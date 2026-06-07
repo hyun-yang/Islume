@@ -3,57 +3,84 @@
 # =============================================================================
 # Islume 스택과의 포트 충돌을 피하기 위한 호스트 포트 재매핑.
 #
+# Host port remapping to avoid port conflicts with the Islume stack.
+#
 # 사용법:
+# Usage:
 #   1) git clone https://github.com/langfuse/langfuse.git ~/langfuse-selfhost
 #   2) 이 파일을 ~/langfuse-selfhost/docker-compose.override.yml 로 복사
+#      Copy this file to ~/langfuse-selfhost/docker-compose.override.yml
 #   3) cd ~/langfuse-selfhost && docker compose up -d
 #
 # Docker Compose는 docker-compose.yml + docker-compose.override.yml 을
 # 자동으로 병합합니다. 원본 파일은 건드리지 않으므로 git pull 시 충돌 없음.
 #
+# Docker Compose automatically merges docker-compose.yml + docker-compose.override.yml.
+# The original file remains untouched, so there are no conflicts on git pull.
+#
 # -----------------------------------------------------------------------------
 # 포트 매핑 정책 (호스트:컨테이너)
+# Port Mapping Policy (host:container)
 # -----------------------------------------------------------------------------
 #   Service              | Container | Host (override) | Reason
 #   ---------------------|-----------|-----------------|---------------------
 #   langfuse-web         | 3000      | 3100            | Next.js dev server 충돌 방지
+#                        |           |                 | Avoid Next.js dev server conflict
+#
 #   postgres (langfuse)  | 5432      | 5433            | islume-postgres와 충돌
+#                        |           |                 | Conflicts with islume-postgres
+#
 #   redis (langfuse)     | 6379      | 6380            | islume-redis와 충돌
+#                        |           |                 | Conflicts with islume-redis
+#
 #   clickhouse (HTTP)    | 8123      | 8124            | 일관성 위해 시프트
+#                        |           |                 | Shifted for consistency
+#
 #   clickhouse (native)  | 9000      | 9001            | 충돌 방지
+#                        |           |                 | Avoid conflict
+#
 #   minio (S3 API)       | 9000      | 9092            | clickhouse 9000과도 충돌 회피
+#                        |           |                 | Also avoids clash with clickhouse 9000
+#
 #   minio (Console)      | 9001      | 9093            | 충돌 방지
+#                        |           |                 | Avoid conflict
 #
 # 컨테이너 *내부* 통신은 원래 포트(5432, 6379, 8123, 9000)를 그대로 사용하므로
 # Langfuse 내부 동작에는 영향 없음. 호스트에서 접근할 때만 새 포트 사용.
 #
+# Inter-container communication still uses the original ports (5432, 6379, 8123, 9000),
+# so Langfuse internals are unaffected. Only host-side access uses the new ports.
+#
 # !override 태그(Compose v2.24+)로 base의 ports 리스트를 append가 아닌 replace
 # 시켜야 함. 안 그러면 base의 5432/6379/3000/9090 매핑이 살아있어 islume과
 # 다시 충돌함.
+#
+# The !override tag (Compose v2.24+) replaces the base ports list instead of appending.
+# Without it, the base mappings (5432/6379/3000/9090) remain active and will
+# conflict with Islume again.
 # =============================================================================
 
 services:
   langfuse-web:
     ports: !override
       - "3100:3000"
-
   langfuse-worker:
-    # worker는 외부 노출 안 함 (원본 그대로 두지만 명시)
+    # worker는 외부 노출 안 함 (원본 그대로 두지만 명시)    
     # ports 섹션 없음
+
+    # Worker is not exposed externally (kept as-is from base, stated explicitly)
+    # No ports section
 
   postgres:
     ports: !override
       - "127.0.0.1:5433:5432"
-
   redis:
     ports: !override
       - "127.0.0.1:6380:6379"
-
   clickhouse:
     ports: !override
       - "127.0.0.1:8124:8123"
       - "127.0.0.1:9001:9000"
-
   minio:
     ports: !override
       - "127.0.0.1:9092:9000"  # S3 API
