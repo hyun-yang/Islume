@@ -25,6 +25,7 @@ from shared.messages import (
 )
 from shared.models import (
     Agent,
+    ConversationTurn,
     MatchSession,
     ToolCallEvent,
     User,
@@ -137,6 +138,69 @@ async def list_user_sessions(
             )
         )
     return summaries
+
+
+class TurnResponse(BaseModel):
+    turn_number: int
+    speaker_agent_id: UUID
+    speaker_name: str
+    content: str
+    model_used: str | None = None
+
+
+@app.get("/sessions/{session_id}/turns", response_model=list[TurnResponse])
+async def list_session_turns(
+    session_id: UUID,
+    db: AsyncSession = Depends(get_session),
+):
+    """Return a session's conversation turns from Postgres, ordered by turn number.
+
+    Postgres is the durable source of truth for "what already happened"; the
+    session WS stream (`stream:session:{id}`) is ephemeral and can be cleared
+    between runs, which would otherwise leave a finished conversation unviewable.
+    The frontend loads history from here and uses the WS only for live updates —
+    the same REST-then-WS pattern as direct chat.
+    """
+    session_obj = await db.get(MatchSession, session_id)
+    if session_obj is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # speaker_name is "{owner display} ({agent name})" — the same shape the worker
+    # writes to the stream, so REST history and live WS turns render identically.
+    # Built from the session's two (user, agent) pairs; no agent→owner lookup needed.
+    user_stmt = select(User.id, User.display_name).where(
+        User.id.in_([session_obj.user_a_id, session_obj.user_b_id])
+    )
+    user_names = dict((await db.execute(user_stmt)).all())
+    agent_stmt = select(Agent.id, Agent.name).where(
+        Agent.id.in_([session_obj.agent_a_id, session_obj.agent_b_id])
+    )
+    agent_names = dict((await db.execute(agent_stmt)).all())
+
+    def _speaker(agent_id: UUID, user_id: UUID) -> str:
+        return f"{user_names.get(user_id, 'Unknown')} ({agent_names.get(agent_id, 'Unknown')})"
+
+    speaker_by_agent = {
+        session_obj.agent_a_id: _speaker(session_obj.agent_a_id, session_obj.user_a_id),
+        session_obj.agent_b_id: _speaker(session_obj.agent_b_id, session_obj.user_b_id),
+    }
+
+    turns_stmt = (
+        select(ConversationTurn)
+        .where(ConversationTurn.session_id == session_id)
+        .order_by(ConversationTurn.turn_number)
+    )
+    turns = list((await db.execute(turns_stmt)).scalars())
+    return [
+        TurnResponse(
+            turn_number=t.turn_number,
+            speaker_agent_id=t.agent_id,
+            speaker_name=speaker_by_agent.get(t.agent_id, "Unknown"),
+            content=t.content,
+            model_used=t.model_used,
+        )
+        for t in turns
+    ]
 
 
 class CreateSessionRequest(BaseModel):

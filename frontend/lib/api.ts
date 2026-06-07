@@ -3,6 +3,7 @@ import type {
   MatchResponse,
   CreateSessionResponse,
   SessionSummary,
+  ConversationTurn,
   UserProfile,
   ProfileUpdateRequest,
   AgentResponse,
@@ -97,6 +98,31 @@ export async function fetchUserSessions(userId: string): Promise<SessionSummary[
   const res = await fetch(`${ORCHESTRATOR}/users/${userId}/sessions`);
   if (!res.ok) throw new Error(`Sessions fetch failed: ${res.status}`);
   return res.json();
+}
+
+/** Conversation turns from Postgres (durable history). The WS stream is only for
+ *  live updates, so finished sessions load their turns from here — they stay
+ *  viewable even after Redis is cleared. Maps snake_case → the camelCase
+ *  ConversationTurn the store/viewer use. */
+export async function fetchSessionTurns(
+  sessionId: string,
+): Promise<ConversationTurn[]> {
+  const res = await fetch(`${ORCHESTRATOR}/sessions/${sessionId}/turns`);
+  if (!res.ok) throw new Error(`Session turns fetch failed: ${res.status}`);
+  const data: Array<{
+    turn_number: number;
+    speaker_agent_id: string;
+    speaker_name: string;
+    content: string;
+    model_used: string | null;
+  }> = await res.json();
+  return data.map((t) => ({
+    turnNumber: t.turn_number,
+    speakerAgentId: t.speaker_agent_id,
+    speakerName: t.speaker_name,
+    content: t.content,
+    modelUsed: t.model_used ?? undefined,
+  }));
 }
 
 export async function cancelSession(

@@ -4,10 +4,11 @@ import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAppStore } from "@/stores/appStore";
 import { useSessionStream } from "@/hooks/useSessionStream";
+import { useSessionTurns } from "@/hooks/useSession";
 import { cancelSession, respondToAffinity } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import ToolCallCard from "@/components/session/ToolCallCard";
-import type { ToolCallEventPayload } from "@/lib/types";
+import type { ConversationTurn, ToolCallEventPayload } from "@/lib/types";
 
 type TimelineItem =
   | { kind: "turn"; turnNumber: number; turn: ReturnType<typeof useAppStore.getState>["conversationTurns"][number] }
@@ -31,6 +32,20 @@ export default function ConversationViewer() {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useSessionStream(activeSessionId);
+
+  // Durable history (Postgres) + live turns (WS store), merged and deduped by
+  // turn number. The WS replay is empty for a finished session whose Redis
+  // stream was cleared (e.g. on restart); Postgres always has the turns, so the
+  // conversation stays viewable. Live turns override history of the same number.
+  const { data: historyTurns } = useSessionTurns(activeSessionId);
+  const mergedTurns = useMemo<ConversationTurn[]>(() => {
+    const byNumber = new Map<number, ConversationTurn>();
+    for (const t of historyTurns ?? []) byNumber.set(t.turnNumber, t);
+    for (const t of conversationTurns) byNumber.set(t.turnNumber, t);
+    return Array.from(byNumber.values()).sort(
+      (a, b) => a.turnNumber - b.turnNumber,
+    );
+  }, [historyTurns, conversationTurns]);
 
   // The conversation lives at the bottom of a long single-scroll sidebar, below
   // wallet/profile/agent/control/session panels. Picking a session loads its
@@ -61,7 +76,7 @@ export default function ConversationViewer() {
   // Merge turns + tool_call events into one ordered timeline. Tool calls land
   // immediately AFTER their turn (same turn_number, but pushed last).
   const timeline = useMemo<TimelineItem[]>(() => {
-    const items: TimelineItem[] = conversationTurns.map((t) => ({
+    const items: TimelineItem[] = mergedTurns.map((t) => ({
       kind: "turn" as const,
       turnNumber: t.turnNumber,
       turn: t,
@@ -71,14 +86,14 @@ export default function ConversationViewer() {
         kind: "tool_call" as const,
         // status events without a turn number anchor to the latest turn we've seen
         turnNumber:
-          conversationTurns.length > 0
-            ? conversationTurns[conversationTurns.length - 1].turnNumber
+          mergedTurns.length > 0
+            ? mergedTurns[mergedTurns.length - 1].turnNumber
             : 0,
         payload: e,
       });
     }
     return items;
-  }, [conversationTurns, toolCallEvents]);
+  }, [mergedTurns, toolCallEvents]);
 
   const affinityMutation = useMutation({
     mutationFn: (action: "continue" | "end") =>
@@ -100,10 +115,10 @@ export default function ConversationViewer() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [conversationTurns, affinityCheck]);
+  }, [mergedTurns, affinityCheck]);
 
   // Track first speaker for alternating colors
-  const firstSpeaker = conversationTurns[0]?.speakerAgentId ?? null;
+  const firstSpeaker = mergedTurns[0]?.speakerAgentId ?? null;
 
   return (
     <div ref={rootRef} className="flex flex-col max-h-[60vh]">
@@ -233,7 +248,7 @@ export default function ConversationViewer() {
           </div>
         )}
 
-        {sessionStatus === "active" && conversationTurns.length > 0 && !affinityCheck && (
+        {sessionStatus === "active" && mergedTurns.length > 0 && !affinityCheck && (
           <div className="text-xs text-zinc-400 text-center py-2">
             {t("session.waitingNextTurn")}
           </div>
