@@ -104,6 +104,20 @@ async def session_socket(websocket: WebSocket, session_id: UUID):
                     if event.event_type == "session_ended":
                         session_ended = True
                         break
+
+        # History fully replayed (including session_ended). Do NOT return here —
+        # returning closes the socket immediately, which races the frames we just
+        # sent. When a client opens an already-finished session, the whole history
+        # plus session_ended is flushed in a single burst and a server-side close
+        # can tear the connection down before the client drains its receive buffer
+        # (observed: client gets 0 turns and a 1006 abnormal close, so the
+        # conversation renders empty — while a live viewer who streamed the turns
+        # incrementally is unaffected). Hold the socket open and let the CLIENT
+        # close it after it processes session_ended (frontend lib/ws.ts does
+        # exactly that). This mirrors the chat/wallet/visit sockets, none of which
+        # self-close.
+        while True:
+            await websocket.receive_text()
     except WebSocketDisconnect:
         print("[gateway] client disconnected")
 
