@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Islume + Langfuse — Self-Hosted Setup Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f4ee;
+    --surface: #ffffff;
+    --surface-tint: #f1ede4;
+    --border: #ddd6c8;
+    --border-subtle: #e8e3d8;
+    --text: #1f1c17;
+    --text-muted: #6b6558;
+    --text-dim: #9a9384;
+
+    --win-accent: #2563c7;
+    --win-border: #b9cdee;
+    --win-tint: #eef3fc;
+
+    --mac-accent: #a8651a;
+    --mac-border: #e3cda0;
+    --mac-tint: #faf3e6;
+
+    --ubu-accent: #c2410c;
+    --ubu-border: #eccab3;
+    --ubu-tint: #fbf0e8;
+
+    --islume-color: #0f766e;
+    --langfuse-color: #7c3aed;
+
+    --code-bg: #1c1a16;
+    --code-border: #2c2a24;
+    --code-text: #d8d4cb;
+    --code-prompt: #6e6a5e;
+    --code-comment: #8a8472;
+    --code-flag: #8db4e0;
+    --code-url: #a3c98a;
+    --code-env-var: #d8b48a;
+    --code-env-val: #a3c98a;
+    --code-header: #8a8472;
+
+    --step-size: 3.2rem;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85em;
+    background: var(--surface-tint);
+    padding: 0.1em 0.4em;
+    border-radius: 3px;
+    color: var(--text);
+  }
+
+  /* ---- LANG TOGGLE ---- */
+  .lang-toggle { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
+
+  .lang-toggle button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 0.45rem 0.9rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .lang-toggle button:first-child { border-right: none; }
+
+  .lang-toggle button.active {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+
+  body[data-lang="ko"] .en { display: none; }
+  body[data-lang="en"] .ko { display: none; }
+
+  /* ---- HEADER ---- */
+  .header { margin-bottom: 3rem; padding-bottom: 2.5rem; border-bottom: 2px solid var(--text); }
+
+  .header .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 1rem;
+  }
+
+  .header h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 3.2rem;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 1.2rem;
+  }
+
+  .header h1 em { font-style: italic; color: var(--text-muted); }
+
+  .header p {
+    color: var(--text-muted);
+    font-size: 0.96rem;
+    max-width: 600px;
+    line-height: 1.8;
+  }
+
+  .prereq-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 2rem;
+  }
+
+  .prereq-cell { background: var(--surface); padding: 1rem 1.2rem; }
+
+  .prereq-cell .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+  }
+
+  .prereq-cell .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* ---- TOPOLOGY ---- */
+  .topology { margin: 2rem 0 0; background: var(--surface); border: 1px solid var(--border); padding: 1.8rem; position: relative; }
+
+  .topology::before {
+    content: 'ARCHITECTURE';
+    position: absolute;
+    top: 0.7rem; right: 0.9rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+  }
+
+  .topo-row { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
+  .topo-row:last-child { margin-bottom: 0; }
+
+  .topo-box {
+    flex: 1;
+    border: 1px solid var(--border);
+    padding: 0.6rem 0.8rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 2.6rem;
+  }
+
+  .topo-box .topo-name { color: var(--text); font-weight: 600; }
+  .topo-box .topo-port { color: var(--text-dim); font-size: 0.66rem; margin-top: 0.15rem; }
+
+  .topo-box.islume-color { border-color: #a8d4cc; background: #eef7f5; }
+  .topo-box.langfuse-color { border-color: #d3bef0; background: #f6f0fd; }
+  .topo-box.infra-color { border-color: var(--border); background: var(--surface-tint); }
+
+  .topo-connector {
+    text-align: center;
+    color: var(--text-dim);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    padding: 0.25rem 0;
+    letter-spacing: 0.05em;
+  }
+
+  /* ---- TABS ---- */
+  .tabs-container { margin-top: 2.5rem; }
+  .tab-bar { display: flex; border-bottom: 1px solid var(--border); }
+
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1rem 2rem;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+  }
+
+  .tab-btn:hover { color: var(--text-muted); }
+
+  .tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0; right: 0;
+    height: 2px;
+    background: transparent;
+    transition: background 0.2s;
+  }
+
+  .tab-btn[data-os="windows"].active { color: var(--win-accent); }
+  .tab-btn[data-os="windows"].active::after { background: var(--win-accent); }
+  .tab-btn[data-os="mac"].active { color: var(--mac-accent); }
+  .tab-btn[data-os="mac"].active::after { background: var(--mac-accent); }
+  .tab-btn[data-os="ubuntu"].active { color: var(--ubu-accent); }
+  .tab-btn[data-os="ubuntu"].active::after { background: var(--ubu-accent); }
+
+  .tab-panel { display: none; padding-top: 2.5rem; }
+  .tab-panel.active { display: block; }
+
+  /* ---- SECTION ---- */
+  .section { margin-bottom: 3.5rem; }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+  }
+
+  .section-label.islume { color: var(--islume-color); }
+  .section-label.langfuse { color: var(--langfuse-color); }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 1.9rem;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .section-desc {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    max-width: 620px;
+  }
+
+  /* ---- STEPS ---- */
+  .step {
+    display: grid;
+    grid-template-columns: var(--step-size) 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .step::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--step-size) / 2);
+    top: var(--step-size);
+    bottom: calc(-2.5rem + 4px);
+    width: 1px;
+    background: var(--border);
+  }
+
+  .step:last-child::before { display: none; }
+
+  .step-num {
+    width: var(--step-size);
+    height: var(--step-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 1.35rem;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .os-windows .step-num { border-color: var(--win-border); color: var(--win-accent); background: var(--win-tint); }
+  .os-mac .step-num { border-color: var(--mac-border); color: var(--mac-accent); background: var(--mac-tint); }
+  .os-ubuntu .step-num { border-color: var(--ubu-border); color: var(--ubu-accent); background: var(--ubu-tint); }
+
+  .step-content h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .step-content p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.7;
+    margin-bottom: 0.8rem;
+  }
+
+  .step-content p a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--text-dim);
+  }
+
+  /* ---- CODE BLOCKS ---- */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    margin: 0.8rem 0;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.9;
+    overflow: hidden;
+  }
+
+  .code-block .code-header {
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--code-border);
+    color: var(--code-header);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .code-block pre {
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    white-space: pre;
+    color: var(--code-text);
+  }
+
+  .code-block .prompt { color: var(--code-prompt); user-select: none; }
+  .code-block .cmd { color: var(--code-text); }
+  .code-block .comment { color: var(--code-comment); font-style: italic; }
+  .code-block .flag { color: var(--code-flag); }
+  .code-block .url { color: var(--code-url); }
+  .code-block .env-var { color: var(--code-env-var); }
+  .code-block .env-val { color: var(--code-env-val); }
+
+  /* ---- NOTE ---- */
+  .note { border-left: 3px solid var(--border); padding: 1rem 1.2rem; margin: 1rem 0; background: var(--surface); }
+
+  .note .note-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+
+  .note p { color: var(--text-muted) !important; font-size: 0.85rem !important; line-height: 1.7 !important; margin-bottom: 0 !important; }
+
+  .note.caution { border-left-color: var(--mac-accent); background: var(--mac-tint); }
+  .note.caution .note-label { color: var(--mac-accent); }
+
+  /* ---- PORT TABLES ---- */
+  .port-map { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin: 1rem 0; }
+  .port-map .port-item { background: var(--surface); padding: 0.8rem 1rem; }
+  .port-map .port-item .port-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--text); margin-bottom: 0.15rem; }
+  .port-map .port-item .port-label { font-size: 0.78rem; color: var(--text-dim); }
+
+  .verify-table, .mapping-table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.84rem; }
+
+  .verify-table th, .mapping-table th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 0.6rem 1rem;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+  }
+
+  .verify-table td, .mapping-table td { padding: 0.55rem 1rem; border-bottom: 1px solid var(--border-subtle); color: var(--text-muted); }
+
+  .verify-table td:first-child,
+  .mapping-table td:nth-child(2),
+  .mapping-table td:nth-child(3) { font-family: 'IBM Plex Mono', monospace; color: var(--text); }
+
+  .mapping-table td:nth-child(3) { color: var(--langfuse-color); font-weight: 600; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 3rem 0; }
+
+  .footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--text);
+    color: var(--text-dim);
+    font-size: 0.76rem;
+    font-family: 'IBM Plex Mono', monospace;
+    line-height: 1.9;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 2rem 1rem 4rem; }
+    .header h1 { font-size: 2.1rem; }
+    .section-title { font-size: 1.45rem; }
+    .tab-btn { padding: 0.8rem 1rem; font-size: 0.72rem; }
+    :root { --step-size: 2.4rem; }
+    .step { grid-template-columns: 2.4rem 1fr; gap: 1rem; }
+    .step-num { font-size: 1rem; }
+    .topo-row { flex-direction: column; }
+    .port-map, .prereq-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body data-lang="en">
+
+<div class="lang-toggle">
+  <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
+  <button id="btn-ko" onclick="setLang('ko')">한국어</button>
+</div>
+
+<header class="header">
+  <div class="eyebrow">Self-Hosted Setup Guide</div>
+  <h1>Islume + Langfuse<br><em><span class="en">Local Development</span><span class="ko">로컬 개발 환경</span></em></h1>
+  <p>
+    <span class="en">A guide to running the Islume microservices alongside a self-hosted Langfuse v3 observability stack on a local machine. Docker handles the infrastructure (Redis, PostgreSQL, ClickHouse), so the actual install footprint is small.</span>
+    <span class="ko">Islume 마이크로서비스와 셀프호스트 Langfuse v3 옵저버빌리티 스택을 로컬 머신에서 함께 실행하는 가이드. Docker가 인프라(Redis, PostgreSQL, ClickHouse)를 담당하므로 실제 설치 항목은 많지 않다.</span>
+  </p>
+
+  <div class="prereq-grid">
+    <div class="prereq-cell">
+      <div class="label">Islume Stack</div>
+      <div class="value">Python 3.12, FastAPI, Redis 7, PostgreSQL 16</div>
+    </div>
+    <div class="prereq-cell">
+      <div class="label">Langfuse Stack</div>
+      <div class="value">Docker Compose, ClickHouse, PostgreSQL, MinIO</div>
+    </div>
+    <div class="prereq-cell">
+      <div class="label">Package Mgr</div>
+      <div class="value">uv (Islume), Docker (Langfuse)</div>
+    </div>
+    <div class="prereq-cell">
+      <div class="label"><span class="en">Min. RAM</span><span class="ko">최소 RAM</span></div>
+      <div class="value"><span class="en">16 GB recommended</span><span class="ko">16 GB 권장</span></div>
+    </div>
+  </div>
+
+  <div class="topology">
+    <div class="topo-row">
+      <div class="topo-box islume-color"><span class="topo-name">Matching API</span><span class="topo-port">:8001</span></div>
+      <div class="topo-box islume-color"><span class="topo-name">WS Gateway</span><span class="topo-port">:8002</span></div>
+      <div class="topo-box islume-color"><span class="topo-name">Orchestrator</span><span class="topo-port">:8003</span></div>
+      <div class="topo-box islume-color"><span class="topo-name">LLM Worker</span><span class="topo-port">background</span></div>
+    </div>
+    <div class="topo-connector">--- connects to ---</div>
+    <div class="topo-row">
+      <div class="topo-box infra-color"><span class="topo-name">Redis 7</span><span class="topo-port">Streams + GEO</span></div>
+      <div class="topo-box infra-color"><span class="topo-name">PostgreSQL 16</span><span class="topo-port">SQLAlchemy 2.0</span></div>
+    </div>
+    <div class="topo-connector">--- observed by ---</div>
+    <div class="topo-row">
+      <div class="topo-box langfuse-color"><span class="topo-name">Langfuse Web</span><span class="topo-port">:3100 (host)</span></div>
+      <div class="topo-box langfuse-color"><span class="topo-name">Langfuse Worker</span><span class="topo-port">background</span></div>
+      <div class="topo-box langfuse-color"><span class="topo-name">ClickHouse</span><span class="topo-port">analytics</span></div>
+      <div class="topo-box langfuse-color"><span class="topo-name">MinIO</span><span class="topo-port">:9092 (host)</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="tabs-container">
+  <div class="tab-bar">
+    <button class="tab-btn active" data-os="windows" onclick="switchTab('windows')">Windows</button>
+    <button class="tab-btn" data-os="mac" onclick="switchTab('mac')">macOS</button>
+    <button class="tab-btn" data-os="ubuntu" onclick="switchTab('ubuntu')">Ubuntu</button>
+  </div>
+
+  <!-- ==================== WINDOWS ==================== -->
+  <div id="panel-windows" class="tab-panel active os-windows">
+    <div class="section">
+      <div class="section-label islume">Islume</div>
+      <div class="section-title"><span class="en">Prerequisites &amp; Islume Setup</span><span class="ko">사전 준비 및 Islume 설치</span></div>
+      <div class="section-desc">
+        <span class="en">On Windows, install Python and Docker Desktop first, then manage Islume dependencies with uv. Git is assumed to be installed already.</span>
+        <span class="ko">Windows에서는 Python과 Docker Desktop을 먼저 설치한 후 uv로 Islume 의존성을 관리한다. Git은 이미 설치되어 있다고 가정한다.</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3><span class="en">Install Python 3.12</span><span class="ko">Python 3.12 설치</span></h3>
+          <p><span class="en">Download the 3.12.x installer from <a href="https://www.python.org/downloads/">python.org</a>. During install, make sure "Add Python to PATH" is checked.</span><span class="ko"><a href="https://www.python.org/downloads/">python.org</a>에서 3.12.x 인스톨러를 받아 설치한다. 설치 시 "Add Python to PATH"를 반드시 체크한다.</span></p>
+          <div class="code-block">
+            <div class="code-header">powershell &mdash; verify</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">python --version</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3><span class="en">Install Docker Desktop</span><span class="ko">Docker Desktop 설치</span></h3>
+          <p><span class="en">Download <a href="https://www.docker.com/products/docker-desktop/">Docker Desktop for Windows</a> and install it. Accept the WSL 2 backend prompt if it appears. A reboot may be required.</span><span class="ko"><a href="https://www.docker.com/products/docker-desktop/">Docker Desktop for Windows</a>를 받아 설치한다. WSL 2 백엔드 활성화 안내가 나오면 그대로 따른다. 재부팅이 필요할 수 있다.</span></p>
+          <div class="code-block">
+            <div class="code-header">powershell &mdash; verify</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">docker --version</span>
+<span class="prompt">PS&gt; </span><span class="cmd">docker compose version</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3><span class="en">Install uv</span><span class="ko">uv 설치</span></h3>
+          <p><span class="en">Islume's package manager. Install in a single line from PowerShell, then restart the terminal.</span><span class="ko">Islume의 패키지 매니저. PowerShell에서 한 줄로 설치한 뒤 터미널을 재시작한다.</span></p>
+          <div class="code-block">
+            <div class="code-header">powershell</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">irm</span> <span class="url">https://astral.sh/uv/install.ps1</span> <span class="cmd">| iex</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3><span class="en">Clone Islume &amp; install dependencies</span><span class="ko">Islume 클론 및 의존성 설치</span></h3>
+          <div class="code-block">
+            <div class="code-header">powershell</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">git clone &lt;islume-repo-url&gt;</span>
+<span class="prompt">PS&gt; </span><span class="cmd">cd islume</span>
+<span class="prompt">PS&gt; </span><span class="cmd">uv pip install -e .</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h3><span class="en">Configure env &amp; start infrastructure</span><span class="ko">환경 변수 설정 및 인프라 기동</span></h3>
+          <div class="code-block">
+            <div class="code-header">powershell</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">copy .env.example .env</span>
+<span class="comment"><span class="en"># Open .env and set ANTHROPIC_API_KEY</span><span class="ko"># .env 파일을 열어 ANTHROPIC_API_KEY 입력</span></span>
+
+<span class="prompt">PS&gt; </span><span class="cmd">docker compose up -d</span>
+<span class="prompt">PS&gt; </span><span class="cmd">docker compose ps</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h3><span class="en">Migrate DB &amp; seed data</span><span class="ko">DB 마이그레이션 및 시드 데이터</span></h3>
+          <div class="code-block">
+            <div class="code-header">powershell</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">uv run alembic upgrade head</span>
+<span class="prompt">PS&gt; </span><span class="cmd">uv run python scripts/seed_db.py</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <h3><span class="en">Start services (4 terminals)</span><span class="ko">서비스 기동 (터미널 4개)</span></h3>
+          <p><span class="en">Open four tabs in Windows Terminal, or use separate PowerShell windows.</span><span class="ko">Windows Terminal에서 탭 4개를 열거나, 별도의 PowerShell 창을 사용한다.</span></p>
+          <div class="port-map">
+            <div class="port-item"><div class="port-num">:8001</div><div class="port-label">Matching API</div></div>
+            <div class="port-item"><div class="port-num">:8002</div><div class="port-label">WebSocket Gateway</div></div>
+            <div class="port-item"><div class="port-num">:8003</div><div class="port-label">Orchestrator</div></div>
+            <div class="port-item"><div class="port-num">background</div><div class="port-label">LLM Worker</div></div>
+          </div>
+          <div class="code-block">
+            <div class="code-header">terminal 1 / 2 / 4 &mdash; uvicorn services</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">uv run uvicorn services.matching.main:app</span> <span class="flag">--reload --port 8001</span>
+<span class="prompt">PS&gt; </span><span class="cmd">uv run uvicorn services.orchestrator.main:app</span> <span class="flag">--reload --port 8003</span>
+<span class="prompt">PS&gt; </span><span class="cmd">uv run uvicorn services.gateway.main:app</span> <span class="flag">--reload --port 8002</span></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-header">terminal 3 &mdash; llm worker</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">uv run python services/worker/main.py</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="section-label langfuse">Langfuse v3</div>
+      <div class="section-title"><span class="en">Self-Hosted Langfuse</span><span class="ko">Langfuse 셀프호스트 설치</span></div>
+      <div class="section-desc">
+        <span class="en">Langfuse ships its own docker-compose.yml bundling all infrastructure (PostgreSQL, ClickHouse, MinIO, Redis). Run it from a separate directory and remap host ports to avoid clashing with Islume — see the port policy below.</span>
+        <span class="ko">Langfuse는 자체 docker-compose.yml에 모든 인프라(PostgreSQL, ClickHouse, MinIO, Redis)를 포함한다. 별도 디렉토리에서 실행하고, Islume과의 충돌을 피하기 위해 호스트 포트를 재매핑한다 — 아래 포트 정책 참고.</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3><span class="en">Clone the Langfuse repository</span><span class="ko">Langfuse 레포지토리 클론</span></h3>
+          <div class="code-block">
+            <div class="code-header">powershell</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">git clone</span> <span class="url">https://github.com/langfuse/langfuse.git</span> <span class="cmd">langfuse-selfhost</span>
+<span class="prompt">PS&gt; </span><span class="cmd">cd langfuse-selfhost</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3><span class="en">Add the port-remapping override</span><span class="ko">포트 재매핑 override 추가</span></h3>
+          <p><span class="en">Drop the <code>docker-compose.override.yml</code> (shown in the port policy below) into the repo root. Compose merges it with the base file automatically, so the original is never touched (no conflicts on <code>git pull</code>).</span><span class="ko">아래 포트 정책에 있는 <code>docker-compose.override.yml</code>을 레포 루트에 넣는다. Compose가 base 파일과 자동 병합하므로 원본은 건드리지 않는다(<code>git pull</code> 시 충돌 없음).</span></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3><span class="en">Change secrets &amp; start</span><span class="ko">시크릿 변경 및 기동</span></h3>
+          <p><span class="en">Update the values marked <code># CHANGEME</code> in docker-compose.yml, then start.</span><span class="ko">docker-compose.yml에서 <code># CHANGEME</code>로 표시된 값을 변경한 뒤 실행한다.</span></p>
+          <div class="code-block">
+            <div class="code-header">powershell</div>
+            <pre><span class="prompt">PS&gt; </span><span class="cmd">docker compose up -d</span>
+<span class="comment"><span class="en"># After ~2-3 min, langfuse-web logs "Ready"</span><span class="ko"># 2-3분 후 langfuse-web에서 "Ready" 로그 출력</span></span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3><span class="en">Open the UI &amp; connect Islume</span><span class="ko">UI 접속 및 Islume 연결</span></h3>
+          <p><span class="en">Open <code>http://localhost:3100</code> (remapped port), create a project, and generate API keys. Add them to Islume's <code>.env</code>.</span><span class="ko"><code>http://localhost:3100</code>(재매핑된 포트)에 접속해 프로젝트를 만들고 API 키를 발급받는다. Islume의 <code>.env</code>에 추가한다.</span></p>
+          <div class="code-block">
+            <div class="code-header">islume/.env</div>
+            <pre><span class="env-var">LANGFUSE_SECRET_KEY</span>=<span class="env-val">"sk-lf-..."</span>
+<span class="env-var">LANGFUSE_PUBLIC_KEY</span>=<span class="env-val">"pk-lf-..."</span>
+<span class="env-var">LANGFUSE_BASE_URL</span>=<span class="env-val">"http://localhost:3100"</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== macOS ==================== -->
+  <div id="panel-mac" class="tab-panel os-mac">
+    <div class="section">
+      <div class="section-label islume">Islume</div>
+      <div class="section-title"><span class="en">Prerequisites &amp; Islume Setup</span><span class="ko">사전 준비 및 Islume 설치</span></div>
+      <div class="section-desc">
+        <span class="en">On macOS, Homebrew installs most dependencies. Ventura or later with 16 GB RAM runs the full stack comfortably.</span>
+        <span class="ko">macOS에서는 Homebrew로 대부분의 의존성을 설치한다. Ventura 이상, 16 GB RAM이면 전체 스택 구동에 문제없다.</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3><span class="en">Install Homebrew</span><span class="ko">Homebrew 설치</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">/bin/bash -c</span> <span class="url">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span></pre>
+          </div>
+          <div class="note">
+            <div class="note-label">Apple Silicon</div>
+            <p><span class="en">On M-series Macs, run the eval command printed after install to add brew to PATH.</span><span class="ko">M 시리즈 맥에서는 설치 후 출력되는 eval 명령을 실행해야 brew가 PATH에 등록된다.</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3><span class="en">Install Python, Docker, uv, tmux</span><span class="ko">Python · Docker · uv · tmux 설치</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">brew install python@3.12 tmux</span>
+<span class="prompt">$ </span><span class="cmd">brew install</span> <span class="flag">--cask</span> <span class="cmd">docker</span>
+<span class="prompt">$ </span><span class="cmd">curl -LsSf</span> <span class="url">https://astral.sh/uv/install.sh</span> <span class="cmd">| sh</span></pre>
+          </div>
+          <p><span class="en">Launch Docker Desktop once to finish setup. The default 8 GB memory allocation is fine.</span><span class="ko">Docker Desktop 앱을 한 번 실행해 초기 셋업을 완료한다. 기본 메모리 할당(8 GB)은 그대로 둬도 된다.</span></p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3><span class="en">Clone Islume &amp; install dependencies</span><span class="ko">Islume 클론 및 의존성 설치</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">git clone &lt;islume-repo-url&gt; && cd islume</span>
+<span class="prompt">$ </span><span class="cmd">uv pip install -e .</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3><span class="en">Configure env &amp; start infrastructure</span><span class="ko">환경 변수 설정 및 인프라 기동</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">cp .env.example .env</span>
+<span class="comment"><span class="en"># Set ANTHROPIC_API_KEY in .env</span><span class="ko"># .env에 ANTHROPIC_API_KEY 입력</span></span>
+<span class="prompt">$ </span><span class="cmd">docker compose up -d && docker compose ps</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h3><span class="en">Migrate DB &amp; seed data</span><span class="ko">DB 마이그레이션 및 시드 데이터</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">uv run alembic upgrade head</span>
+<span class="prompt">$ </span><span class="cmd">uv run python scripts/seed_db.py</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h3><span class="en">Start services (tmux recommended)</span><span class="ko">서비스 기동 (tmux 권장)</span></h3>
+          <div class="port-map">
+            <div class="port-item"><div class="port-num">:8001</div><div class="port-label">Matching API</div></div>
+            <div class="port-item"><div class="port-num">:8002</div><div class="port-label">WebSocket Gateway</div></div>
+            <div class="port-item"><div class="port-num">:8003</div><div class="port-label">Orchestrator</div></div>
+            <div class="port-item"><div class="port-num">background</div><div class="port-label">LLM Worker</div></div>
+          </div>
+          <div class="code-block">
+            <div class="code-header">tmux windows</div>
+            <pre><span class="prompt">$ </span><span class="cmd">uv run uvicorn services.matching.main:app</span> <span class="flag">--reload --port 8001</span>
+<span class="prompt">$ </span><span class="cmd">uv run uvicorn services.orchestrator.main:app</span> <span class="flag">--reload --port 8003</span>
+<span class="prompt">$ </span><span class="cmd">uv run uvicorn services.gateway.main:app</span> <span class="flag">--reload --port 8002</span>
+<span class="prompt">$ </span><span class="cmd">uv run python services/worker/main.py</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="section-label langfuse">Langfuse v3</div>
+      <div class="section-title"><span class="en">Self-Hosted Langfuse</span><span class="ko">Langfuse 셀프호스트 설치</span></div>
+      <div class="section-desc">
+        <span class="en">Run Langfuse from a separate directory with the port-remapping override (see port policy below) so it coexists with Islume.</span>
+        <span class="ko">Langfuse를 별도 디렉토리에서 포트 재매핑 override(아래 포트 정책 참고)와 함께 실행하면 Islume과 공존한다.</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3><span class="en">Clone &amp; add the override</span><span class="ko">클론 및 override 추가</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">git clone</span> <span class="url">https://github.com/langfuse/langfuse.git</span> <span class="cmd">langfuse-selfhost</span>
+<span class="prompt">$ </span><span class="cmd">cd langfuse-selfhost</span>
+<span class="comment"><span class="en"># copy docker-compose.override.yml (below) into this directory</span><span class="ko"># docker-compose.override.yml(아래)을 이 디렉토리에 복사</span></span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3><span class="en">Start &amp; connect Islume</span><span class="ko">기동 및 Islume 연결</span></h3>
+          <div class="code-block">
+            <div class="code-header">terminal</div>
+            <pre><span class="prompt">$ </span><span class="cmd">docker compose up -d</span>
+<span class="comment"><span class="en"># UI at http://localhost:3100</span><span class="ko"># http://localhost:3100 에서 UI 접속</span></span></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-header">islume/.env</div>
+            <pre><span class="env-var">LANGFUSE_SECRET_KEY</span>=<span class="env-val">"sk-lf-..."</span>
+<span class="env-var">LANGFUSE_PUBLIC_KEY</span>=<span class="env-val">"pk-lf-..."</span>
+<span class="env-var">LANGFUSE_BASE_URL</span>=<span class="env-val">"http://localhost:3100"</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== UBUNTU ==================== -->
+  <div id="panel-ubuntu" class="tab-panel os-ubuntu">
+    <div class="section">
+      <div class="section-label islume">Islume</div>
+      <div class="section-title"><span class="en">Prerequisites &amp; Islume Setup</span><span class="ko">사전 준비 및 Islume 설치</span></div>
+      <div class="section-desc">
+        <span class="en">Based on Ubuntu 24.04. System dependencies come from apt; Docker is installed from its official repository (Docker Engine, not Desktop).</span>
+        <span class="ko">Ubuntu 24.04 기준. 시스템 의존성은 apt로, Docker는 공식 리포지토리에서 설치한다(Desktop이 아닌 Docker Engine).</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3><span class="en">Update system &amp; install Python 3.12</span><span class="ko">시스템 업데이트 및 Python 3.12 설치</span></h3>
+          <p><span class="en">Ubuntu 24.04 ships with Python 3.12. On older releases, use the deadsnakes PPA.</span><span class="ko">Ubuntu 24.04에는 Python 3.12가 기본 탑재. 구버전이면 deadsnakes PPA를 사용한다.</span></p>
+          <div class="code-block">
+            <div class="code-header">bash</div>
+            <pre><span class="prompt">$ </span><span class="cmd">sudo apt update && sudo apt upgrade -y</span>
+<span class="comment"><span class="en"># older releases only:</span><span class="ko"># 구버전에서만:</span></span>
+<span class="prompt">$ </span><span class="cmd">sudo add-apt-repository ppa:deadsnakes/ppa -y && sudo apt update</span>
+<span class="prompt">$ </span><span class="cmd">sudo apt install python3.12 python3.12-venv -y</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3><span class="en">Install Docker Engine</span><span class="ko">Docker Engine 설치</span></h3>
+          <div class="code-block">
+            <div class="code-header">bash &mdash; apt repo setup</div>
+            <pre><span class="prompt">$ </span><span class="cmd">sudo apt install ca-certificates curl -y</span>
+<span class="prompt">$ </span><span class="cmd">sudo install -m 0755 -d /etc/apt/keyrings</span>
+<span class="prompt">$ </span><span class="cmd">sudo curl -fsSL</span> <span class="url">https://download.docker.com/linux/ubuntu/gpg</span> <span class="flag">-o /etc/apt/keyrings/docker.asc</span>
+<span class="prompt">$ </span><span class="cmd">sudo chmod a+r /etc/apt/keyrings/docker.asc</span>
+<span class="prompt">$ </span><span class="cmd">echo</span> <span class="env-val">"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable"</span> <span class="cmd">| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null</span>
+<span class="prompt">$ </span><span class="cmd">sudo apt update</span></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-header">bash &mdash; install &amp; enable rootless usage</div>
+            <pre><span class="prompt">$ </span><span class="cmd">sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y</span>
+<span class="prompt">$ </span><span class="cmd">sudo usermod -aG docker $USER</span>
+<span class="comment"><span class="en"># log out and back in, then verify</span><span class="ko"># 로그아웃 후 재로그인, 그다음 확인</span></span>
+<span class="prompt">$ </span><span class="cmd">docker run hello-world</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3><span class="en">Install uv</span><span class="ko">uv 설치</span></h3>
+          <div class="code-block">
+            <div class="code-header">bash</div>
+            <pre><span class="prompt">$ </span><span class="cmd">curl -LsSf</span> <span class="url">https://astral.sh/uv/install.sh</span> <span class="cmd">| sh</span>
+<span class="prompt">$ </span><span class="cmd">source $HOME/.local/bin/env</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3><span class="en">Clone, configure, migrate</span><span class="ko">클론 · 환경설정 · 마이그레이션</span></h3>
+          <div class="code-block">
+            <div class="code-header">bash</div>
+            <pre><span class="prompt">$ </span><span class="cmd">git clone &lt;islume-repo-url&gt; && cd islume</span>
+<span class="prompt">$ </span><span class="cmd">uv pip install -e .</span>
+<span class="prompt">$ </span><span class="cmd">cp .env.example .env</span>
+<span class="comment"><span class="en"># set ANTHROPIC_API_KEY</span><span class="ko"># ANTHROPIC_API_KEY 입력</span></span>
+<span class="prompt">$ </span><span class="cmd">docker compose up -d</span>
+<span class="prompt">$ </span><span class="cmd">uv run alembic upgrade head && uv run python scripts/seed_db.py</span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h3><span class="en">Start services (tmux)</span><span class="ko">서비스 기동 (tmux)</span></h3>
+          <div class="port-map">
+            <div class="port-item"><div class="port-num">:8001</div><div class="port-label">Matching API</div></div>
+            <div class="port-item"><div class="port-num">:8002</div><div class="port-label">WebSocket Gateway</div></div>
+            <div class="port-item"><div class="port-num">:8003</div><div class="port-label">Orchestrator</div></div>
+            <div class="port-item"><div class="port-num">background</div><div class="port-label">LLM Worker</div></div>
+          </div>
+          <div class="code-block">
+            <div class="code-header">bash &mdash; tmux windows</div>
+            <pre><span class="prompt">$ </span><span class="cmd">sudo apt install tmux -y && tmux new -s islume</span>
+<span class="prompt">$ </span><span class="cmd">uv run uvicorn services.matching.main:app</span> <span class="flag">--reload --port 8001</span>
+<span class="prompt">$ </span><span class="cmd">uv run uvicorn services.orchestrator.main:app</span> <span class="flag">--reload --port 8003</span>
+<span class="prompt">$ </span><span class="cmd">uv run uvicorn services.gateway.main:app</span> <span class="flag">--reload --port 8002</span>
+<span class="prompt">$ </span><span class="cmd">uv run python services/worker/main.py</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="section">
+      <div class="section-label langfuse">Langfuse v3</div>
+      <div class="section-title"><span class="en">Self-Hosted Langfuse</span><span class="ko">Langfuse 셀프호스트 설치</span></div>
+      <div class="section-desc">
+        <span class="en">Run Langfuse from a separate directory with the port-remapping override (see port policy below) so it coexists with the Islume stack on the same host.</span>
+        <span class="ko">Langfuse를 별도 디렉토리에서 포트 재매핑 override(아래 포트 정책 참고)와 함께 실행하면 같은 호스트에서 Islume 스택과 공존한다.</span>
+      </div>
+
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3><span class="en">Clone &amp; add the override</span><span class="ko">클론 및 override 추가</span></h3>
+          <div class="code-block">
+            <div class="code-header">bash</div>
+            <pre><span class="prompt">$ </span><span class="cmd">git clone</span> <span class="url">https://github.com/langfuse/langfuse.git</span> <span class="cmd">~/langfuse-selfhost</span>
+<span class="prompt">$ </span><span class="cmd">cd ~/langfuse-selfhost</span>
+<span class="comment"><span class="en"># copy docker-compose.override.yml (below) here</span><span class="ko"># docker-compose.override.yml(아래)을 여기에 복사</span></span></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3><span class="en">Start &amp; connect Islume</span><span class="ko">기동 및 Islume 연결</span></h3>
+          <div class="code-block">
+            <div class="code-header">bash</div>
+            <pre><span class="prompt">$ </span><span class="cmd">docker compose up -d</span>
+<span class="comment"><span class="en"># UI at http://localhost:3100</span><span class="ko"># http://localhost:3100 에서 UI 접속</span></span></pre>
+          </div>
+          <div class="code-block">
+            <div class="code-header">islume/.env</div>
+            <pre><span class="env-var">LANGFUSE_SECRET_KEY</span>=<span class="env-val">"sk-lf-..."</span>
+<span class="env-var">LANGFUSE_PUBLIC_KEY</span>=<span class="env-val">"pk-lf-..."</span>
+<span class="env-var">LANGFUSE_BASE_URL</span>=<span class="env-val">"http://localhost:3100"</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PORT MAPPING POLICY (shared) ==================== -->
+<div class="section">
+  <div class="section-label langfuse">Langfuse — Port Policy</div>
+  <div class="section-title"><span class="en">Port Remapping for Coexistence</span><span class="ko">공존을 위한 포트 재매핑</span></div>
+  <div class="section-desc">
+    <span class="en">Islume and Langfuse both ship Docker Compose stacks that default to the same host ports (PostgreSQL 5432, Redis 6379, etc.). To run both on one machine, Langfuse's host-side ports are shifted. Container-internal communication keeps the original ports, so Langfuse itself is unaffected — only host access uses the new ports.</span>
+    <span class="ko">Islume과 Langfuse 모두 동일한 호스트 포트(PostgreSQL 5432, Redis 6379 등)를 기본값으로 쓰는 Docker Compose 스택을 제공한다. 한 머신에서 둘 다 실행하기 위해 Langfuse 쪽 호스트 포트를 시프트한다. 컨테이너 내부 통신은 원래 포트를 그대로 사용하므로 Langfuse 동작에는 영향이 없고, 호스트에서 접근할 때만 새 포트를 쓴다.</span>
+  </div>
+
+  <table class="mapping-table">
+    <thead>
+      <tr>
+        <th>Service</th>
+        <th>Container</th>
+        <th><span class="en">Host (override)</span><span class="ko">호스트 (override)</span></th>
+        <th><span class="en">Reason</span><span class="ko">이유</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>langfuse-web</td><td>3000</td><td>3100</td><td><span class="en">avoid Next.js dev server</span><span class="ko">Next.js dev server 충돌 방지</span></td></tr>
+      <tr><td>postgres</td><td>5432</td><td>5433</td><td><span class="en">clashes with islume-postgres</span><span class="ko">islume-postgres와 충돌</span></td></tr>
+      <tr><td>redis</td><td>6379</td><td>6380</td><td><span class="en">clashes with islume-redis</span><span class="ko">islume-redis와 충돌</span></td></tr>
+      <tr><td>clickhouse (HTTP)</td><td>8123</td><td>8124</td><td><span class="en">consistency shift</span><span class="ko">일관성 시프트</span></td></tr>
+      <tr><td>clickhouse (native)</td><td>9000</td><td>9001</td><td><span class="en">conflict avoidance</span><span class="ko">충돌 방지</span></td></tr>
+      <tr><td>minio (S3 API)</td><td>9000</td><td>9092</td><td><span class="en">avoid clickhouse 9000</span><span class="ko">clickhouse 9000 회피</span></td></tr>
+      <tr><td>minio (Console)</td><td>9001</td><td>9093</td><td><span class="en">conflict avoidance</span><span class="ko">충돌 방지</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="note caution">
+    <div class="note-label">!override</div>
+    <p><span class="en">Use the <code>!override</code> tag (Compose v2.24+) so the base port list is replaced, not appended. Without it, the base mappings (5432/6379/3000/9090) stay live and clash with Islume again.</span><span class="ko"><code>!override</code> 태그(Compose v2.24+)를 사용해 base의 ports 리스트를 append가 아닌 replace로 바꿔야 한다. 안 그러면 base 매핑(5432/6379/3000/9090)이 살아있어 다시 Islume과 충돌한다.</span></p>
+  </div>
+
+  <p style="color: var(--text-muted); font-size: 0.88rem; margin: 1.5rem 0 0.5rem;">
+    <span class="en"><strong>docker-compose.override.yml</strong> — place in the Langfuse repo root:</span>
+    <span class="ko"><strong>docker-compose.override.yml</strong> — Langfuse 레포 루트에 배치:</span>
+  </p>
+
+  <div class="code-block">
+    <div class="code-header">docker-compose.override.yml</div>
+<pre><span class="cmd">services:</span>
+  <span class="cmd">langfuse-web:</span>
+    <span class="cmd">ports:</span> <span class="flag">!override</span>
+      <span class="cmd">- "3100:3000"</span>
+
+  <span class="cmd">postgres:</span>
+    <span class="cmd">ports:</span> <span class="flag">!override</span>
+      <span class="cmd">- "127.0.0.1:5433:5432"</span>
+
+  <span class="cmd">redis:</span>
+    <span class="cmd">ports:</span> <span class="flag">!override</span>
+      <span class="cmd">- "127.0.0.1:6380:6379"</span>
+
+  <span class="cmd">clickhouse:</span>
+    <span class="cmd">ports:</span> <span class="flag">!override</span>
+      <span class="cmd">- "127.0.0.1:8124:8123"</span>
+      <span class="cmd">- "127.0.0.1:9001:9000"</span>
+
+  <span class="cmd">minio:</span>
+    <span class="cmd">ports:</span> <span class="flag">!override</span>
+      <span class="cmd">- "127.0.0.1:9092:9000"</span>  <span class="comment"># S3 API</span>
+      <span class="cmd">- "127.0.0.1:9093:9001"</span>  <span class="comment"># Console UI</span></pre>
+  </div>
+
+  <div class="note">
+    <div class="note-label"><span class="en">Bind to localhost</span><span class="ko">localhost 바인딩</span></div>
+    <p><span class="en">Infra ports are bound to <code>127.0.0.1</code> so only the local machine can reach them. Only <code>langfuse-web</code> (3100) is left open for browser access.</span><span class="ko">인프라 포트는 <code>127.0.0.1</code>에 바인딩되어 로컬 머신에서만 접근 가능하다. 브라우저 접근용 <code>langfuse-web</code>(3100)만 열어둔다.</span></p>
+  </div>
+</div>
+
+<!-- VERIFICATION -->
+<div class="section">
+  <div class="section-title"><span class="en">Verification Checklist</span><span class="ko">검증 체크리스트</span></div>
+  <table class="verify-table">
+    <thead>
+      <tr><th>Command</th><th>Expected</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>python3 --version</td><td>3.12.x</td></tr>
+      <tr><td>docker compose version</td><td>v2.24+</td></tr>
+      <tr><td>uv --version</td><td>0.x.x+</td></tr>
+      <tr><td>docker compose ps</td><td>redis, postgres healthy</td></tr>
+      <tr><td>curl localhost:8001/health</td><td>Islume Matching API OK</td></tr>
+      <tr><td>curl localhost:3100</td><td><span class="en">Langfuse UI loads</span><span class="ko">Langfuse UI 로드</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer class="footer">
+  <p>Islume — Python 3.12 / FastAPI / Redis 7 Streams / PostgreSQL 16 / uv</p>
+  <p>Langfuse v3 — Docker Compose / ClickHouse / MinIO / MIT License</p>
+</footer>
+
+<script>
+function switchTab(os) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-os="${os}"]`).classList.add('active');
+  document.getElementById(`panel-${os}`).classList.add('active');
+}
+function setLang(lang) {
+  document.body.setAttribute('data-lang', lang);
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-ko').classList.toggle('active', lang === 'ko');
+  document.documentElement.lang = lang;
+}
+</script>
+</body>
+</html>

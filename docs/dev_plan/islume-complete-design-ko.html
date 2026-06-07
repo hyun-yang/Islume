@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Islume — 종합 설계 문서</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8;
+  --bg2: #F1EFE8;
+  --bg3: #E8E6DF;
+  --text: #1a1a18;
+  --text2: #5F5E5A;
+  --text3: #888780;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --purple-50: #EEEDFE; --purple-100: #CECBF6; --purple-200: #AFA9EC; --purple-600: #534AB7; --purple-800: #3C3489;
+  --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-200: #5DCAA5; --teal-600: #0F6E56; --teal-800: #085041;
+  --coral-50: #FAECE7; --coral-100: #F5C4B3; --coral-200: #F0997B; --coral-600: #993C1D; --coral-800: #712B13;
+  --pink-50: #FBEAF0; --pink-100: #F4C0D1; --pink-600: #993556; --pink-800: #72243E;
+  --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-600: #5F5E5A; --gray-800: #444441;
+  --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5; --blue-800: #0C447C;
+  --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-600: #854F0B; --amber-800: #633806;
+  --red-50: #FCEBEB; --red-100: #F7C1C1; --red-600: #A32D2D; --red-800: #791F1F;
+  --green-50: #EAF3DE; --green-100: #C0DD97; --green-600: #3B6D11; --green-800: #27500A;
+  --font: 'Noto Sans KR', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18; --bg2: #2C2C2A; --bg3: #3d3d3a;
+    --text: #e8e6df; --text2: #B4B2A9; --text3: #888780;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+    --purple-50: #26215C; --purple-100: #3C3489; --purple-200: #534AB7; --purple-600: #AFA9EC; --purple-800: #CECBF6;
+    --teal-50: #04342C; --teal-100: #085041; --teal-200: #0F6E56; --teal-600: #5DCAA5; --teal-800: #9FE1CB;
+    --coral-50: #4A1B0C; --coral-100: #712B13; --coral-200: #993C1D; --coral-600: #F0997B; --coral-800: #F5C4B3;
+    --pink-50: #4B1528; --pink-100: #72243E; --pink-600: #ED93B1; --pink-800: #F4C0D1;
+    --gray-50: #2C2C2A; --gray-100: #444441; --gray-200: #5F5E5A; --gray-600: #B4B2A9; --gray-800: #D3D1C7;
+    --blue-50: #042C53; --blue-100: #0C447C; --blue-600: #85B7EB; --blue-800: #B5D4F4;
+    --amber-50: #412402; --amber-100: #633806; --amber-600: #EF9F27; --amber-800: #FAC775;
+    --red-50: #501313; --red-100: #791F1F; --red-600: #F09595; --red-800: #F7C1C1;
+    --green-50: #173404; --green-100: #27500A; --green-600: #97C459; --green-800: #C0DD97;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  font-size: 15px;
+  word-break: keep-all;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border2); }
+header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.25rem; }
+header .subtitle { font-size: 1rem; color: var(--text2); }
+header .meta { font-size: 0.8rem; color: var(--text3); margin-top: 0.5rem; font-family: var(--mono); }
+h2 {
+  font-size: 1.5rem; font-weight: 600; margin: 3rem 0 0.75rem;
+  padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);
+  letter-spacing: -0.02em;
+}
+h3 { font-size: 1.15rem; font-weight: 600; margin: 2rem 0 0.5rem; }
+h4 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; color: var(--text2); }
+p { margin-bottom: 0.75rem; color: var(--text); }
+.note { color: var(--text2); }
+code {
+  font-family: var(--mono); font-size: 0.85em;
+  background: var(--bg2); padding: 2px 6px; border-radius: 4px;
+}
+pre {
+  font-family: var(--mono); font-size: 0.82rem;
+  background: var(--bg2); padding: 1rem 1.25rem; border-radius: 8px;
+  overflow-x: auto; margin: 0.75rem 0 1rem; line-height: 1.6;
+  border: 1px solid var(--border);
+}
+pre code { background: none; padding: 0; }
+
+.diagram-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem; margin: 1rem 0 1.5rem;
+  overflow: hidden;
+}
+.diagram-card .caption {
+  font-size: 0.8rem; color: var(--text3); margin-top: 0.75rem;
+  font-family: var(--mono); text-align: center;
+}
+.diagram-card svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.diagram-card svg text { font-family: var(--font); }
+.diagram-card svg .th { font-size: 13px; font-weight: 500; fill: var(--text); }
+.diagram-card svg .ts { font-size: 11px; fill: var(--text2); }
+.diagram-card svg .t { font-size: 13px; fill: var(--text); }
+.diagram-card svg .arr { stroke: var(--text3); stroke-width: 1.5; fill: none; }
+.diagram-card svg .leader { stroke: var(--text3); stroke-width: 0.5; stroke-dasharray: 4 3; fill: none; }
+
+.c-purple rect, .c-purple circle, .c-purple ellipse { fill: var(--purple-50); stroke: var(--purple-600); }
+.c-purple .th { fill: var(--purple-800) !important; }
+.c-purple .ts { fill: var(--purple-600) !important; }
+.c-teal rect, .c-teal circle, .c-teal ellipse { fill: var(--teal-50); stroke: var(--teal-600); }
+.c-teal .th { fill: var(--teal-800) !important; }
+.c-teal .ts { fill: var(--teal-600) !important; }
+.c-coral rect, .c-coral circle, .c-coral ellipse { fill: var(--coral-50); stroke: var(--coral-600); }
+.c-coral .th { fill: var(--coral-800) !important; }
+.c-coral .ts { fill: var(--coral-600) !important; }
+.c-pink rect, .c-pink circle, .c-pink ellipse { fill: var(--pink-50); stroke: var(--pink-600); }
+.c-pink .th { fill: var(--pink-800) !important; }
+.c-pink .ts { fill: var(--pink-600) !important; }
+.c-gray rect, .c-gray circle, .c-gray ellipse { fill: var(--gray-50); stroke: var(--gray-600); }
+.c-gray .th { fill: var(--gray-800) !important; }
+.c-gray .ts { fill: var(--gray-600) !important; }
+.c-blue rect, .c-blue circle, .c-blue ellipse { fill: var(--blue-50); stroke: var(--blue-600); }
+.c-blue .th { fill: var(--blue-800) !important; }
+.c-blue .ts { fill: var(--blue-600) !important; }
+.c-amber rect, .c-amber circle, .c-amber ellipse { fill: var(--amber-50); stroke: var(--amber-600); }
+.c-amber .th { fill: var(--amber-800) !important; }
+.c-amber .ts { fill: var(--amber-600) !important; }
+.c-green rect, .c-green circle, .c-green ellipse { fill: var(--green-50); stroke: var(--green-600); }
+.c-green .th { fill: var(--green-800) !important; }
+.c-green .ts { fill: var(--green-600) !important; }
+
+table {
+  width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+}
+th { text-align: left; font-weight: 600; font-size: 0.8rem; color: var(--text3);
+  padding: 8px 12px; border-bottom: 1px solid var(--border2); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+.badge {
+  display: inline-block; font-size: 0.7rem; padding: 2px 10px;
+  border-radius: 6px; font-weight: 500; font-family: var(--mono);
+}
+.b-hot { background: var(--red-50); color: var(--red-800); }
+.b-warm { background: var(--amber-50); color: var(--amber-800); }
+.b-cool { background: var(--blue-50); color: var(--blue-800); }
+
+.toc { margin: 1.5rem 0 2rem; padding: 1.25rem 1.5rem; background: var(--bg2); border-radius: 12px; border: 1px solid var(--border); }
+.toc strong { display: block; margin-bottom: 0.5rem; }
+.toc a { color: var(--text2); text-decoration: none; display: block; padding: 4px 0; font-size: 0.92rem; }
+.toc a:hover { color: var(--text); }
+.toc .indent { padding-left: 1.5rem; font-size: 0.88rem; }
+
+.pill { display: inline-block; font-size: 0.75rem; padding: 2px 10px; border-radius: 999px;
+  background: var(--bg3); color: var(--text2); margin: 2px 2px; }
+
+.compare-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin: 1rem 0 1.5rem; }
+.compare-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; }
+.compare-card h3 { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; margin-top: 0; }
+.compare-card .tagline { font-size: 0.85rem; color: var(--text2); margin-bottom: 0.75rem; }
+.compare-card .row { margin-bottom: 0.65rem; }
+.compare-card .row .label { font-size: 0.75rem; color: var(--text3); }
+.compare-card .row .value { font-size: 0.9rem; color: var(--text); }
+.badge-rail { background: var(--blue-50); color: var(--blue-800); }
+.badge-render { background: var(--green-50); color: var(--green-800); }
+.sum-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin-top: 1rem; }
+.sum-card { padding: 1rem; border-radius: 12px; }
+.sum-rail { background: var(--blue-50); }
+.sum-render { background: var(--green-50); }
+.sum-card h4 { font-size: 0.9rem; font-weight: 500; margin: 0 0 0.5rem; }
+.sum-rail h4 { color: var(--blue-800); }
+.sum-render h4 { color: var(--green-800); }
+.sum-card ul { list-style: none; padding: 0; margin: 0; }
+.sum-card li { font-size: 0.82rem; color: var(--text2); padding: 2px 0; line-height: 1.5; }
+.sum-card li::before { content: "→ "; opacity: 0.5; }
+
+@media print {
+  .container { max-width: 100%; padding: 1rem; }
+  .diagram-card { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Islume — 종합 설계 문서</h1>
+  <div class="subtitle">사용자가 "움직이는 섬"이 되어, 페르소나 에이전트와 함께 근처 섬과 자동 매칭되어 LLM 기반 대화를 나누는 멀티 유저 웹 앱</div>
+  <div class="meta">종합 초안 · 2026년 4월 · Python 백엔드 · Railway 호스팅 · MVP 로컬 구현 완료</div>
+</header>
+
+<nav class="toc">
+  <strong>목차</strong>
+  <a href="#platform">1. 플랫폼 결정 — Railway vs Render</a>
+  <a href="#overview">2. 시스템 개요</a>
+  <a href="#orchestrator">3. 에이전트 오케스트레이터</a>
+  <a href="#orchestrator-scheduler" class="indent">3.1 턴 스케줄러 단계별 살펴보기</a>
+  <a href="#matching">4. 맵 + 매칭 서비스</a>
+  <a href="#matching-illustration" class="indent">4.1 매칭 일러스트레이션</a>
+  <a href="#gateway">5. WebSocket 게이트웨이</a>
+  <a href="#gateway-scaling" class="indent">5.1 인스턴스 간 확장</a>
+  <a href="#worker-pool">6. LLM 워커 풀</a>
+  <a href="#worker-pipeline" class="indent">6.1 워커 내부 파이프라인</a>
+  <a href="#context-builder" class="indent">6.2 컨텍스트 빌더 전략</a>
+  <a href="#llm-router" class="indent">6.3 LLM 라우터 설계</a>
+  <a href="#redis">7. Redis 메시지 큐 패턴</a>
+  <a href="#consumer-mental-model" class="indent">7.1 컨슈머 그룹 멘탈 모델</a>
+  <a href="#consumer-group" class="indent">7.2 컨슈머 그룹 단계별 살펴보기</a>
+  <a href="#database">8. 데이터베이스 스키마</a>
+  <a href="#local-dev">9. 로컬 개발 환경</a>
+  <a href="#cost">10. 비용 추정</a>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="platform">1. 플랫폼 결정 — Railway vs Render</h2>
+
+<p>Islume의 Python 백엔드는 다수의 서비스와 비동기 메시지 큐를 사용하므로, 매니지드 호스팅 플랫폼이 필요했어요. 후보로 Railway와 Render가 떠올랐어요. 둘 다 Heroku 스타일의 개발자 친화적 플랫폼이지만, 최적화하는 워크플로우가 달라요.</p>
+
+<div class="compare-grid">
+  <div class="compare-card">
+    <span class="badge badge-rail">Railway</span>
+    <h3>Railway</h3>
+    <p class="tagline">속도와 단순함 우선</p>
+    <div class="row"><div class="label">가격 모델</div><div class="value">사용량 기반 (vCPU-초 + GB-RAM-초)</div></div>
+    <div class="row"><div class="label">무료 등급</div><div class="value">$5 일회성 체험 크레딧 (카드 불필요)</div></div>
+    <div class="row"><div class="label">유료 플랜</div><div class="value">Hobby $5/월 + 사용량, Pro $20/월 + 사용량</div></div>
+    <div class="row"><div class="label">주요 기능</div><div>
+      <span class="pill">비주얼 캔버스</span>
+      <span class="pill">Scale-to-zero</span>
+      <span class="pill">템플릿 마켓플레이스</span>
+      <span class="pill">railway.toml IaC</span>
+    </div></div>
+  </div>
+  <div class="compare-card">
+    <span class="badge badge-render">Render</span>
+    <h3>Render</h3>
+    <p class="tagline">구조와 프로덕션 안정성</p>
+    <div class="row"><div class="label">가격 모델</div><div class="value">인스턴스 기반 (서비스당 고정 월정액)</div></div>
+    <div class="row"><div class="label">무료 등급</div><div class="value">750시간/월 + 무료 Postgres (30일) + 정적 사이트</div></div>
+    <div class="row"><div class="label">유료 플랜</div><div class="value">Standard $25/월/서비스, Pro $85/월</div></div>
+    <div class="row"><div class="label">주요 기능</div><div>
+      <span class="pill">render.yaml IaC</span>
+      <span class="pill">CDN 내장</span>
+      <span class="pill">매니지드 Postgres</span>
+      <span class="pill">백그라운드 워커</span>
+    </div></div>
+  </div>
+</div>
+
+<table>
+<tr><th>특징</th><th>Railway</th><th>Render</th></tr>
+<tr><td>DX / 대시보드</td><td>비주얼 프로젝트 캔버스 (협업 지원)</td><td>전통적 대시보드</td></tr>
+<tr><td>데이터베이스</td><td>Postgres, MySQL, Redis, Mongo (컨테이너)</td><td>매니지드 Postgres + Redis (프로덕션급)</td></tr>
+<tr><td>오토스케일링</td><td>수직 + 수평 레플리카</td><td>수평 + 수직, CPU/메모리 트리거</td></tr>
+<tr><td>요청 타임아웃</td><td>최대 5분</td><td>최대 100분</td></tr>
+<tr><td>정적 사이트</td><td>네이티브 미지원</td><td>글로벌 CDN과 함께 무료</td></tr>
+<tr><td>콜드 스타트</td><td>있음 (scale-from-zero)</td><td>있음 (무료 티어는 15분 후 sleep)</td></tr>
+<tr><td>비용 예측성</td><td>변동 (사용량 spike)</td><td>월 고정 청구</td></tr>
+</table>
+
+<div class="sum-grid">
+  <div class="sum-card sum-rail">
+    <h4>Railway가 적합한 경우</h4>
+    <ul>
+      <li>빠른 프로토타이핑, 사이드 프로젝트</li>
+      <li>변동성 있거나 burst 트래픽</li>
+      <li>비주얼 인프라 캔버스 선호</li>
+      <li>Scale-to-zero로 비용 절약</li>
+    </ul>
+  </div>
+  <div class="sum-card sum-render">
+    <h4>Render가 적합한 경우</h4>
+    <ul>
+      <li>안정성이 필요한 프로덕션 앱</li>
+      <li>예측 가능한 월 청구</li>
+      <li>정적 사이트 + API 풀스택 앱</li>
+      <li>장시간 작업 (ML, 리포트)</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Islume의 선택</h3>
+
+<p>Railway를 선택했어요. 이유는 이래요. Islume의 에이전트 매칭은 burst 워크로드를 만들어요. 활발한 시간과 idle한 시간이 반복되는 패턴이죠. 이게 Railway의 사용량 기반 가격에 완벽히 맞아요. Scale-to-zero 덕분에 사용하지 않는 LLM 워커는 비용이 0이에요. Islume처럼 멀티 서비스 시스템(5개 서비스 + 데이터베이스)에서는 비주얼 캔버스가 특히 유용해요. 5분 HTTP 타임아웃 제한은 문제가 되지 않아요. 에이전트 대화는 Redis Streams를 통해 비동기로 처리되기 때문에, HTTP 요청 자체는 짧게 유지되거든요. 오직 백그라운드 워커만 길게 실행돼요.</p>
+
+<!-- ============================================================ -->
+<h2 id="overview">2. 시스템 개요</h2>
+
+<p>Islume은 다섯 개의 독립적으로 확장 가능한 서비스로 분해되어 있고, Redis(Streams + GEO)와 Postgres(영속 상태)로 연결돼요. 아키텍처는 두 가지 원칙을 따라요. <strong>Redis는 "지금 일어나고 있는 일"을 소유</strong>해요. 위치, 세션 상태, 작업 큐, 라이브 이벤트 스트림이 여기에 해당해요. <strong>Postgres는 "이미 일어난 일"을 소유</strong>해요. 완료된 대화, 사용자 계정, 에이전트 정의가 여기에 들어가요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 440">
+<defs><marker id="arr-ov" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-purple">
+  <rect x="40" y="20" width="600" height="370" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="48" text-anchor="middle">Islume 시스템</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="75" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="200" y="95" text-anchor="middle" dominant-baseline="central">맵 + 매칭 API</text>
+  <text class="ts" x="200" y="113" text-anchor="middle" dominant-baseline="central">근접 기반 페어링</text>
+</g>
+<g class="c-teal">
+  <rect x="360" y="75" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="95" text-anchor="middle" dominant-baseline="central">WebSocket 게이트웨이</text>
+  <text class="ts" x="480" y="113" text-anchor="middle" dominant-baseline="central">실시간 맵 업데이트</text>
+</g>
+<line x1="320" y1="103" x2="358" y2="103" class="arr" marker-end="url(#arr-ov)"/>
+
+<g class="c-coral">
+  <rect x="170" y="175" width="340" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="195" text-anchor="middle" dominant-baseline="central">에이전트 오케스트레이터</text>
+  <text class="ts" x="340" y="213" text-anchor="middle" dominant-baseline="central">페르소나 대화 생성</text>
+</g>
+<line x1="200" y1="131" x2="200" y2="155" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="200" y1="155" x2="340" y2="155" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="340" y1="155" x2="340" y2="173" class="arr" marker-end="url(#arr-ov)"/>
+
+<g class="c-gray">
+  <rect x="80" y="280" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="300" text-anchor="middle" dominant-baseline="central">메시지 큐</text>
+  <text class="ts" x="160" y="318" text-anchor="middle" dominant-baseline="central">Redis Streams</text>
+</g>
+<g class="c-coral">
+  <rect x="280" y="280" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="360" y="300" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="360" y="318" text-anchor="middle" dominant-baseline="central">페르소나 대화 생성</text>
+</g>
+<g class="c-gray">
+  <rect x="480" y="280" width="140" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="550" y="300" text-anchor="middle" dominant-baseline="central">Postgres</text>
+  <text class="ts" x="550" y="318" text-anchor="middle" dominant-baseline="central">사용자, 에이전트, 로그</text>
+</g>
+
+<line x1="280" y1="231" x2="160" y2="278" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ov)"/>
+<line x1="340" y1="231" x2="340" y2="278" class="arr" marker-end="url(#arr-ov)"/>
+<line x1="400" y1="231" x2="550" y2="278" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ov)"/>
+<line x1="240" y1="308" x2="278" y2="308" class="arr" marker-end="url(#arr-ov)"/>
+</svg>
+<div class="caption">그림 1 — Islume 시스템 개요</div>
+</div>
+
+<p>핵심 기술 스택:
+<span class="pill">Python 3.12</span>
+<span class="pill">FastAPI</span>
+<span class="pill">Redis Streams</span>
+<span class="pill">Redis GEO</span>
+<span class="pill">Postgres 16</span>
+<span class="pill">SQLAlchemy 2.0 async</span>
+<span class="pill">WebSocket</span>
+<span class="pill">Railway</span>
+</p>
+
+<!-- ============================================================ -->
+<h2 id="orchestrator">3. 에이전트 오케스트레이터</h2>
+
+<p>오케스트레이터는 Islume의 두뇌예요. 매칭 이벤트를 받아 대화 세션을 생성하고, 페르소나 프롬프트를 로드하며, 두 매칭된 에이전트 사이의 턴별 대화 루프를 관리해요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 580">
+<defs><marker id="arr-or" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-teal">
+  <rect x="220" y="20" width="240" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">매칭 이벤트</text>
+  <text class="ts" x="340" y="56" text-anchor="middle" dominant-baseline="central">매칭 API로부터</text>
+</g>
+<line x1="340" y1="70" x2="340" y2="100" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-coral">
+  <rect x="180" y="100" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="118" text-anchor="middle" dominant-baseline="central">세션 매니저</text>
+  <text class="ts" x="340" y="136" text-anchor="middle" dominant-baseline="central">대화 세션 생성</text>
+</g>
+<line x1="340" y1="150" x2="340" y2="180" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-coral">
+  <rect x="180" y="180" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="198" text-anchor="middle" dominant-baseline="central">페르소나 로더</text>
+  <text class="ts" x="340" y="216" text-anchor="middle" dominant-baseline="central">에이전트 시스템 프롬프트 로드</text>
+</g>
+<line x1="340" y1="230" x2="340" y2="260" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-coral">
+  <rect x="180" y="260" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="278" text-anchor="middle" dominant-baseline="central">턴 스케줄러</text>
+  <text class="ts" x="340" y="296" text-anchor="middle" dominant-baseline="central">A/B 턴 순서 관리</text>
+</g>
+<line x1="340" y1="310" x2="340" y2="340" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-gray">
+  <rect x="180" y="340" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="358" text-anchor="middle" dominant-baseline="central">Redis Streams</text>
+  <text class="ts" x="340" y="376" text-anchor="middle" dominant-baseline="central">LLM 작업 큐 등록</text>
+</g>
+<line x1="340" y1="390" x2="340" y2="420" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-purple">
+  <rect x="180" y="420" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="438" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="340" y="456" text-anchor="middle" dominant-baseline="central">페르소나 응답 생성</text>
+</g>
+
+<text class="ts" x="524" y="290" text-anchor="start">다음 턴은</text>
+<text class="ts" x="524" y="306" text-anchor="start">스케줄러로 루프</text>
+<path d="M500 285 L550 285 L550 255 L500 255" fill="none" stroke="var(--purple-600)" stroke-width="0.5" marker-end="url(#arr-or)"/>
+</svg>
+<div class="caption">그림 2 — 오케스트레이터 파이프라인: 매칭 → 세션 → 턴 → LLM</div>
+</div>
+
+<h3>컴포넌트 책임</h3>
+
+<p><strong>세션 매니저</strong>는 두 에이전트, 매칭 컨텍스트, TTL(예: 300초), 초기 턴 카운터를 묶는 세션 레코드를 생성해요. 세션 상태는 실시간 접근을 위해 Redis Hash에 저장되고, 영속 레코드는 Postgres에 들어가요.</p>
+
+<p><strong>페르소나 로더</strong>는 양쪽 에이전트의 페르소나 템플릿을 Postgres에서 가져와 매칭 컨텍스트를 동적으로 주입해요. 이 덕분에 같은 페르소나가 누구와 매칭됐는지에 따라 다르게 행동할 수 있어요.</p>
+
+<p><strong>턴 스케줄러</strong>는 단순한 상태 머신을 구현해요. 짝수 턴은 에이전트 A, 홀수 턴은 에이전트 B로 가요. 각 턴마다 Redis Streams에 LLM 작업을 등록하고, 결과는 다음 턴을 트리거해요. TTL 만료 또는 사용자 연결 해제까지 계속돼요.</p>
+
+<h3 id="orchestrator-scheduler">3.1 턴 스케줄러 단계별 살펴보기</h3>
+
+<p>다음 네 단계는 세션이 오케스트레이터와 워커를 거치는 과정을 보여줘요. 초기 매칭 이벤트부터 세션 정리까지요.</p>
+
+<h4>1단계: 세션 초기화</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">세션 초기화</text>
+<g class="c-teal"><rect x="60" y="60" width="120" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="120" y="92" text-anchor="middle" dominant-baseline="central">섬 A</text>
+  <text class="ts" x="120" y="112" text-anchor="middle" dominant-baseline="central">재즈 애호가</text></g>
+<g class="c-teal"><rect x="500" y="60" width="120" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="560" y="92" text-anchor="middle" dominant-baseline="central">섬 B</text>
+  <text class="ts" x="560" y="112" text-anchor="middle" dominant-baseline="central">바이닐 컬렉터</text></g>
+<g class="c-coral"><rect x="240" y="65" width="200" height="70" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="92" text-anchor="middle" dominant-baseline="central">오케스트레이터</text>
+  <text class="ts" x="340" y="112" text-anchor="middle" dominant-baseline="central">세션 생성</text></g>
+<line x1="180" y1="100" x2="238" y2="100" stroke="var(--teal-600)" stroke-width="0.5" marker-end="url(#arr-s1)"/>
+<line x1="442" y1="100" x2="498" y2="100" stroke="var(--teal-600)" stroke-width="0.5" marker-end="url(#arr-s1)"/>
+<text class="ts" x="340" y="180" text-anchor="middle">매칭 컨텍스트: "둘 다 아날로그 음악을 사랑"</text>
+<g class="c-gray"><rect x="190" y="200" width="300" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="340" y="218" text-anchor="middle" dominant-baseline="central">session: {id, agents: [A,B], turn: 0, ttl: 300s}</text></g>
+</svg>
+<div class="caption">그림 3a — 매칭 이벤트 도착, 오케스트레이터가 세션 레코드 생성</div>
+</div>
+
+<h4>2단계: 에이전트 A가 먼저 말함</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">에이전트 A가 먼저 말함</text>
+<g class="c-coral"><rect x="80" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="180" y="80" text-anchor="middle" dominant-baseline="central">턴 스케줄러</text>
+  <text class="ts" x="180" y="98" text-anchor="middle" dominant-baseline="central">turn=0 → 에이전트 A</text></g>
+<g class="c-gray"><rect x="80" y="150" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="180" y="170" text-anchor="middle" dominant-baseline="central">Redis Streams</text>
+  <text class="ts" x="180" y="188" text-anchor="middle" dominant-baseline="central">A의 작업 등록</text></g>
+<line x1="180" y1="116" x2="180" y2="148" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-s2)"/>
+<g class="c-purple"><rect x="380" y="150" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="490" y="170" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="490" y="188" text-anchor="middle" dominant-baseline="central">A의 인사말 생성</text></g>
+<line x1="280" y1="178" x2="378" y2="178" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-s2)"/>
+<text class="ts" x="340" y="240" text-anchor="middle">"안녕! 바이닐 모은다고 들었어. 가장 희귀한 음반이 뭐야?"</text>
+</svg>
+<div class="caption">그림 3b — 턴 스케줄러가 첫 작업을 큐에 넣고, 워커가 오프닝 생성</div>
+</div>
+
+<h4>3단계: 에이전트 B가 응답함</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">에이전트 B가 응답함</text>
+<g class="c-coral"><rect x="80" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="180" y="80" text-anchor="middle" dominant-baseline="central">턴 스케줄러</text>
+  <text class="ts" x="180" y="98" text-anchor="middle" dominant-baseline="central">turn=1 → 에이전트 B</text></g>
+<g class="c-purple"><rect x="380" y="60" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="490" y="80" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="490" y="98" text-anchor="middle" dominant-baseline="central">컨텍스트: A의 메시지 + B의 페르소나</text></g>
+<line x1="280" y1="88" x2="378" y2="88" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-s3)"/>
+<text class="ts" x="340" y="160" text-anchor="middle">"오 멋지네 — '59년 Kind of Blue 초판 가지고 있어. 재즈 좋아해?"</text>
+<g class="c-gray"><rect x="140" y="185" width="400" height="44" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="207" text-anchor="middle" dominant-baseline="central">최대 턴 도달 또는 사용자 종료까지 루프 계속</text></g>
+</svg>
+<div class="caption">그림 3c — 턴이 번갈아 진행되고, 워커는 히스토리 로드 후 B의 목소리로 응답</div>
+</div>
+
+<h4>4단계: 세션 종료</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">세션 종료</text>
+<g class="c-gray"><rect x="140" y="60" width="400" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="80" text-anchor="middle" dominant-baseline="central">세션 정리</text>
+  <text class="ts" x="340" y="98" text-anchor="middle" dominant-baseline="central">최대 턴 도달 또는 사용자 연결 해제</text></g>
+<g class="c-teal"><rect x="80" y="155" width="230" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="195" y="175" text-anchor="middle" dominant-baseline="central">Postgres</text>
+  <text class="ts" x="195" y="193" text-anchor="middle" dominant-baseline="central">대화 로그 저장</text></g>
+<g class="c-teal"><rect x="370" y="155" width="230" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="485" y="175" text-anchor="middle" dominant-baseline="central">세션 스트림</text>
+  <text class="ts" x="485" y="193" text-anchor="middle" dominant-baseline="central">session_ended 발행</text></g>
+<line x1="260" y1="116" x2="195" y2="153" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-s4)"/>
+<line x1="420" y1="116" x2="485" y2="153" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-s4)"/>
+</svg>
+<div class="caption">그림 3d — 세션 완료 표시, 클라이언트에 최종 이벤트 발행</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="matching">4. 맵 + 매칭 서비스</h2>
+
+<p>맵 + 매칭 서비스는 공유 맵 위의 실시간 섬 위치 관리와, 유사한 에이전트 페르소나를 가진 가까운 섬들을 페어링하는 작업을 담당해요. 이중 필터 파이프라인을 실행해요. Redis <code>GEOSEARCH</code>를 통한 지리적 근접 필터와, 그 다음 페르소나 유사도 점수 계산이에요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 440">
+<defs><marker id="arr-mm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-teal">
+  <rect x="220" y="20" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">위치 업데이트</text>
+  <text class="ts" x="340" y="58" text-anchor="middle" dominant-baseline="central">WebSocket 하트비트</text>
+</g>
+<line x1="340" y1="76" x2="340" y2="108" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-coral">
+  <rect x="220" y="110" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="130" text-anchor="middle" dominant-baseline="central">지리 인덱스</text>
+  <text class="ts" x="340" y="148" text-anchor="middle" dominant-baseline="central">Redis GEOSEARCH</text>
+</g>
+<line x1="340" y1="166" x2="340" y2="198" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-coral">
+  <rect x="220" y="200" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="220" text-anchor="middle" dominant-baseline="central">유사도 필터</text>
+  <text class="ts" x="340" y="238" text-anchor="middle" dominant-baseline="central">페르소나 태그 매칭</text>
+</g>
+<line x1="340" y1="256" x2="340" y2="288" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-purple">
+  <rect x="220" y="290" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="310" text-anchor="middle" dominant-baseline="central">매칭 리졸버</text>
+  <text class="ts" x="340" y="328" text-anchor="middle" dominant-baseline="central">중복 제거 + 쿨다운</text>
+</g>
+<line x1="340" y1="346" x2="340" y2="378" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-gray">
+  <rect x="220" y="380" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="402" text-anchor="middle" dominant-baseline="central">매칭 이벤트 → 오케스트레이터</text>
+</g>
+
+<text class="ts" x="490" y="138" text-anchor="start">GEORADIUS r=500</text>
+<line class="leader" x1="460" y1="138" x2="488" y2="138"/>
+<text class="ts" x="490" y="228" text-anchor="start">Jaccard / 코사인 점수</text>
+<line class="leader" x1="460" y1="228" x2="488" y2="228"/>
+<text class="ts" x="490" y="318" text-anchor="start">SETNX 잠금 + 쿨다운</text>
+<line class="leader" x1="460" y1="318" x2="488" y2="318"/>
+</svg>
+<div class="caption">그림 4 — 매칭 파이프라인 (4단계 필터)</div>
+</div>
+
+<h3 id="matching-illustration">4.1 매칭 일러스트레이션</h3>
+
+<p>다음 다이어그램은 구체적인 매칭 시나리오를 보여줘요. Alice(재즈 애호가)가 중앙에 있고, 주변에 다른 3명의 사용자가 있어요. 시스템은 각각에 대해 유사도 점수를 계산해요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 360">
+<circle cx="280" cy="180" r="140" fill="none" stroke="var(--purple-600)" stroke-width="0.5" stroke-dasharray="6 4" opacity="0.5"/>
+<text class="ts" x="280" y="335" text-anchor="middle">매칭 반경 (500m)</text>
+
+<g class="c-teal"><circle cx="280" cy="180" r="18" stroke-width="0.5"/></g>
+<text class="th" x="280" y="184" text-anchor="middle" dominant-baseline="central">A</text>
+<text class="ts" x="280" y="156" text-anchor="middle">재즈 애호가</text>
+
+<g class="c-teal"><circle cx="370" cy="130" r="14" stroke-width="0.5"/></g>
+<text class="th" x="370" y="134" text-anchor="middle" dominant-baseline="central">B</text>
+<text class="ts" x="370" y="110" text-anchor="middle">바이닐 컬렉터</text>
+
+<g class="c-gray"><circle cx="200" cy="120" r="14" stroke-width="0.5"/></g>
+<text class="th" x="200" y="124" text-anchor="middle" dominant-baseline="central">C</text>
+<text class="ts" x="200" y="100" text-anchor="middle">게이머</text>
+
+<g class="c-teal"><circle cx="340" cy="250" r="14" stroke-width="0.5"/></g>
+<text class="th" x="340" y="254" text-anchor="middle" dominant-baseline="central">D</text>
+<text class="ts" x="340" y="274" text-anchor="middle">음악 블로거</text>
+
+<g class="c-gray"><circle cx="520" cy="90" r="14" stroke-width="0.5"/></g>
+<text class="th" x="520" y="94" text-anchor="middle" dominant-baseline="central">E</text>
+<text class="ts" x="520" y="74" text-anchor="middle">범위 밖</text>
+
+<line x1="298" y1="174" x2="354" y2="136" stroke="var(--teal-600)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="296" y1="190" x2="326" y2="242" stroke="var(--teal-600)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="264" y1="170" x2="214" y2="128" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+
+<g class="c-purple"><rect x="470" y="150" width="170" height="32" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="555" y="166" text-anchor="middle" dominant-baseline="central">B: 유사도 0.85</text></g>
+<g class="c-purple"><rect x="470" y="192" width="170" height="32" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="555" y="208" text-anchor="middle" dominant-baseline="central">D: 유사도 0.72</text></g>
+<g class="c-gray"><rect x="470" y="234" width="170" height="32" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="555" y="250" text-anchor="middle" dominant-baseline="central">C: 유사도 0.15</text></g>
+
+<line class="leader" x1="370" y1="144" x2="468" y2="166"/>
+<line class="leader" x1="340" y1="260" x2="468" y2="208"/>
+<line class="leader" x1="200" y1="134" x2="468" y2="250"/>
+</svg>
+<div class="caption">그림 5 — 이중 필터 매칭: 근접도 + 페르소나 유사도</div>
+</div>
+
+<p><strong>매칭 알고리즘 단계:</strong></p>
+
+<p>1. <strong>근접 필터</strong>는 <code>GEOSEARCH</code>를 사용해 반경(기본 500m) 내의 모든 섬을 반환해요. 사용자 E는 범위 밖이라 제외돼요.</p>
+
+<p>2. <strong>벌크 에이전트 로드</strong>는 단일 SQL 쿼리로 모든 인접 후보의 활성 에이전트를 가져와요(N+1 회피).</p>
+
+<p>3. <strong>유사도 점수 계산</strong>은 태그 집합에 대해 Jaccard 유사도를 구해요. Alice(재즈)와 Bob(바이닐)의 경우, 태그 공통 3개(<code>음악</code>, <code>바이닐</code>, <code>아날로그</code>)에 합집합 7개로 ~0.43이에요. 이는 0.3 임계값을 넘어요. 사용자 C(게이머)는 태그 공통이 없어 제외돼요.</p>
+
+<p>4. <strong>매칭 리졸버</strong>는 세 가지 결정적 엣지 케이스를 처리해요. Redis <code>SETNX</code> 잠금을 통한 중복 방지, 정렬된 셋을 통한 쿨다운 추적(30분 내 반복 매칭 차단), 그리고 세션 한도 강제(에이전트당 활성 세션 1개)예요.</p>
+
+<!-- ============================================================ -->
+<h2 id="gateway">5. WebSocket 게이트웨이</h2>
+
+<p>WebSocket 게이트웨이는 실시간 통신 허브예요. 맵 위의 섬 위치를 동기화하고, 매칭/대화 이벤트를 즉시 전달해요. FastAPI WebSocket 핸들러와 <code>redis.asyncio</code>로 구축했어요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 480">
+<defs><marker id="arr-ws" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-purple">
+  <rect x="40" y="15" width="600" height="440" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle">WebSocket 게이트웨이</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="65" width="240" height="100" rx="12" stroke-width="0.5"/>
+  <text class="th" x="200" y="88" text-anchor="middle">연결 매니저</text>
+  <text class="ts" x="200" y="108" text-anchor="middle">인증, 세션 추적</text>
+  <text class="ts" x="200" y="124" text-anchor="middle">하트비트 / keepalive</text>
+  <text class="ts" x="200" y="140" text-anchor="middle">사용자별 채널 레지스트리</text>
+</g>
+<g class="c-coral">
+  <rect x="360" y="65" width="240" height="100" rx="12" stroke-width="0.5"/>
+  <text class="th" x="480" y="88" text-anchor="middle">메시지 라우터</text>
+  <text class="ts" x="480" y="108" text-anchor="middle">인바운드: 위치, 액션</text>
+  <text class="ts" x="480" y="124" text-anchor="middle">아웃바운드: 매칭, 대화</text>
+  <text class="ts" x="480" y="140" text-anchor="middle">스트림 포워딩</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="205" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="223" text-anchor="middle" dominant-baseline="central">맵 브로드캐스트</text>
+  <text class="ts" x="160" y="239" text-anchor="middle" dominant-baseline="central">인접 섬 동기화</text>
+</g>
+<g class="c-coral">
+  <rect x="260" y="205" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="223" text-anchor="middle" dominant-baseline="central">매칭 알림</text>
+  <text class="ts" x="340" y="239" text-anchor="middle" dominant-baseline="central">페어 발견 이벤트</text>
+</g>
+<g class="c-coral">
+  <rect x="440" y="205" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="223" text-anchor="middle" dominant-baseline="central">대화 릴레이</text>
+  <text class="ts" x="520" y="239" text-anchor="middle" dominant-baseline="central">에이전트 턴 전달</text>
+</g>
+
+<line x1="200" y1="165" x2="160" y2="203" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="340" y1="165" x2="340" y2="203" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="480" y1="165" x2="520" y2="203" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+
+<g class="c-gray">
+  <rect x="80" y="295" width="520" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="313" text-anchor="middle" dominant-baseline="central">Redis 세션 스트림</text>
+  <text class="ts" x="340" y="329" text-anchor="middle" dominant-baseline="central">영속 이벤트 로그 (replay + live)</text>
+</g>
+
+<line x1="160" y1="255" x2="160" y2="293" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="340" y1="255" x2="340" y2="293" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="520" y1="255" x2="520" y2="293" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+
+<g class="c-gray">
+  <rect x="80" y="380" width="160" height="50" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="160" y="398" text-anchor="middle" dominant-baseline="central">게이트웨이 #1</text>
+  <text class="ts" x="160" y="414" text-anchor="middle" dominant-baseline="central">사용자 A, B, C</text>
+</g>
+<g class="c-gray">
+  <rect x="260" y="380" width="160" height="50" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="340" y="398" text-anchor="middle" dominant-baseline="central">게이트웨이 #2</text>
+  <text class="ts" x="340" y="414" text-anchor="middle" dominant-baseline="central">사용자 D, E, F</text>
+</g>
+<g class="c-gray">
+  <rect x="440" y="380" width="160" height="50" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="520" y="398" text-anchor="middle" dominant-baseline="central">게이트웨이 #N</text>
+  <text class="ts" x="520" y="414" text-anchor="middle" dominant-baseline="central">수평 확장</text>
+</g>
+
+<line x1="160" y1="345" x2="160" y2="378" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="340" y1="345" x2="340" y2="378" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="520" y1="345" x2="520" y2="378" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+</svg>
+<div class="caption">그림 6 — WebSocket 게이트웨이 아키텍처와 수평 확장</div>
+</div>
+
+<h3 id="gateway-scaling">5.1 인스턴스 간 확장</h3>
+
+<p>다음 세 다이어그램은 확장 문제와 그 해결책을 보여주고, 메시지 양을 sub-quadratic으로 유지하는 맵 브로드캐스트 최적화도 함께 보여줘요.</p>
+
+<h4>1단계: 인스턴스 간 전달 문제</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 280">
+<defs><marker id="arr-sc1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">문제: 인스턴스 간 전달</text>
+<g class="c-teal"><rect x="60" y="55" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="120" y="77" text-anchor="middle" dominant-baseline="central">사용자 A</text></g>
+<g class="c-teal"><rect x="500" y="55" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="560" y="77" text-anchor="middle" dominant-baseline="central">사용자 B</text></g>
+<g class="c-gray"><rect x="60" y="130" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="120" y="152" text-anchor="middle" dominant-baseline="central">게이트웨이 #1</text></g>
+<g class="c-gray"><rect x="500" y="130" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="560" y="152" text-anchor="middle" dominant-baseline="central">게이트웨이 #2</text></g>
+<line x1="120" y1="99" x2="120" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc1)"/>
+<line x1="560" y1="99" x2="560" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc1)"/>
+<g class="c-coral"><rect x="240" y="130" width="200" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="152" text-anchor="middle" dominant-baseline="central">A가 B와 매칭됨</text></g>
+<text class="ts" x="340" y="210" text-anchor="middle">A와 B는 서로 다른 게이트웨이 인스턴스에 연결</text>
+<text class="ts" x="340" y="228" text-anchor="middle">매칭 이벤트를 양쪽에 어떻게 전달할까?</text>
+</svg>
+<div class="caption">그림 7a — 확장 문제: 서로 다른 게이트웨이 인스턴스에 있는 사용자들</div>
+</div>
+
+<h4>2단계: 세션 스트림 브릿지</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 320">
+<defs><marker id="arr-sc2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">해결책: 영속적인 세션 스트림</text>
+<g class="c-teal"><rect x="60" y="55" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="115" y="77" text-anchor="middle" dominant-baseline="central">사용자 A</text></g>
+<g class="c-teal"><rect x="510" y="55" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="565" y="77" text-anchor="middle" dominant-baseline="central">사용자 B</text></g>
+<g class="c-gray"><rect x="60" y="130" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="115" y="152" text-anchor="middle" dominant-baseline="central">GW #1</text></g>
+<g class="c-gray"><rect x="510" y="130" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="565" y="152" text-anchor="middle" dominant-baseline="central">GW #2</text></g>
+<line x1="115" y1="99" x2="115" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<line x1="565" y1="99" x2="565" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<g class="c-coral"><rect x="220" y="130" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="152" text-anchor="middle" dominant-baseline="central">stream:session:{id}</text></g>
+<line x1="170" y1="152" x2="218" y2="152" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<line x1="462" y1="152" x2="508" y2="152" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<text class="ts" x="340" y="210" text-anchor="middle">양쪽 게이트웨이가 같은 세션 스트림을 XREAD</text>
+<text class="ts" x="340" y="228" text-anchor="middle">각자 연결된 사용자에게 이벤트 전달</text>
+<text class="ts" x="340" y="246" text-anchor="middle">Pub/Sub과 달리 늦은 연결도 전체 히스토리를 받음</text>
+<g class="c-purple"><rect x="140" y="268" width="400" height="36" rx="6" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="286" text-anchor="middle" dominant-baseline="central">단일 XREAD로 replay + live — 경쟁 조건 없음</text></g>
+</svg>
+<div class="caption">그림 7b — 스트림이 게이트웨이를 브릿지하고 경쟁 조건을 해결</div>
+</div>
+
+<h4>3단계: 맵 브로드캐스트 최적화</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<text class="th" x="340" y="28" text-anchor="middle">최적화: 그리드 셀 채널</text>
+<g class="c-teal"><rect x="60" y="60" width="110" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="115" y="88" text-anchor="middle" dominant-baseline="central">그리드 셀 A3</text>
+  <text class="ts" x="115" y="108" text-anchor="middle">사용자: A, B, C</text>
+  <text class="ts" x="115" y="124" text-anchor="middle">채널: map:A3</text></g>
+<g class="c-coral"><rect x="200" y="60" width="110" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="255" y="88" text-anchor="middle" dominant-baseline="central">그리드 셀 B3</text>
+  <text class="ts" x="255" y="108" text-anchor="middle">사용자: D, E</text>
+  <text class="ts" x="255" y="124" text-anchor="middle">채널: map:B3</text></g>
+<g class="c-gray"><rect x="340" y="60" width="110" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="395" y="88" text-anchor="middle" dominant-baseline="central">그리드 셀 C3</text>
+  <text class="ts" x="395" y="108" text-anchor="middle">사용자: F</text>
+  <text class="ts" x="395" y="124" text-anchor="middle">채널: map:C3</text></g>
+<text class="ts" x="340" y="180" text-anchor="middle">위치 업데이트는 같은 + 인접 셀에만 브로드캐스트</text>
+<text class="ts" x="340" y="198" text-anchor="middle">사용자 A가 이동 → map:A3, map:B3에 발행</text>
+<text class="ts" x="340" y="216" text-anchor="middle">사용자 D, E는 A의 움직임을 보지만 F는 못 봄</text>
+<g class="c-purple"><rect x="120" y="240" width="440" height="36" rx="6" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="258" text-anchor="middle" dominant-baseline="central">업데이트당 O(인접) — O(전체 사용자) 대신</text></g>
+</svg>
+<div class="caption">그림 7c — 공간 분할로 브로드캐스트 양을 O(인접)으로 축소</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="worker-pool">6. LLM 워커 풀</h2>
+
+<p>LLM 워커 풀은 가장 비용이 큰 컴포넌트예요. Redis Streams에서 작업을 가져와 LLM API를 호출해 페르소나 응답을 생성하고, 데이터베이스와 세션 이벤트 스트림 양쪽에 저장해요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 440">
+<defs><marker id="arr-lw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="200" y="15" width="280" height="40" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="35" text-anchor="middle" dominant-baseline="central">stream:llm_tasks</text>
+</g>
+<line x1="340" y1="55" x2="340" y2="80" class="arr" marker-end="url(#arr-lw)"/>
+
+<g class="c-purple">
+  <rect x="60" y="80" width="560" height="170" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="104" text-anchor="middle">LLM 워커 풀</text>
+</g>
+
+<g class="c-coral">
+  <rect x="90" y="120" width="150" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="165" y="138" text-anchor="middle" dominant-baseline="central">컨텍스트 빌더</text>
+  <text class="ts" x="165" y="156" text-anchor="middle" dominant-baseline="central">프롬프트 조합</text>
+</g>
+<g class="c-coral">
+  <rect x="265" y="120" width="150" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="138" text-anchor="middle" dominant-baseline="central">LLM 라우터</text>
+  <text class="ts" x="340" y="156" text-anchor="middle" dominant-baseline="central">모델 선택</text>
+</g>
+<g class="c-coral">
+  <rect x="440" y="120" width="150" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="515" y="138" text-anchor="middle" dominant-baseline="central">후처리</text>
+  <text class="ts" x="515" y="156" text-anchor="middle" dominant-baseline="central">검증 + 포맷</text>
+</g>
+
+<line x1="240" y1="145" x2="263" y2="145" class="arr" marker-end="url(#arr-lw)"/>
+<line x1="415" y1="145" x2="438" y2="145" class="arr" marker-end="url(#arr-lw)"/>
+
+<g class="c-gray">
+  <rect x="90" y="195" width="500" height="36" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="213" text-anchor="middle" dominant-baseline="central">동시성: 워커 인스턴스당 asyncio.Semaphore(N)</text>
+</g>
+
+<line x1="160" y1="250" x2="160" y2="280" class="arr" marker-end="url(#arr-lw)"/>
+<line x1="340" y1="250" x2="340" y2="280" class="arr" marker-end="url(#arr-lw)"/>
+<line x1="520" y1="250" x2="520" y2="280" class="arr" marker-end="url(#arr-lw)"/>
+
+<g class="c-teal">
+  <rect x="80" y="282" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="300" text-anchor="middle" dominant-baseline="central">세션 스트림</text>
+  <text class="ts" x="160" y="318" text-anchor="middle" dominant-baseline="central">XADD 턴 이벤트</text>
+</g>
+<g class="c-teal">
+  <rect x="260" y="282" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="300" text-anchor="middle" dominant-baseline="central">XADD 다음 턴</text>
+  <text class="ts" x="340" y="318" text-anchor="middle" dominant-baseline="central">자체 영속화</text>
+</g>
+<g class="c-gray">
+  <rect x="440" y="282" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="300" text-anchor="middle" dominant-baseline="central">Postgres INSERT</text>
+  <text class="ts" x="520" y="318" text-anchor="middle" dominant-baseline="central">턴 로그 영속화</text>
+</g>
+
+<g class="c-purple">
+  <rect x="80" y="370" width="520" height="44" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="340" y="385" text-anchor="middle" dominant-baseline="central">Railway에서 scale-to-zero</text>
+  <text class="ts" x="340" y="401" text-anchor="middle" dominant-baseline="central">워커는 수요에 따라 켜지고, idle 시 0 인스턴스</text>
+</g>
+</svg>
+<div class="caption">그림 8 — LLM 워커 풀 내부 구조</div>
+</div>
+
+<h3 id="worker-pipeline">6.1 워커 내부 파이프라인</h3>
+
+<p>하나의 턴 작업이 워커 안에서 7단계로 흘러가요. 색상은 어떤 서브시스템이 관여하는지 인코딩해요. 코랄은 Python-only 작업, 틸은 데이터베이스와 스트림 쓰기, 퍼플은 루프 제어예요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 720">
+<defs><marker id="arr-wi" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="220" y="20" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle" dominant-baseline="central">스트림에서 XREADGROUP</text>
+</g>
+<line x1="340" y1="64" x2="340" y2="92" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="92" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="112" text-anchor="middle" dominant-baseline="central">1. 작업 파싱</text>
+  <text class="ts" x="340" y="130" text-anchor="middle" dominant-baseline="central">TurnTask.from_redis</text>
+</g>
+<line x1="340" y1="148" x2="340" y2="176" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="176" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="196" text-anchor="middle" dominant-baseline="central">2. 세션 컨텍스트 로드</text>
+  <text class="ts" x="340" y="214" text-anchor="middle" dominant-baseline="central">세션, 에이전트, 사용자 이름</text>
+</g>
+<line x1="340" y1="232" x2="340" y2="260" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="260" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="280" text-anchor="middle" dominant-baseline="central">3. 히스토리 로드 (관점 교체)</text>
+  <text class="ts" x="340" y="298" text-anchor="middle" dominant-baseline="central">자신 = assistant, 상대 = user</text>
+</g>
+<line x1="340" y1="316" x2="340" y2="344" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="344" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="364" text-anchor="middle" dominant-baseline="central">4. 프롬프트 조합 + LLM 호출</text>
+  <text class="ts" x="340" y="382" text-anchor="middle" dominant-baseline="central">Anthropic Sonnet 4.5</text>
+</g>
+<line x1="340" y1="400" x2="340" y2="428" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-teal">
+  <rect x="180" y="428" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="448" text-anchor="middle" dominant-baseline="central">5. 원자적 DB 트랜잭션</text>
+  <text class="ts" x="340" y="466" text-anchor="middle" dominant-baseline="central">턴 삽입 + 세션 업데이트</text>
+</g>
+<line x1="340" y1="484" x2="340" y2="512" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-teal">
+  <rect x="180" y="512" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="532" text-anchor="middle" dominant-baseline="central">6. 세션 스트림에 발행</text>
+  <text class="ts" x="340" y="550" text-anchor="middle" dominant-baseline="central">XADD stream:session:{id}</text>
+</g>
+<line x1="340" y1="568" x2="340" y2="596" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-purple">
+  <rect x="180" y="596" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="616" text-anchor="middle" dominant-baseline="central">7. 다음 턴 등록 또는 세션 종료</text>
+  <text class="ts" x="340" y="634" text-anchor="middle" dominant-baseline="central">자체 영속화 루프</text>
+</g>
+<line x1="340" y1="652" x2="340" y2="680" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-gray">
+  <rect x="220" y="680" width="240" height="32" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="340" y="696" text-anchor="middle" dominant-baseline="central">XACK 작업 완료</text>
+</g>
+
+<text class="ts" x="510" y="120" text-anchor="start">Pydantic 역직렬화</text>
+<line class="leader" x1="500" y1="120" x2="508" y2="120"/>
+<text class="ts" x="510" y="204" text-anchor="start">3개 SQL 쿼리</text>
+<line class="leader" x1="500" y1="204" x2="508" y2="204"/>
+<text class="ts" x="510" y="288" text-anchor="start">가장 미묘한 단계</text>
+<line class="leader" x1="500" y1="288" x2="508" y2="288"/>
+<text class="ts" x="510" y="372" text-anchor="start">~3-5초, $0.002</text>
+<line class="leader" x1="500" y1="372" x2="508" y2="372"/>
+<text class="ts" x="510" y="456" text-anchor="start">단일 커밋</text>
+<line class="leader" x1="500" y1="456" x2="508" y2="456"/>
+<text class="ts" x="510" y="540" text-anchor="start">게이트웨이 클라이언트용</text>
+<line class="leader" x1="500" y1="540" x2="508" y2="540"/>
+<text class="ts" x="510" y="624" text-anchor="start">또는 status=completed</text>
+<line class="leader" x1="500" y1="624" x2="508" y2="624"/>
+</svg>
+<div class="caption">그림 9 — 워커 내부 파이프라인: 파싱 → 로드 → LLM → 영속화 → 발행 → 루프</div>
+</div>
+
+<p><strong>관점 교체.</strong> 3단계가 가장 미묘한 부분이에요. Anthropic API는 <code>assistant</code>가 모델 자신의 과거 턴인 특정 포맷을 기대해요. 두 개의 페르소나가 한 대화를 공유하므로, 워커는 히스토리 로드 시 관점을 교체해야 해요. 스피커 A 관점에서 A의 턴은 <code>assistant</code>이고 B의 턴은 <code>user</code>예요. 스피커 B 관점에서는 라벨이 반대예요.</p>
+
+<p><strong>발행 순서가 중요해요.</strong> 5단계(DB 커밋)는 6단계(스트림 발행)보다 먼저 와야 해요. 순서가 반대였다면, 게이트웨이 클라이언트가 아직 영속화되지 않은 턴을 참조하는 이벤트를 받을 수 있어요. 그 후 페이지 새로고침을 하면 그 턴이 사라져 보일 수 있죠. 데이터베이스가 진실의 원천이고, 스트림은 알림 채널일 뿐이에요.</p>
+
+<p><strong>자체 영속화 큐.</strong> 7단계가 핵심 패턴이에요. 워커는 다음 스피커의 턴을 같은 <code>stream:llm_tasks</code>에 등록해요. 그러면 다른 워커(또는 자기 자신)가 이를 가져가요. 이 덕분에 외부 코디네이터가 필요 없어요. 오케스트레이터는 오직 세션의 첫 번째 작업만 등록해요.</p>
+
+<h3 id="context-builder">6.2 컨텍스트 빌더 전략</h3>
+
+<p>대화가 진행될수록 전체 히스토리를 LLM에 보내면 토큰 비용이 폭발해요. 슬라이딩 윈도우 전략은 최근 6개 턴은 전체 텍스트로 유지하고, 이전 턴들은 요약으로 압축해요(Haiku 같은 저렴한 모델로 생성). 이로써 오래된 컨텍스트에서 ~90% 토큰을 절약해요.</p>
+
+<h4>프롬프트 구조 (레이어드)</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 380">
+<text class="th" x="340" y="28" text-anchor="middle">프롬프트 구조 (레이어드)</text>
+<g class="c-purple"><rect x="100" y="50" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="72" text-anchor="middle" dominant-baseline="central">시스템: 페르소나 정의</text></g>
+<g class="c-teal"><rect x="100" y="104" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="126" text-anchor="middle" dominant-baseline="central">시스템: 매칭 컨텍스트 주입</text></g>
+<g class="c-gray"><rect x="100" y="158" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="180" text-anchor="middle" dominant-baseline="central">압축됨: 이전 턴 요약</text></g>
+<g class="c-coral"><rect x="100" y="212" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="234" text-anchor="middle" dominant-baseline="central">최근: 마지막 6개 턴 (전체 텍스트)</text></g>
+<g class="c-gray"><rect x="100" y="266" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="288" text-anchor="middle" dominant-baseline="central">사용자: "당신의 차례. {agent}로 응답하세요."</text></g>
+<text class="ts" x="86" y="72" text-anchor="end">고정</text>
+<text class="ts" x="86" y="126" text-anchor="end">고정</text>
+<text class="ts" x="86" y="180" text-anchor="end">증가</text>
+<text class="ts" x="86" y="234" text-anchor="end">윈도우</text>
+<text class="ts" x="86" y="288" text-anchor="end">고정</text>
+<text class="ts" x="340" y="340" text-anchor="middle">총 목표: 입력 2,000 토큰 이하</text>
+<text class="ts" x="340" y="360" text-anchor="middle">슬라이딩 윈도우가 턴당 비용을 예측 가능하게 유지</text>
+</svg>
+<div class="caption">그림 10a — 레이어드 프롬프트 구조</div>
+</div>
+
+<h4>슬라이딩 윈도우 시각화</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 340">
+<text class="th" x="340" y="28" text-anchor="middle">슬라이딩 윈도우 전략</text>
+<g class="c-gray"><rect x="60" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="95" y="73" text-anchor="middle" dominant-baseline="central">턴 1</text></g>
+<g class="c-gray"><rect x="140" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="175" y="73" text-anchor="middle" dominant-baseline="central">턴 2</text></g>
+<g class="c-gray"><rect x="220" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="255" y="73" text-anchor="middle" dominant-baseline="central">턴 3</text></g>
+<g class="c-gray"><rect x="300" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="335" y="73" text-anchor="middle" dominant-baseline="central">턴 4</text></g>
+<g class="c-coral"><rect x="380" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="415" y="73" text-anchor="middle" dominant-baseline="central">턴 5</text></g>
+<g class="c-coral"><rect x="460" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="495" y="73" text-anchor="middle" dominant-baseline="central">턴 6</text></g>
+<g class="c-coral"><rect x="540" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="575" y="73" text-anchor="middle" dominant-baseline="central">턴 7</text></g>
+<path d="M60 100 L370 100" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="4 4" fill="none"/>
+<path d="M380 100 L610 100" stroke="var(--coral-600)" stroke-width="1" fill="none"/>
+<text class="ts" x="215" y="120" text-anchor="middle">요약으로 압축</text>
+<text class="ts" x="495" y="120" text-anchor="middle">전체 텍스트 컨텍스트</text>
+<g class="c-teal"><rect x="80" y="150" width="520" height="70" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="175" text-anchor="middle" dominant-baseline="central">요약 (자동 생성)</text>
+  <text class="ts" x="340" y="195" text-anchor="middle" dominant-baseline="central">"A와 B는 바이닐 재즈 음반에 대한 공통 사랑을 발견..."</text></g>
+<text class="ts" x="340" y="256" text-anchor="middle">턴 1-4: ~800 토큰 → ~80 토큰으로 압축</text>
+<text class="ts" x="340" y="276" text-anchor="middle">턴 5-7: ~600 토큰 그대로 유지</text>
+<text class="ts" x="340" y="296" text-anchor="middle">오래된 컨텍스트에서 90% 토큰 절약</text>
+</svg>
+<div class="caption">그림 10b — 슬라이딩 윈도우: 최근 턴은 전체 텍스트, 오래된 턴은 압축</div>
+</div>
+
+<h4>요약 타이밍</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<text class="th" x="340" y="28" text-anchor="middle">언제 요약할까?</text>
+<g class="c-coral"><rect x="80" y="55" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="190" y="75" text-anchor="middle" dominant-baseline="central">사전 (N턴마다)</text>
+  <text class="ts" x="190" y="93" text-anchor="middle" dominant-baseline="central">배치당 추가 LLM 호출</text></g>
+<g class="c-teal"><rect x="380" y="55" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="490" y="75" text-anchor="middle" dominant-baseline="central">지연 (윈도우 슬라이드 시)</text>
+  <text class="ts" x="490" y="93" text-anchor="middle" dominant-baseline="central">밀려날 때 요약</text></g>
+<text class="ts" x="190" y="140" text-anchor="middle">장점: 항상 준비됨</text>
+<text class="ts" x="190" y="158" text-anchor="middle">단점: LLM 호출 증가</text>
+<text class="ts" x="490" y="140" text-anchor="middle">장점: LLM 호출 감소</text>
+<text class="ts" x="490" y="158" text-anchor="middle">단점: 약간의 지연 스파이크</text>
+<g class="c-purple"><rect x="140" y="185" width="400" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="207" text-anchor="middle" dominant-baseline="central">추천: 지연 + 저렴한 모델</text></g>
+<text class="ts" x="340" y="258" text-anchor="middle">요약에는 빠르고 저렴한 모델(Haiku) 사용</text>
+<text class="ts" x="340" y="278" text-anchor="middle">페르소나 응답에는 강력한 모델(Sonnet) 사용</text>
+</svg>
+<div class="caption">그림 10c — 요약 전략 비교</div>
+</div>
+
+<h3 id="llm-router">6.3 LLM 라우터 설계</h3>
+
+<p>LLM 라우터는 각 작업 타입에 어떤 모델을 사용할지 결정하는 작은 디스패처예요. MVP에는 라우터가 없어요. 모든 호출이 Sonnet 4.5로 가요. 하지만 시스템이 요약, 일관성 체크, 품질 점수 같은 기능을 포함하도록 성장하면, 코드베이스 전체에 모델 이름을 하드코딩하지 않으면서 비용을 통제하기 위해 라우터가 필수가 돼요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 580">
+<defs><marker id="arr-lr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="220" y="20" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle" dominant-baseline="central">LLMRequest(task_type, ...)</text>
+</g>
+<line x1="340" y1="64" x2="340" y2="92" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-coral">
+  <rect x="180" y="92" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="110" text-anchor="middle" dominant-baseline="central">1. 작업 정책 조회</text>
+  <text class="ts" x="340" y="128" text-anchor="middle" dominant-baseline="central">task_type → 선호 모델 티어</text>
+</g>
+<line x1="340" y1="142" x2="340" y2="170" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-coral">
+  <rect x="180" y="170" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="188" text-anchor="middle" dominant-baseline="central">2. 예산 가드 확인</text>
+  <text class="ts" x="340" y="206" text-anchor="middle" dominant-baseline="central">세션별 비용 한도</text>
+</g>
+<line x1="340" y1="220" x2="340" y2="248" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-coral">
+  <rect x="180" y="248" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="266" text-anchor="middle" dominant-baseline="central">3. 최종 모델 결정</text>
+  <text class="ts" x="340" y="284" text-anchor="middle" dominant-baseline="central">예산 초과 시 다운그레이드 가능</text>
+</g>
+<line x1="340" y1="298" x2="340" y2="326" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-teal">
+  <rect x="180" y="326" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="344" text-anchor="middle" dominant-baseline="central">4. 재시도/폴백과 함께 LLM 호출</text>
+  <text class="ts" x="340" y="362" text-anchor="middle" dominant-baseline="central">기본 시도, 에러 시 폴백</text>
+</g>
+<line x1="340" y1="376" x2="340" y2="404" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-teal">
+  <rect x="180" y="404" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="422" text-anchor="middle" dominant-baseline="central">5. 텔레메트리 기록</text>
+  <text class="ts" x="340" y="440" text-anchor="middle" dominant-baseline="central">작업, 모델, 비용, 지연</text>
+</g>
+<line x1="340" y1="454" x2="340" y2="482" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-purple">
+  <rect x="180" y="482" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="500" text-anchor="middle" dominant-baseline="central">6. LLMResponse 반환</text>
+  <text class="ts" x="340" y="518" text-anchor="middle" dominant-baseline="central">사용 모델 + 비용 포함</text>
+</g>
+
+<text class="ts" x="510" y="118" text-anchor="start">정적 설정 맵</text>
+<line class="leader" x1="500" y1="118" x2="508" y2="118"/>
+<text class="ts" x="510" y="196" text-anchor="start">한도 없으면 건너뜀</text>
+<line class="leader" x1="500" y1="196" x2="508" y2="196"/>
+<text class="ts" x="510" y="274" text-anchor="start">Sonnet → Haiku</text>
+<line class="leader" x1="500" y1="274" x2="508" y2="274"/>
+<text class="ts" x="510" y="352" text-anchor="start">Tenacity / 수동</text>
+<line class="leader" x1="500" y1="352" x2="508" y2="352"/>
+<text class="ts" x="510" y="430" text-anchor="start">Postgres 또는 Redis</text>
+<line class="leader" x1="500" y1="430" x2="508" y2="430"/>
+</svg>
+<div class="caption">그림 11 — LLM 라우터 결정 흐름</div>
+</div>
+
+<h4>작업 타입 정책</h4>
+
+<table>
+<tr><th>작업</th><th>기본</th><th>폴백</th><th>이유</th></tr>
+<tr><td>페르소나 응답</td><td>Sonnet 4.5</td><td>Haiku 4.5</td><td>품질 우선. Sonnet rate limit 시 폴백</td></tr>
+<tr><td>히스토리 요약</td><td>Haiku 4.5</td><td>없음</td><td>내부 사용. Haiku로 충분</td></tr>
+<tr><td>매칭 컨텍스트</td><td>Haiku 4.5</td><td>없음</td><td>한 문장 출력. 캐싱 가능</td></tr>
+<tr><td>일관성 체크</td><td>Haiku 4.5</td><td>없음</td><td>분류 작업, 생성 아님</td></tr>
+<tr><td>안전성 체크</td><td>Haiku 4.5</td><td>없음</td><td>분류 작업, 저지연 필요</td></tr>
+<tr><td>품질 점수</td><td>Opus 4.6</td><td>Sonnet 4.5</td><td>배치 분석. 정확도가 가장 중요</td></tr>
+</table>
+
+<p>라우터의 역할은 이런 결정을 중앙화하는 거예요. 호출하는 쪽이 "이건 페르소나 응답 작업이다"라고 말하면, 라우터가 모델을 선택해요. 그러면 모델 할당 변경, A/B 테스트, 세션별 예산 한도 강제 같은 일이 워커 로직을 건드리지 않고도 쉬워져요.</p>
+
+<!-- ============================================================ -->
+<h2 id="redis">7. Redis 메시지 큐 패턴</h2>
+
+<p>Redis는 Islume에서 세 가지 역할을 동시에 수행해요. <strong>Streams</strong>는 영속적인 비동기 작업 큐잉, <strong>세션 스트림</strong>은 세션별 이벤트 로그, <strong>GEO/Hash/Set</strong>은 휘발성 상태 저장이에요. 초기에는 단일 Redis 인스턴스가 세 역할을 모두 처리해요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 380">
+<defs><marker id="arr-rd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-coral">
+  <rect x="200" y="20" width="280" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="38" text-anchor="middle" dominant-baseline="central">Redis</text>
+  <text class="ts" x="340" y="56" text-anchor="middle" dominant-baseline="central">단일 인스턴스, 세 가지 역할</text>
+</g>
+
+<g class="c-teal">
+  <rect x="40" y="115" width="180" height="70" rx="12" stroke-width="0.5"/>
+  <text class="th" x="130" y="138" text-anchor="middle" dominant-baseline="central">작업 스트림</text>
+  <text class="ts" x="130" y="156" text-anchor="middle" dominant-baseline="central">컨슈머 그룹</text>
+  <text class="ts" x="130" y="170" text-anchor="middle" dominant-baseline="central">XREADGROUP</text>
+</g>
+<g class="c-purple">
+  <rect x="250" y="115" width="180" height="70" rx="12" stroke-width="0.5"/>
+  <text class="th" x="340" y="138" text-anchor="middle" dominant-baseline="central">세션 스트림</text>
+  <text class="ts" x="340" y="156" text-anchor="middle" dominant-baseline="central">세션별 로그</text>
+  <text class="ts" x="340" y="170" text-anchor="middle" dominant-baseline="central">XREAD from 0</text>
+</g>
+<g class="c-coral">
+  <rect x="460" y="115" width="180" height="70" rx="12" stroke-width="0.5"/>
+  <text class="th" x="550" y="138" text-anchor="middle" dominant-baseline="central">상태 저장소</text>
+  <text class="ts" x="550" y="156" text-anchor="middle" dominant-baseline="central">GEO, Hash, Set</text>
+  <text class="ts" x="550" y="170" text-anchor="middle" dominant-baseline="central">세션 + 위치</text>
+</g>
+
+<line x1="250" y1="70" x2="130" y2="113" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-rd)"/>
+<line x1="340" y1="70" x2="340" y2="113" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-rd)"/>
+<line x1="430" y1="70" x2="550" y2="113" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-rd)"/>
+
+<g class="c-gray">
+  <rect x="40" y="230" width="180" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="130" y="248" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="130" y="264" text-anchor="middle" dominant-baseline="central">작업 소비</text>
+</g>
+<g class="c-gray">
+  <rect x="250" y="230" width="180" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="248" text-anchor="middle" dominant-baseline="central">WS 게이트웨이</text>
+  <text class="ts" x="340" y="264" text-anchor="middle" dominant-baseline="central">세션 스트림 읽기</text>
+</g>
+<g class="c-gray">
+  <rect x="460" y="230" width="180" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="550" y="248" text-anchor="middle" dominant-baseline="central">맵 + 매칭</text>
+  <text class="ts" x="550" y="264" text-anchor="middle" dominant-baseline="central">GEOSEARCH 읽기</text>
+</g>
+
+<line x1="130" y1="185" x2="130" y2="228" class="arr" marker-end="url(#arr-rd)"/>
+<line x1="340" y1="185" x2="340" y2="228" class="arr" marker-end="url(#arr-rd)"/>
+<line x1="550" y1="185" x2="550" y2="228" class="arr" marker-end="url(#arr-rd)"/>
+
+<g class="c-teal">
+  <rect x="100" y="320" width="480" height="36" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="338" text-anchor="middle" dominant-baseline="central">stream:llm_tasks | stream:session:{id} | geo:islands | session:{id}</text>
+</g>
+</svg>
+<div class="caption">그림 12 — Redis 세 가지 역할: 작업 스트림 + 세션 스트림 + 상태 저장소</div>
+</div>
+
+<h3 id="consumer-mental-model">7.1 컨슈머 그룹 멘탈 모델</h3>
+
+<p>Redis Streams 컨슈머 그룹에 대해 가장 중요한 것 한 가지는 이거예요. <strong>스트림과 컨슈머 그룹은 별개의 개념</strong>이에요. 스트림은 그냥 append-only 로그예요. 컨슈머 그룹은 그 위에 올라가는 읽기 상태 관리자로서, 어느 컨슈머가 어느 메시지를 받았고 acknowledge됐는지를 추적해요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 460">
+<defs><marker id="arr-cm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="40" y="20" width="600" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="340" y="44" text-anchor="middle">stream:llm_tasks (append-only 로그)</text>
+</g>
+
+<g class="c-coral"><rect x="70" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="100" y="78" text-anchor="middle" dominant-baseline="central">t1</text></g>
+<g class="c-coral"><rect x="140" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="170" y="78" text-anchor="middle" dominant-baseline="central">t2</text></g>
+<g class="c-coral"><rect x="210" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="240" y="78" text-anchor="middle" dominant-baseline="central">t3</text></g>
+<g class="c-coral"><rect x="280" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="310" y="78" text-anchor="middle" dominant-baseline="central">t4</text></g>
+<g class="c-coral"><rect x="350" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="380" y="78" text-anchor="middle" dominant-baseline="central">t5</text></g>
+<g class="c-coral"><rect x="420" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="450" y="78" text-anchor="middle" dominant-baseline="central">t6</text></g>
+
+<g class="c-purple">
+  <rect x="40" y="140" width="600" height="80" rx="12" stroke-width="0.5" stroke-dasharray="6 4"/>
+  <text class="th" x="340" y="164" text-anchor="middle">컨슈머 그룹: llm_workers</text>
+  <text class="ts" x="340" y="182" text-anchor="middle">추적: 마지막 전달 ID + 컨슈머별 pending 항목</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="270" width="160" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="160" y="295" text-anchor="middle">worker-1234</text>
+  <text class="ts" x="160" y="313" text-anchor="middle">받음: t1, t4</text>
+  <text class="ts" x="160" y="329" text-anchor="middle">Pending: t4</text>
+</g>
+<g class="c-teal">
+  <rect x="260" y="270" width="160" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="340" y="295" text-anchor="middle">worker-5678</text>
+  <text class="ts" x="340" y="313" text-anchor="middle">받음: t2, t5</text>
+  <text class="ts" x="340" y="329" text-anchor="middle">Pending: 없음</text>
+</g>
+<g class="c-teal">
+  <rect x="440" y="270" width="160" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="520" y="295" text-anchor="middle">worker-9012</text>
+  <text class="ts" x="520" y="313" text-anchor="middle">받음: t3, t6</text>
+  <text class="ts" x="520" y="329" text-anchor="middle">Pending: 없음</text>
+</g>
+
+<line x1="100" y1="88" x2="120" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="170" y1="88" x2="320" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="240" y1="88" x2="500" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="310" y1="88" x2="200" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="380" y1="88" x2="360" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="450" y1="88" x2="540" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+
+<text class="ts" x="340" y="385" text-anchor="middle">각 작업은 정확히 하나의 워커에 전달 (부하 분산)</text>
+<text class="ts" x="340" y="405" text-anchor="middle">ACK되지 않은 작업은 PEL에 머묾 → 워커 크래시 시 복구 가능</text>
+<text class="ts" x="340" y="425" text-anchor="middle">스트림 자체는 그대로 — 그룹은 그저 커서 + 부기 장부</text>
+</svg>
+<div class="caption">그림 13 — 컨슈머 그룹 팬아웃과 pending 항목 추적</div>
+</div>
+
+<h3 id="consumer-group">7.2 컨슈머 그룹 단계별 살펴보기</h3>
+
+<p>컨슈머 그룹 라이프사이클의 네 가지 핵심 순간이에요. 작업이 어떻게 흐르고, 워커들이 어떻게 경쟁하고, 실패가 어떻게 복구되는지 보여줘요.</p>
+
+<h4>1단계: 프로듀서가 작업 등록</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<defs><marker id="arr-cg1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">프로듀서: 오케스트레이터가 작업 등록</text>
+<g class="c-coral"><rect x="60" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">오케스트레이터</text>
+  <text class="ts" x="160" y="98" text-anchor="middle" dominant-baseline="central">턴 스케줄러</text></g>
+<g class="c-teal"><rect x="340" y="60" width="280" height="90" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="82" text-anchor="middle" dominant-baseline="central">XADD stream:llm_tasks *</text>
+  <text class="ts" x="480" y="102" text-anchor="middle">session_id  ses_abc123</text>
+  <text class="ts" x="480" y="118" text-anchor="middle">agent_id  agent_jazz</text>
+  <text class="ts" x="480" y="134" text-anchor="middle">context  {history + persona}</text></g>
+<line x1="260" y1="88" x2="338" y2="88" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-cg1)"/>
+<g class="c-gray"><rect x="100" y="195" width="480" height="80" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="218" text-anchor="middle" dominant-baseline="central">stream:llm_tasks</text>
+  <text class="ts" x="340" y="240" text-anchor="middle">1712345-0: {ses_abc123, agent_jazz, ...}</text>
+  <text class="ts" x="340" y="258" text-anchor="middle">1712346-0: {ses_def456, agent_vinyl, ...}</text></g>
+<line x1="480" y1="150" x2="480" y2="170" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="480" y1="170" x2="340" y2="170" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="340" y1="170" x2="340" y2="193" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg1)"/>
+</svg>
+<div class="caption">그림 14a — 오케스트레이터가 XADD로 스트림에 작업 추가</div>
+</div>
+
+<h4>2단계: 워커들이 작업을 두고 경쟁</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 320">
+<defs><marker id="arr-cg2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">컨슈머 그룹: 워커들이 작업을 두고 경쟁</text>
+<g class="c-gray"><rect x="140" y="55" width="400" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="77" text-anchor="middle" dominant-baseline="central">stream:llm_tasks</text></g>
+<g class="c-purple"><rect x="60" y="145" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="140" y="165" text-anchor="middle" dominant-baseline="central">워커 #1</text>
+  <text class="ts" x="140" y="183" text-anchor="middle" dominant-baseline="central">XREADGROUP</text></g>
+<g class="c-purple"><rect x="260" y="145" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="165" text-anchor="middle" dominant-baseline="central">워커 #2</text>
+  <text class="ts" x="340" y="183" text-anchor="middle" dominant-baseline="central">XREADGROUP</text></g>
+<g class="c-purple"><rect x="460" y="145" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="540" y="165" text-anchor="middle" dominant-baseline="central">워커 #N</text>
+  <text class="ts" x="540" y="183" text-anchor="middle" dominant-baseline="central">XREADGROUP</text></g>
+<line x1="220" y1="99" x2="140" y2="143" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg2)"/>
+<line x1="340" y1="99" x2="340" y2="143" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg2)"/>
+<line x1="460" y1="99" x2="540" y2="143" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg2)"/>
+<text class="ts" x="340" y="235" text-anchor="middle">각 메시지는 정확히 하나의 워커에게 전달됨</text>
+<text class="ts" x="340" y="255" text-anchor="middle">GROUP "llm_workers", CONSUMER "worker-{id}"</text>
+<text class="ts" x="340" y="275" text-anchor="middle">BLOCK 5000ms (long-poll, busy loop 아님)</text>
+</svg>
+<div class="caption">그림 14b — XREADGROUP이 워커들에게 메시지를 분배</div>
+</div>
+
+<h4>3단계: ACK와 다음 턴</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 320">
+<defs><marker id="arr-cg3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">ACK + 다음 턴 등록</text>
+<g class="c-purple"><rect x="60" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="160" y="98" text-anchor="middle" dominant-baseline="central">응답 생성</text></g>
+<g class="c-teal"><rect x="340" y="60" width="280" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="80" text-anchor="middle" dominant-baseline="central">XACK stream:llm_tasks</text>
+  <text class="ts" x="480" y="98" text-anchor="middle" dominant-baseline="central">작업 완료 표시</text></g>
+<line x1="260" y1="88" x2="338" y2="88" stroke="var(--teal-600)" stroke-width="0.5" marker-end="url(#arr-cg3)"/>
+<g class="c-coral"><rect x="60" y="160" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="180" text-anchor="middle" dominant-baseline="central">턴 이벤트 발행</text>
+  <text class="ts" x="160" y="198" text-anchor="middle" dominant-baseline="central">XADD 세션 스트림</text></g>
+<g class="c-gray"><rect x="340" y="160" width="280" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="180" text-anchor="middle" dominant-baseline="central">XADD stream:llm_tasks</text>
+  <text class="ts" x="480" y="198" text-anchor="middle" dominant-baseline="central">다음 턴 등록</text></g>
+<line x1="160" y1="116" x2="160" y2="158" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg3)"/>
+<line x1="260" y1="188" x2="338" y2="188" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg3)"/>
+<text class="ts" x="340" y="252" text-anchor="middle">게이트웨이가 세션 스트림으로 이벤트 수신 → 사용자가 응답 봄</text>
+<text class="ts" x="340" y="272" text-anchor="middle">다음 턴은 다른 워커가 가져감 (자체 영속화)</text>
+<text class="ts" x="340" y="292" text-anchor="middle">최대 턴 도달까지 루프 계속</text>
+</svg>
+<div class="caption">그림 14c — 워커가 ACK하고 다음 턴을 등록</div>
+</div>
+
+<h4>4단계: PEL을 통한 실패 복구</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<defs><marker id="arr-cg4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">실패 복구: pending entries 리스트</text>
+<g class="c-coral"><rect x="60" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">워커 #2 크래시</text>
+  <text class="ts" x="160" y="98" text-anchor="middle" dominant-baseline="central">작업 ACK 안 됨</text></g>
+<g class="c-gray"><rect x="340" y="60" width="280" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="80" text-anchor="middle" dominant-baseline="central">Pending entries 리스트</text>
+  <text class="ts" x="480" y="98" text-anchor="middle" dominant-baseline="central">Redis가 unacked 메시지 추적</text></g>
+<line x1="260" y1="88" x2="338" y2="88" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-cg4)"/>
+<g class="c-teal"><rect x="140" y="160" width="400" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="180" text-anchor="middle" dominant-baseline="central">XAUTOCLAIM 또는 XCLAIM</text>
+  <text class="ts" x="340" y="198" text-anchor="middle" dominant-baseline="central">30초 idle 이후 stale 작업 재할당</text></g>
+<line x1="480" y1="116" x2="480" y2="135" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="480" y1="135" x2="340" y2="135" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="340" y1="135" x2="340" y2="158" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg4)"/>
+<text class="ts" x="340" y="248" text-anchor="middle">건강한 워커가 고아 작업을 가져감</text>
+<text class="ts" x="340" y="268" text-anchor="middle">워커가 죽어도 메시지 손실 없음</text>
+</svg>
+<div class="caption">그림 14d — XAUTOCLAIM이 죽은 워커의 stale 작업을 재할당</div>
+</div>
+
+<h3>Redis 키 네임스페이스</h3>
+
+<table>
+<tr><th>키 패턴</th><th>타입</th><th>용도</th></tr>
+<tr><td><code>stream:llm_tasks</code></td><td>Stream</td><td>LLM 작업 큐 (컨슈머 그룹: <code>llm_workers</code>)</td></tr>
+<tr><td><code>stream:session:{uuid}</code></td><td>Stream</td><td>게이트웨이 클라이언트용 세션별 대화 이벤트</td></tr>
+<tr><td><code>geo:islands</code></td><td>GEO sorted set</td><td>활성 섬 위치</td></tr>
+<tr><td><code>session:{uuid}</code></td><td>Hash</td><td>라이브 세션 상태 (계획됨)</td></tr>
+<tr><td><code>cooldown:{a}:{b}</code></td><td>String + EXPIRE</td><td>매칭 쿨다운 윈도우 (계획됨)</td></tr>
+<tr><td><code>lock:match:{a}:{b}</code></td><td>String (SETNX)</td><td>매칭 중복 방지 잠금 (계획됨)</td></tr>
+</table>
+
+<h3>왜 Pub/Sub 대신 Streams를 쓰는가</h3>
+
+<p>Islume 초기 버전은 워커에서 게이트웨이로 턴 이벤트를 전달하는 데 Redis Pub/Sub을 사용했어요. 이게 산발적으로 실패했어요. <code>pubsub.subscribe()</code>와 첫 번째 <code>pubsub.listen()</code> 반복 사이의 윈도우 동안 메시지가 조용히 손실됐어요. Pub/Sub은 fire-and-forget이에요. 메시지가 발행된 후에 연결된 구독자는 그 메시지를 절대 볼 수 없어요. Streams는 이걸 구조적으로 해결해요. 메시지가 영속적이고, 클라이언트는 <code>XREAD</code>로 알려진 위치에서 가져와요. Replay와 live가 같은 메커니즘을 써요. 전체 디버깅 여정은 JOURNAL을 참고하세요.</p>
+
+<!-- ============================================================ -->
+<h2 id="database">8. 데이터베이스 스키마</h2>
+
+<p>Postgres는 영속 데이터를 처리해요. 사용자 계정, 에이전트 정의, 매칭 히스토리, 대화 로그가 들어가요. Redis는 모든 실시간 상태를 처리해요. 경계가 명확해요. Redis는 "지금 일어나고 있는 일"용, Postgres는 "이미 일어난 일"용이에요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 720">
+<defs><marker id="arr-db" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-teal">
+  <rect x="40" y="20" width="280" height="140" rx="12" stroke-width="0.5"/>
+  <text class="th" x="180" y="44" text-anchor="middle">users</text>
+  <text class="ts" x="60" y="66">id: uuid PK</text>
+  <text class="ts" x="60" y="82">display_name: text</text>
+  <text class="ts" x="60" y="98">email: text</text>
+  <text class="ts" x="60" y="114">auth_provider: text</text>
+  <text class="ts" x="60" y="130">created_at, last_seen_at</text>
+</g>
+
+<g class="c-teal">
+  <rect x="380" y="20" width="260" height="140" rx="12" stroke-width="0.5"/>
+  <text class="th" x="510" y="44" text-anchor="middle">islands</text>
+  <text class="ts" x="400" y="66">id: uuid PK</text>
+  <text class="ts" x="400" y="82">user_id: uuid FK</text>
+  <text class="ts" x="400" y="98">island_name, island_style</text>
+  <text class="ts" x="400" y="114">is_active: boolean</text>
+  <text class="ts" x="400" y="130">entered_map_at</text>
+</g>
+<line x1="320" y1="85" x2="378" y2="85" class="arr" marker-end="url(#arr-db)"/>
+
+<g class="c-coral">
+  <rect x="40" y="200" width="280" height="160" rx="12" stroke-width="0.5"/>
+  <text class="th" x="180" y="224" text-anchor="middle">agents</text>
+  <text class="ts" x="60" y="246">id: uuid PK</text>
+  <text class="ts" x="60" y="262">name, description: text</text>
+  <text class="ts" x="60" y="278">persona_prompt: text</text>
+  <text class="ts" x="60" y="294">tone: text</text>
+  <text class="ts" x="60" y="310">tags: text array</text>
+  <text class="ts" x="60" y="326">is_public: boolean</text>
+  <text class="ts" x="60" y="342">created_at</text>
+</g>
+
+<g class="c-purple">
+  <rect x="380" y="200" width="260" height="120" rx="12" stroke-width="0.5"/>
+  <text class="th" x="510" y="224" text-anchor="middle">user_agents</text>
+  <text class="ts" x="400" y="246">id: uuid PK</text>
+  <text class="ts" x="400" y="262">user_id: uuid FK</text>
+  <text class="ts" x="400" y="278">agent_id: uuid FK</text>
+  <text class="ts" x="400" y="294">is_active: boolean</text>
+  <text class="ts" x="400" y="310">activated_at</text>
+</g>
+<line x1="320" y1="270" x2="378" y2="270" class="arr" marker-end="url(#arr-db)"/>
+<line x1="510" y1="160" x2="510" y2="198" class="arr" marker-end="url(#arr-db)"/>
+
+<g class="c-coral">
+  <rect x="40" y="400" width="290" height="200" rx="12" stroke-width="0.5"/>
+  <text class="th" x="185" y="424" text-anchor="middle">match_sessions</text>
+  <text class="ts" x="60" y="446">id: uuid PK</text>
+  <text class="ts" x="60" y="462">user_a_id, user_b_id: uuid FK</text>
+  <text class="ts" x="60" y="478">agent_a_id, agent_b_id: uuid FK</text>
+  <text class="ts" x="60" y="494">match_context: text</text>
+  <text class="ts" x="60" y="510">similarity_score: float</text>
+  <text class="ts" x="60" y="526">status: text</text>
+  <text class="ts" x="60" y="542">turn_count, max_turns: int</text>
+  <text class="ts" x="60" y="558">started_at, ended_at</text>
+</g>
+
+<g class="c-purple">
+  <rect x="370" y="400" width="270" height="200" rx="12" stroke-width="0.5"/>
+  <text class="th" x="505" y="424" text-anchor="middle">conversation_turns</text>
+  <text class="ts" x="390" y="446">id: uuid PK</text>
+  <text class="ts" x="390" y="462">session_id: uuid FK</text>
+  <text class="ts" x="390" y="478">agent_id: uuid FK</text>
+  <text class="ts" x="390" y="494">turn_number: int</text>
+  <text class="ts" x="390" y="510">content: text</text>
+  <text class="ts" x="390" y="526">input_tokens, output_tokens</text>
+  <text class="ts" x="390" y="542">model_used: text</text>
+  <text class="ts" x="390" y="558">latency_ms: int</text>
+</g>
+<line x1="330" y1="500" x2="368" y2="500" class="arr" marker-end="url(#arr-db)"/>
+<line x1="185" y1="360" x2="185" y2="398" class="arr" marker-end="url(#arr-db)"/>
+<line x1="505" y1="320" x2="505" y2="398" class="arr" marker-end="url(#arr-db)"/>
+
+<text class="ts" x="340" y="650" text-anchor="middle">관계: users 1→N islands, users N↔M agents via user_agents,</text>
+<text class="ts" x="340" y="668" text-anchor="middle">match_sessions는 2개 사용자 + 2개 에이전트 참조,</text>
+<text class="ts" x="340" y="686" text-anchor="middle">conversation_turns는 match_session당 1→N</text>
+</svg>
+<div class="caption">그림 15 — Postgres 스키마: 사용자, 에이전트, 세션, 대화 턴</div>
+</div>
+
+<h3>인덱스 전략</h3>
+
+<table>
+<tr><th>우선순위</th><th>인덱스</th><th>용도</th></tr>
+<tr><td><span class="badge b-hot">hot</span></td><td><code>islands (is_active, user_id)</code> partial</td><td>매칭용 활성 섬</td></tr>
+<tr><td><span class="badge b-hot">hot</span></td><td><code>user_agents (user_id)</code> partial</td><td>사용자별 활성 에이전트</td></tr>
+<tr><td><span class="badge b-warm">warm</span></td><td><code>conversation_turns (session_id, turn_number)</code></td><td>세션별 턴 조회</td></tr>
+<tr><td><span class="badge b-warm">warm</span></td><td><code>match_sessions (island_a) WHERE status='active'</code></td><td>섬별 활성 세션</td></tr>
+<tr><td><span class="badge b-cool">cool</span></td><td><code>conversation_turns (model_used, created_at)</code></td><td>모델별 비용 분석</td></tr>
+<tr><td><span class="badge b-cool">cool</span></td><td><code>match_sessions (similarity_score, started_at)</code></td><td>매칭 품질 분석</td></tr>
+</table>
+
+<p><strong>파티셔닝 노트:</strong> <code>conversation_turns</code> 테이블이 가장 빠르게 성장해요 (보통 ~월 30,000행). <code>created_at</code> 기준 월별 파티셔닝이 분석 쿼리를 빠르게 유지하고 데이터 보존을 단순화해요. MVP에는 아직 구현되지 않았어요.</p>
+
+<!-- ============================================================ -->
+<h2 id="local-dev">9. 로컬 개발 환경</h2>
+
+<p>Islume의 로컬 개발은 Ubuntu 24.04 호스트에서 직접 실행돼요. 인프라 서비스(Postgres, Redis)는 Docker Compose 컨테이너로, 애플리케이션 코드(Python 서비스)는 <code>uv run</code>으로 네이티브 실행해요. VMware는 사용하지 않아요. 이 구성이 피드백 루프를 빠르게 유지하면서도 stateful 서비스를 격리해요.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 480">
+<defs><marker id="arr-ld" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="40" y="20" width="600" height="440" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="48" text-anchor="middle">Ubuntu 24.04 호스트 (Ryzen 7 7800X3D, 62GB RAM)</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="80" width="240" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="200" y="105" text-anchor="middle">네이티브 (호스트)</text>
+  <text class="ts" x="200" y="125" text-anchor="middle">Python 3.12 + uv</text>
+  <text class="ts" x="200" y="143" text-anchor="middle">VS Code + Claude Code</text>
+</g>
+
+<g class="c-purple">
+  <rect x="360" y="80" width="240" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="480" y="105" text-anchor="middle">Docker Compose 스택</text>
+  <text class="ts" x="480" y="125" text-anchor="middle">컨테이너 인프라 서비스</text>
+  <text class="ts" x="480" y="143" text-anchor="middle">격리된 네트워크 + 볼륨</text>
+</g>
+
+<g class="c-coral">
+  <rect x="80" y="200" width="170" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="165" y="220" text-anchor="middle" dominant-baseline="central">redis:7-alpine</text>
+  <text class="ts" x="165" y="238" text-anchor="middle" dominant-baseline="central">포트 6379</text>
+</g>
+<g class="c-coral">
+  <rect x="260" y="200" width="170" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="345" y="220" text-anchor="middle" dominant-baseline="central">postgres:16-alpine</text>
+  <text class="ts" x="345" y="238" text-anchor="middle" dominant-baseline="central">포트 5432</text>
+</g>
+<g class="c-coral">
+  <rect x="440" y="200" width="170" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="525" y="220" text-anchor="middle" dominant-baseline="central">redis-insight</text>
+  <text class="ts" x="525" y="238" text-anchor="middle" dominant-baseline="central">포트 5540</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="290" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="310" text-anchor="middle" dominant-baseline="central">맵 + 매칭</text>
+  <text class="ts" x="160" y="328" text-anchor="middle" dominant-baseline="central">FastAPI :8001</text>
+</g>
+<g class="c-teal">
+  <rect x="260" y="290" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="310" text-anchor="middle" dominant-baseline="central">WS 게이트웨이</text>
+  <text class="ts" x="340" y="328" text-anchor="middle" dominant-baseline="central">FastAPI :8002</text>
+</g>
+<g class="c-teal">
+  <rect x="440" y="290" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="310" text-anchor="middle" dominant-baseline="central">오케스트레이터</text>
+  <text class="ts" x="520" y="328" text-anchor="middle" dominant-baseline="central">FastAPI :8003</text>
+</g>
+
+<g class="c-purple">
+  <rect x="180" y="380" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="400" text-anchor="middle" dominant-baseline="central">LLM 워커</text>
+  <text class="ts" x="340" y="418" text-anchor="middle" dominant-baseline="central">Python (1+ 인스턴스)</text>
+</g>
+
+<line x1="160" y1="346" x2="165" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="340" y1="346" x2="200" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="340" y1="346" x2="345" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="520" y1="346" x2="380" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="340" y1="378" x2="220" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+</svg>
+<div class="caption">그림 16 — Ubuntu 호스트의 로컬 개발 스택</div>
+</div>
+
+<p>전체 셋업 안내는 프로젝트 README를 참고하세요. 필수 도구는 Docker + Docker Compose, uv (Python 패키지 매니저), Anthropic API 키예요. 모든 인프라는 <code>docker compose up -d</code> 명령 하나로 시작돼요.</p>
+
+<!-- ============================================================ -->
+<h2 id="cost">10. 비용 추정</h2>
+
+<h3>LLM API 비용 (측정값)</h3>
+
+<table>
+<tr><th>항목</th><th>측정값</th></tr>
+<tr><td>Sonnet 4.5 입력 가격</td><td>$3 / 1M 토큰</td></tr>
+<tr><td>Sonnet 4.5 출력 가격</td><td>$15 / 1M 토큰</td></tr>
+<tr><td>세션당 평균 턴 수</td><td>6</td></tr>
+<tr><td>평균 입력 토큰 (누적)</td><td>~2,000</td></tr>
+<tr><td>평균 출력 토큰 (누적)</td><td>~600</td></tr>
+<tr><td>세션당 평균 비용</td><td>$0.015</td></tr>
+<tr><td>턴당 평균 지연</td><td>~4초</td></tr>
+</table>
+
+<h3>Railway 인프라 (예상)</h3>
+
+<table>
+<tr><th>서비스</th><th>스케일 동작</th><th>예상 비용</th></tr>
+<tr><td>맵 + 매칭 API</td><td>Scale-to-zero</td><td>$5–15 / 월</td></tr>
+<tr><td>WebSocket 게이트웨이</td><td>Always-on (최소 1 인스턴스)</td><td>$10–25 / 월</td></tr>
+<tr><td>에이전트 오케스트레이터</td><td>Scale-to-zero</td><td>$3–10 / 월</td></tr>
+<tr><td>LLM 워커</td><td>Scale-to-zero</td><td>$5–15 / 월</td></tr>
+<tr><td>Redis</td><td>Always-on</td><td>$5–10 / 월</td></tr>
+<tr><td>Postgres</td><td>Always-on</td><td>$5–10 / 월</td></tr>
+<tr><td colspan="2"><strong>Railway 총합</strong></td><td><strong>$33–85 / 월</strong></td></tr>
+</table>
+
+<h3>다양한 규모에서의 예상 총비용</h3>
+
+<table>
+<tr><th>일일 세션</th><th>월 LLM 비용</th><th>월 Railway 비용</th><th>월 총비용</th></tr>
+<tr><td>10</td><td>$4.50</td><td>$35</td><td>~$40</td></tr>
+<tr><td>100</td><td>$45</td><td>$50</td><td>~$95</td></tr>
+<tr><td>1,000</td><td>$450</td><td>$80</td><td>~$530</td></tr>
+<tr><td>10,000</td><td>$4,500</td><td>$200+</td><td>~$4,700+</td></tr>
+</table>
+
+<p class="note">참고: 규모가 커질수록 LLM API 비용이 지배적이에요. 계획된 슬라이딩 윈도우 압축(오래된 턴 요약에 Sonnet 대신 Haiku 사용)이 비용 최적화의 주요 레버예요. Railway 인프라는 훨씬 완만하게 확장돼요.</p>
+
+<hr style="margin: 3rem 0; border: none; border-top: 1px solid var(--border2);">
+<p class="note" style="font-size: 0.85rem; text-align: center;">Islume 종합 설계 문서 — 2026년 4월 — MVP 로컬 구현 및 검증 완료</p>
+
+</div>
+</body>
+</html>

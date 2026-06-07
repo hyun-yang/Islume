@@ -1,0 +1,43 @@
+{
+  "id": "stage1",
+  "name": "Stage 1: Sunny Beach",
+  "background": "beach",
+  "rows": [
+    "................................................................",
+    "................................................................",
+    ".....c............c...........c.............c.............c.....",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    ".............................................................T..",
+    ".............................................GGGGGGGGGGG.....F..",
+    ".................................GGGGGGGGGG..DDDDDDDDDDD.....F..",
+    ".............u..u................DDDDDDDDDD..DDDDDDDDDDD.....F..",
+    "GGGGGGGGGGGGGGGGGGG...GGGGGGGGGGGDDDDDDDDDD..DDDDDDDDDDDGGGGGGGG",
+    "DDDDDDDDDDDDDDDDDDD...DDDDDDDDDDDDDDDDDDDDDD..DDDDDDDDDDDDDDDDDD",
+    "DDDDDDDDDDDDDDDDDDD...DDDDDDDDDDDDDDDDDDDDDD..DDDDDDDDDDDDDDDDDD",
+    "DDDDDDDDDDDDDDDDDDD...DDDDDDDDDDDDDDDDDDDDDD..DDDDDDDDDDDDDDDDDD"
+  ],
+  "spawn": { "x": 2, "y": 12 },
+  "goal":  { "x": 61, "y": 12 },
+  "checkpoints": [{ "x": 33, "y": 10 }],
+  "actors": [
+    { "id": "c1",  "type": "enemy_crab",     "x": 15, "y": 12, "walk_range": [11, 18] },
+    { "id": "s1",  "type": "enemy_starfish", "x": 28, "y": 12, "jump_interval_ms": 1800 },
+    { "id": "c2",  "type": "enemy_crab",     "x": 35, "y": 10, "walk_range": [33, 42] },
+    { "id": "c3",  "type": "enemy_crab",     "x": 40, "y": 10, "walk_range": [33, 42] },
+    { "id": "sh1", "type": "item_shell", "x": 19, "y": 10 },
+    { "id": "sh2", "type": "item_shell", "x": 20, "y": 9  },
+    { "id": "sh3", "type": "item_shell", "x": 21, "y": 10 },
+    { "id": "sh4", "type": "item_shell", "x": 35, "y": 8  },
+    { "id": "sh5", "type": "item_shell", "x": 37, "y": 8  },
+    { "id": "sh6", "type": "item_shell", "x": 40, "y": 8  },
+    { "id": "sh7", "type": "item_shell", "x": 46, "y": 7  },
+    { "id": "sh8", "type": "item_shell", "x": 48, "y": 7  },
+    { "id": "sh9", "type": "item_shell", "x": 50, "y": 7  },
+    { "id": "sh10","type": "item_shell", "x": 52, "y": 7  },
+    { "id": "h1",  "type": "item_heart", "x": 54, "y": 7  }
+  ]
+}

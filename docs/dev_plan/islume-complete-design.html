@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Islume — Complete Design Document</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAFAF8;
+  --bg2: #F1EFE8;
+  --bg3: #E8E6DF;
+  --text: #1a1a18;
+  --text2: #5F5E5A;
+  --text3: #888780;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.15);
+  --purple-50: #EEEDFE; --purple-100: #CECBF6; --purple-200: #AFA9EC; --purple-600: #534AB7; --purple-800: #3C3489;
+  --teal-50: #E1F5EE; --teal-100: #9FE1CB; --teal-200: #5DCAA5; --teal-600: #0F6E56; --teal-800: #085041;
+  --coral-50: #FAECE7; --coral-100: #F5C4B3; --coral-200: #F0997B; --coral-600: #993C1D; --coral-800: #712B13;
+  --pink-50: #FBEAF0; --pink-100: #F4C0D1; --pink-600: #993556; --pink-800: #72243E;
+  --gray-50: #F1EFE8; --gray-100: #D3D1C7; --gray-200: #B4B2A9; --gray-600: #5F5E5A; --gray-800: #444441;
+  --blue-50: #E6F1FB; --blue-100: #B5D4F4; --blue-600: #185FA5; --blue-800: #0C447C;
+  --amber-50: #FAEEDA; --amber-100: #FAC775; --amber-600: #854F0B; --amber-800: #633806;
+  --red-50: #FCEBEB; --red-100: #F7C1C1; --red-600: #A32D2D; --red-800: #791F1F;
+  --green-50: #EAF3DE; --green-100: #C0DD97; --green-600: #3B6D11; --green-800: #27500A;
+  --font: 'DM Sans', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a18; --bg2: #2C2C2A; --bg3: #3d3d3a;
+    --text: #e8e6df; --text2: #B4B2A9; --text3: #888780;
+    --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+    --purple-50: #26215C; --purple-100: #3C3489; --purple-200: #534AB7; --purple-600: #AFA9EC; --purple-800: #CECBF6;
+    --teal-50: #04342C; --teal-100: #085041; --teal-200: #0F6E56; --teal-600: #5DCAA5; --teal-800: #9FE1CB;
+    --coral-50: #4A1B0C; --coral-100: #712B13; --coral-200: #993C1D; --coral-600: #F0997B; --coral-800: #F5C4B3;
+    --pink-50: #4B1528; --pink-100: #72243E; --pink-600: #ED93B1; --pink-800: #F4C0D1;
+    --gray-50: #2C2C2A; --gray-100: #444441; --gray-200: #5F5E5A; --gray-600: #B4B2A9; --gray-800: #D3D1C7;
+    --blue-50: #042C53; --blue-100: #0C447C; --blue-600: #85B7EB; --blue-800: #B5D4F4;
+    --amber-50: #412402; --amber-100: #633806; --amber-600: #EF9F27; --amber-800: #FAC775;
+    --red-50: #501313; --red-100: #791F1F; --red-600: #F09595; --red-800: #F7C1C1;
+    --green-50: #173404; --green-100: #27500A; --green-600: #97C459; --green-800: #C0DD97;
+  }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  font-size: 15px;
+}
+.container { max-width: 900px; margin: 0 auto; padding: 3rem 2rem 4rem; }
+header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--border2); }
+header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 0.25rem; }
+header .subtitle { font-size: 1rem; color: var(--text2); }
+header .meta { font-size: 0.8rem; color: var(--text3); margin-top: 0.5rem; font-family: var(--mono); }
+h2 {
+  font-size: 1.5rem; font-weight: 600; margin: 3rem 0 0.75rem;
+  padding-bottom: 0.4rem; border-bottom: 1px solid var(--border);
+  letter-spacing: -0.02em;
+}
+h3 { font-size: 1.15rem; font-weight: 600; margin: 2rem 0 0.5rem; }
+h4 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; color: var(--text2); }
+p { margin-bottom: 0.75rem; color: var(--text); }
+.note { color: var(--text2); }
+code {
+  font-family: var(--mono); font-size: 0.85em;
+  background: var(--bg2); padding: 2px 6px; border-radius: 4px;
+}
+pre {
+  font-family: var(--mono); font-size: 0.82rem;
+  background: var(--bg2); padding: 1rem 1.25rem; border-radius: 8px;
+  overflow-x: auto; margin: 0.75rem 0 1rem; line-height: 1.6;
+  border: 1px solid var(--border);
+}
+pre code { background: none; padding: 0; }
+
+.diagram-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1.25rem; margin: 1rem 0 1.5rem;
+  overflow: hidden;
+}
+.diagram-card .caption {
+  font-size: 0.8rem; color: var(--text3); margin-top: 0.75rem;
+  font-family: var(--mono); text-align: center;
+}
+.diagram-card svg { display: block; width: 100%; height: auto; max-width: 100%; }
+.diagram-card svg text { font-family: var(--font); }
+.diagram-card svg .th { font-size: 14px; font-weight: 500; fill: var(--text); }
+.diagram-card svg .ts { font-size: 12px; fill: var(--text2); }
+.diagram-card svg .t { font-size: 14px; fill: var(--text); }
+.diagram-card svg .arr { stroke: var(--text3); stroke-width: 1.5; fill: none; }
+.diagram-card svg .leader { stroke: var(--text3); stroke-width: 0.5; stroke-dasharray: 4 3; fill: none; }
+
+.c-purple rect, .c-purple circle, .c-purple ellipse { fill: var(--purple-50); stroke: var(--purple-600); }
+.c-purple .th { fill: var(--purple-800) !important; }
+.c-purple .ts { fill: var(--purple-600) !important; }
+.c-teal rect, .c-teal circle, .c-teal ellipse { fill: var(--teal-50); stroke: var(--teal-600); }
+.c-teal .th { fill: var(--teal-800) !important; }
+.c-teal .ts { fill: var(--teal-600) !important; }
+.c-coral rect, .c-coral circle, .c-coral ellipse { fill: var(--coral-50); stroke: var(--coral-600); }
+.c-coral .th { fill: var(--coral-800) !important; }
+.c-coral .ts { fill: var(--coral-600) !important; }
+.c-pink rect, .c-pink circle, .c-pink ellipse { fill: var(--pink-50); stroke: var(--pink-600); }
+.c-pink .th { fill: var(--pink-800) !important; }
+.c-pink .ts { fill: var(--pink-600) !important; }
+.c-gray rect, .c-gray circle, .c-gray ellipse { fill: var(--gray-50); stroke: var(--gray-600); }
+.c-gray .th { fill: var(--gray-800) !important; }
+.c-gray .ts { fill: var(--gray-600) !important; }
+.c-blue rect, .c-blue circle, .c-blue ellipse { fill: var(--blue-50); stroke: var(--blue-600); }
+.c-blue .th { fill: var(--blue-800) !important; }
+.c-blue .ts { fill: var(--blue-600) !important; }
+.c-amber rect, .c-amber circle, .c-amber ellipse { fill: var(--amber-50); stroke: var(--amber-600); }
+.c-amber .th { fill: var(--amber-800) !important; }
+.c-amber .ts { fill: var(--amber-600) !important; }
+.c-green rect, .c-green circle, .c-green ellipse { fill: var(--green-50); stroke: var(--green-600); }
+.c-green .th { fill: var(--green-800) !important; }
+.c-green .ts { fill: var(--green-600) !important; }
+
+table {
+  width: 100%; border-collapse: collapse; margin: 0.75rem 0 1rem;
+  font-size: 0.9rem;
+}
+th { text-align: left; font-weight: 600; font-size: 0.8rem; color: var(--text3);
+  padding: 8px 12px; border-bottom: 1px solid var(--border2); }
+td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+.badge {
+  display: inline-block; font-size: 0.7rem; padding: 2px 10px;
+  border-radius: 6px; font-weight: 500; font-family: var(--mono);
+}
+.b-hot { background: var(--red-50); color: var(--red-800); }
+.b-warm { background: var(--amber-50); color: var(--amber-800); }
+.b-cool { background: var(--blue-50); color: var(--blue-800); }
+
+.toc { margin: 1.5rem 0 2rem; padding: 1.25rem 1.5rem; background: var(--bg2); border-radius: 12px; border: 1px solid var(--border); }
+.toc strong { display: block; margin-bottom: 0.5rem; }
+.toc a { color: var(--text2); text-decoration: none; display: block; padding: 4px 0; font-size: 0.92rem; }
+.toc a:hover { color: var(--text); }
+.toc .indent { padding-left: 1.5rem; font-size: 0.88rem; }
+
+.pill { display: inline-block; font-size: 0.75rem; padding: 2px 10px; border-radius: 999px;
+  background: var(--bg3); color: var(--text2); margin: 2px 2px; }
+
+.step-group { margin: 1rem 0; }
+.step-label { font-size: 0.8rem; color: var(--text3); font-family: var(--mono); text-align: center; margin-top: 0.5rem; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px dashed var(--border); }
+.step-label:last-child { border-bottom: none; }
+
+/* Comparison card grid */
+.compare-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin: 1rem 0 1.5rem; }
+.compare-card { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; }
+.compare-card h3 { font-size: 1.1rem; font-weight: 500; margin-bottom: 0.25rem; margin-top: 0; }
+.compare-card .tagline { font-size: 0.85rem; color: var(--text2); margin-bottom: 0.75rem; }
+.compare-card .row { margin-bottom: 0.65rem; }
+.compare-card .row .label { font-size: 0.75rem; color: var(--text3); }
+.compare-card .row .value { font-size: 0.9rem; color: var(--text); }
+.badge-rail { background: var(--blue-50); color: var(--blue-800); }
+.badge-render { background: var(--green-50); color: var(--green-800); }
+.sum-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; margin-top: 1rem; }
+.sum-card { padding: 1rem; border-radius: 12px; }
+.sum-rail { background: var(--blue-50); }
+.sum-render { background: var(--green-50); }
+.sum-card h4 { font-size: 0.9rem; font-weight: 500; margin: 0 0 0.5rem; }
+.sum-rail h4 { color: var(--blue-800); }
+.sum-render h4 { color: var(--green-800); }
+.sum-card ul { list-style: none; padding: 0; margin: 0; }
+.sum-card li { font-size: 0.82rem; color: var(--text2); padding: 2px 0; line-height: 1.5; }
+.sum-card li::before { content: "→ "; opacity: 0.5; }
+
+@media print {
+  .container { max-width: 100%; padding: 1rem; }
+  .diagram-card { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>Islume — Complete Design Document</h1>
+  <div class="subtitle">A multi-user web app where users are "moving islands" with persona agents that auto-match nearby for LLM-powered conversations</div>
+  <div class="meta">Comprehensive draft · April 2026 · Python Backend · Railway Hosting · MVP implemented locally</div>
+</header>
+
+<nav class="toc">
+  <strong>Table of Contents</strong>
+  <a href="#platform">1. Platform Decision — Railway vs Render</a>
+  <a href="#overview">2. System Overview</a>
+  <a href="#orchestrator">3. Agent Orchestrator</a>
+  <a href="#orchestrator-scheduler" class="indent">3.1 Turn Scheduler Walkthrough</a>
+  <a href="#matching">4. Map + Matching Service</a>
+  <a href="#matching-illustration" class="indent">4.1 Matching Illustration</a>
+  <a href="#gateway">5. WebSocket Gateway</a>
+  <a href="#gateway-scaling" class="indent">5.1 Cross-Instance Scaling</a>
+  <a href="#worker-pool">6. LLM Worker Pool</a>
+  <a href="#worker-pipeline" class="indent">6.1 Worker Internal Pipeline</a>
+  <a href="#context-builder" class="indent">6.2 Context Builder Strategy</a>
+  <a href="#llm-router" class="indent">6.3 LLM Router Design</a>
+  <a href="#redis">7. Redis Message Queue Patterns</a>
+  <a href="#consumer-group" class="indent">7.1 Consumer Group Design</a>
+  <a href="#consumer-mental-model" class="indent">7.2 Mental Model</a>
+  <a href="#database">8. Database Schema</a>
+  <a href="#local-dev">9. Local Development Environment</a>
+  <a href="#cost">10. Cost Estimation</a>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="platform">1. Platform Decision — Railway vs Render</h2>
+
+<p>For hosting Islume's Python backend with multiple services and an async message queue, two managed platforms emerged as the finalists: Railway and Render. Both are developer-friendly Heroku-style platforms, but they optimize for different workflows.</p>
+
+<div class="compare-grid">
+  <div class="compare-card">
+    <span class="badge badge-rail">Railway</span>
+    <h3>Railway</h3>
+    <p class="tagline">Speed and simplicity first</p>
+    <div class="row"><div class="label">Pricing model</div><div class="value">Usage-based (per vCPU-sec + GB-RAM-sec)</div></div>
+    <div class="row"><div class="label">Free tier</div><div class="value">$5 one-time trial credit (no card)</div></div>
+    <div class="row"><div class="label">Paid plans</div><div class="value">Hobby $5/mo + usage, Pro $20/mo + usage</div></div>
+    <div class="row"><div class="label">Key features</div><div>
+      <span class="pill">Visual canvas</span>
+      <span class="pill">Scale-to-zero</span>
+      <span class="pill">Template marketplace</span>
+      <span class="pill">railway.toml IaC</span>
+    </div></div>
+  </div>
+  <div class="compare-card">
+    <span class="badge badge-render">Render</span>
+    <h3>Render</h3>
+    <p class="tagline">Structure and production-readiness</p>
+    <div class="row"><div class="label">Pricing model</div><div class="value">Instance-based (fixed monthly per service)</div></div>
+    <div class="row"><div class="label">Free tier</div><div class="value">750 hrs/mo + free Postgres (30-day) + static sites</div></div>
+    <div class="row"><div class="label">Paid plans</div><div class="value">Standard $25/mo per service, Pro $85/mo</div></div>
+    <div class="row"><div class="label">Key features</div><div>
+      <span class="pill">render.yaml IaC</span>
+      <span class="pill">CDN built-in</span>
+      <span class="pill">Managed Postgres</span>
+      <span class="pill">Background workers</span>
+    </div></div>
+  </div>
+</div>
+
+<table>
+<tr><th>Feature</th><th>Railway</th><th>Render</th></tr>
+<tr><td>DX / Dashboard</td><td>Visual project canvas (collaborative)</td><td>Traditional dashboard</td></tr>
+<tr><td>Databases</td><td>Postgres, MySQL, Redis, Mongo (containers)</td><td>Managed Postgres + Redis (production-grade)</td></tr>
+<tr><td>Autoscaling</td><td>Vertical + horizontal replicas</td><td>Horizontal + vertical, CPU/mem triggers</td></tr>
+<tr><td>Request timeout</td><td>5 minutes max</td><td>Up to 100 minutes</td></tr>
+<tr><td>Static sites</td><td>Not supported natively</td><td>Free with global CDN</td></tr>
+<tr><td>Cold starts</td><td>Yes (scale-from-zero)</td><td>Yes (free tier sleeps after 15 min)</td></tr>
+<tr><td>Cost predictability</td><td>Variable (usage spikes)</td><td>Fixed monthly billing</td></tr>
+</table>
+
+<div class="sum-grid">
+  <div class="sum-card sum-rail">
+    <h4>Choose Railway when</h4>
+    <ul>
+      <li>Rapid prototyping, side projects</li>
+      <li>Variable or bursty traffic</li>
+      <li>Visual infrastructure canvas</li>
+      <li>Budget-conscious with scale-to-zero</li>
+    </ul>
+  </div>
+  <div class="sum-card sum-render">
+    <h4>Choose Render when</h4>
+    <ul>
+      <li>Production apps needing reliability</li>
+      <li>Predictable monthly billing</li>
+      <li>Static site + API full-stack apps</li>
+      <li>Long-running operations (ML, reports)</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Decision for Islume</h3>
+
+<p>Railway was chosen. The reasoning: Islume's agent matching creates bursty workloads (periods of high activity followed by idle time), which fits Railway's usage-based pricing perfectly. Scale-to-zero means unused LLM workers cost nothing. The visual canvas is particularly valuable for a multi-service system like Islume (5 services + databases). The 5-minute HTTP timeout is not a concern because agent conversations are processed asynchronously via Redis Streams, so HTTP requests themselves remain short — only the background workers run for extended periods.</p>
+
+<!-- ============================================================ -->
+<h2 id="overview">2. System Overview</h2>
+
+<p>Islume is decomposed into five independently scalable services connected via Redis (Streams + GEO) and Postgres (persistent state). The architecture follows two principles: <strong>Redis owns "what's happening now"</strong> (positions, session state, task queue, live event streams), and <strong>Postgres owns "what already happened"</strong> (completed conversations, user accounts, agent definitions).</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 440">
+<defs><marker id="arr-ov" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-purple">
+  <rect x="40" y="20" width="600" height="370" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="48" text-anchor="middle">Islume system</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="75" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="200" y="95" text-anchor="middle" dominant-baseline="central">Map + matching API</text>
+  <text class="ts" x="200" y="113" text-anchor="middle" dominant-baseline="central">Proximity-based pairing</text>
+</g>
+<g class="c-teal">
+  <rect x="360" y="75" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="95" text-anchor="middle" dominant-baseline="central">WebSocket gateway</text>
+  <text class="ts" x="480" y="113" text-anchor="middle" dominant-baseline="central">Real-time map updates</text>
+</g>
+<line x1="320" y1="103" x2="358" y2="103" class="arr" marker-end="url(#arr-ov)"/>
+
+<g class="c-coral">
+  <rect x="170" y="175" width="340" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="195" text-anchor="middle" dominant-baseline="central">Agent orchestrator</text>
+  <text class="ts" x="340" y="213" text-anchor="middle" dominant-baseline="central">Spawns persona conversations</text>
+</g>
+<line x1="200" y1="131" x2="200" y2="155" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="200" y1="155" x2="340" y2="155" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="340" y1="155" x2="340" y2="173" class="arr" marker-end="url(#arr-ov)"/>
+
+<g class="c-gray">
+  <rect x="80" y="280" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="300" text-anchor="middle" dominant-baseline="central">Message queue</text>
+  <text class="ts" x="160" y="318" text-anchor="middle" dominant-baseline="central">Redis streams</text>
+</g>
+<g class="c-coral">
+  <rect x="280" y="280" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="360" y="300" text-anchor="middle" dominant-baseline="central">LLM workers</text>
+  <text class="ts" x="360" y="318" text-anchor="middle" dominant-baseline="central">Persona conversations</text>
+</g>
+<g class="c-gray">
+  <rect x="480" y="280" width="140" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="550" y="300" text-anchor="middle" dominant-baseline="central">Postgres</text>
+  <text class="ts" x="550" y="318" text-anchor="middle" dominant-baseline="central">Users, agents, logs</text>
+</g>
+
+<line x1="280" y1="231" x2="160" y2="278" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ov)"/>
+<line x1="340" y1="231" x2="340" y2="278" class="arr" marker-end="url(#arr-ov)"/>
+<line x1="400" y1="231" x2="550" y2="278" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ov)"/>
+<line x1="240" y1="308" x2="278" y2="308" class="arr" marker-end="url(#arr-ov)"/>
+</svg>
+<div class="caption">Fig 1 — Islume system overview</div>
+</div>
+
+<p>Key technology choices:
+<span class="pill">Python 3.12</span>
+<span class="pill">FastAPI</span>
+<span class="pill">Redis Streams</span>
+<span class="pill">Redis GEO</span>
+<span class="pill">Postgres 16</span>
+<span class="pill">SQLAlchemy 2.0 async</span>
+<span class="pill">WebSocket</span>
+<span class="pill">Railway</span>
+</p>
+
+<!-- ============================================================ -->
+<h2 id="orchestrator">3. Agent Orchestrator</h2>
+
+<p>The Orchestrator is the brain of Islume — it receives match events, creates conversation sessions, loads persona prompts, and manages the turn-by-turn dialogue loop between two matched agents.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 580">
+<defs><marker id="arr-or" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-teal">
+  <rect x="220" y="20" width="240" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">Match event</text>
+  <text class="ts" x="340" y="56" text-anchor="middle" dominant-baseline="central">From matching API</text>
+</g>
+<line x1="340" y1="70" x2="340" y2="100" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-coral">
+  <rect x="180" y="100" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="118" text-anchor="middle" dominant-baseline="central">Session manager</text>
+  <text class="ts" x="340" y="136" text-anchor="middle" dominant-baseline="central">Creates conversation session</text>
+</g>
+<line x1="340" y1="150" x2="340" y2="180" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-coral">
+  <rect x="180" y="180" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="198" text-anchor="middle" dominant-baseline="central">Persona loader</text>
+  <text class="ts" x="340" y="216" text-anchor="middle" dominant-baseline="central">Loads agent system prompts</text>
+</g>
+<line x1="340" y1="230" x2="340" y2="260" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-coral">
+  <rect x="180" y="260" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="278" text-anchor="middle" dominant-baseline="central">Turn scheduler</text>
+  <text class="ts" x="340" y="296" text-anchor="middle" dominant-baseline="central">Manages A/B turn order</text>
+</g>
+<line x1="340" y1="310" x2="340" y2="340" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-gray">
+  <rect x="180" y="340" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="358" text-anchor="middle" dominant-baseline="central">Redis streams</text>
+  <text class="ts" x="340" y="376" text-anchor="middle" dominant-baseline="central">Enqueue LLM task</text>
+</g>
+<line x1="340" y1="390" x2="340" y2="420" class="arr" marker-end="url(#arr-or)"/>
+
+<g class="c-purple">
+  <rect x="180" y="420" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="438" text-anchor="middle" dominant-baseline="central">LLM worker</text>
+  <text class="ts" x="340" y="456" text-anchor="middle" dominant-baseline="central">Generates persona reply</text>
+</g>
+
+<text class="ts" x="524" y="290" text-anchor="start">Next turn loops</text>
+<text class="ts" x="524" y="306" text-anchor="start">back to scheduler</text>
+<path d="M500 285 L550 285 L550 255 L500 255" fill="none" stroke="var(--purple-600)" stroke-width="0.5" marker-end="url(#arr-or)"/>
+</svg>
+<div class="caption">Fig 2 — Orchestrator pipeline: match → session → turns → LLM</div>
+</div>
+
+<h3>Component Responsibilities</h3>
+
+<p><strong>Session Manager</strong> creates a session record binding two agents, their match context, a TTL (e.g. 300s), and initial turn counter. Session state lives in Redis Hash for real-time access; persistent record in Postgres.</p>
+
+<p><strong>Persona Loader</strong> fetches both agents' persona templates from Postgres and injects the match context dynamically. This makes the same persona behave differently depending on who they're matched with.</p>
+
+<p><strong>Turn Scheduler</strong> implements a simple state machine: even turns → Agent A, odd turns → Agent B. Each turn enqueues an LLM task to Redis Streams, and the result triggers the next turn until TTL expires or a user disconnects.</p>
+
+<h3 id="orchestrator-scheduler">3.1 Turn Scheduler Walkthrough</h3>
+
+<p>The following four steps show how a session progresses through the orchestrator and worker, from initial match event to session cleanup.</p>
+
+<h4>Step 1: Session Initialization</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">Session init</text>
+<g class="c-teal"><rect x="60" y="60" width="120" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="120" y="92" text-anchor="middle" dominant-baseline="central">Island A</text>
+  <text class="ts" x="120" y="112" text-anchor="middle" dominant-baseline="central">Jazz lover</text></g>
+<g class="c-teal"><rect x="500" y="60" width="120" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="560" y="92" text-anchor="middle" dominant-baseline="central">Island B</text>
+  <text class="ts" x="560" y="112" text-anchor="middle" dominant-baseline="central">Vinyl collector</text></g>
+<g class="c-coral"><rect x="240" y="65" width="200" height="70" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="92" text-anchor="middle" dominant-baseline="central">Orchestrator</text>
+  <text class="ts" x="340" y="112" text-anchor="middle" dominant-baseline="central">Creates session</text></g>
+<line x1="180" y1="100" x2="238" y2="100" stroke="var(--teal-600)" stroke-width="0.5" marker-end="url(#arr-s1)"/>
+<line x1="442" y1="100" x2="498" y2="100" stroke="var(--teal-600)" stroke-width="0.5" marker-end="url(#arr-s1)"/>
+<text class="ts" x="340" y="180" text-anchor="middle">Match context: "Both love analog music"</text>
+<g class="c-gray"><rect x="190" y="200" width="300" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="340" y="218" text-anchor="middle" dominant-baseline="central">session: {id, agents: [A,B], turn: 0, ttl: 300s}</text></g>
+</svg>
+<div class="caption">Fig 3a — Match event arrives, orchestrator creates session record</div>
+</div>
+
+<h4>Step 2: Agent A Speaks First</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">Agent A speaks first</text>
+<g class="c-coral"><rect x="80" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="180" y="80" text-anchor="middle" dominant-baseline="central">Turn scheduler</text>
+  <text class="ts" x="180" y="98" text-anchor="middle" dominant-baseline="central">turn=0 → Agent A</text></g>
+<g class="c-gray"><rect x="80" y="150" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="180" y="170" text-anchor="middle" dominant-baseline="central">Redis streams</text>
+  <text class="ts" x="180" y="188" text-anchor="middle" dominant-baseline="central">Enqueue A's task</text></g>
+<line x1="180" y1="116" x2="180" y2="148" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-s2)"/>
+<g class="c-purple"><rect x="380" y="150" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="490" y="170" text-anchor="middle" dominant-baseline="central">LLM worker</text>
+  <text class="ts" x="490" y="188" text-anchor="middle" dominant-baseline="central">Generates A's greeting</text></g>
+<line x1="280" y1="178" x2="378" y2="178" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-s2)"/>
+<text class="ts" x="340" y="240" text-anchor="middle">"Hey! I heard you collect vinyl — what's your rarest find?"</text>
+</svg>
+<div class="caption">Fig 3b — Turn scheduler enqueues first task, worker generates opener</div>
+</div>
+
+<h4>Step 3: Agent B Responds</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">Agent B responds</text>
+<g class="c-coral"><rect x="80" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="180" y="80" text-anchor="middle" dominant-baseline="central">Turn scheduler</text>
+  <text class="ts" x="180" y="98" text-anchor="middle" dominant-baseline="central">turn=1 → Agent B</text></g>
+<g class="c-purple"><rect x="380" y="60" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="490" y="80" text-anchor="middle" dominant-baseline="central">LLM worker</text>
+  <text class="ts" x="490" y="98" text-anchor="middle" dominant-baseline="central">Context: A's msg + B's persona</text></g>
+<line x1="280" y1="88" x2="378" y2="88" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-s3)"/>
+<text class="ts" x="340" y="160" text-anchor="middle">"Oh nice — got a '59 Kind of Blue first press. You into jazz?"</text>
+<g class="c-gray"><rect x="140" y="185" width="400" height="44" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="207" text-anchor="middle" dominant-baseline="central">Loop continues until max_turns reached or user exits</text></g>
+</svg>
+<div class="caption">Fig 3c — Turn alternates; worker loads history and responds in B's voice</div>
+</div>
+
+<h4>Step 4: Session End</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="arr-s4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="30" text-anchor="middle">Session end</text>
+<g class="c-gray"><rect x="140" y="60" width="400" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="80" text-anchor="middle" dominant-baseline="central">Session cleanup</text>
+  <text class="ts" x="340" y="98" text-anchor="middle" dominant-baseline="central">max_turns reached or user disconnect</text></g>
+<g class="c-teal"><rect x="80" y="155" width="230" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="195" y="175" text-anchor="middle" dominant-baseline="central">Postgres</text>
+  <text class="ts" x="195" y="193" text-anchor="middle" dominant-baseline="central">Save conversation log</text></g>
+<g class="c-teal"><rect x="370" y="155" width="230" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="485" y="175" text-anchor="middle" dominant-baseline="central">Session stream</text>
+  <text class="ts" x="485" y="193" text-anchor="middle" dominant-baseline="central">Publish session_ended</text></g>
+<line x1="260" y1="116" x2="195" y2="153" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-s4)"/>
+<line x1="420" y1="116" x2="485" y2="153" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-s4)"/>
+</svg>
+<div class="caption">Fig 3d — Session marked completed; final event published for clients</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="matching">4. Map + Matching Service</h2>
+
+<p>The Map + Matching service handles real-time island positioning on the shared map and pairs nearby islands with similar agent personas. It runs a dual-filter pipeline: geographic proximity via Redis <code>GEOSEARCH</code>, then persona similarity scoring.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 440">
+<defs><marker id="arr-mm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-teal">
+  <rect x="220" y="20" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="40" text-anchor="middle" dominant-baseline="central">Position update</text>
+  <text class="ts" x="340" y="58" text-anchor="middle" dominant-baseline="central">WebSocket heartbeat</text>
+</g>
+<line x1="340" y1="76" x2="340" y2="108" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-coral">
+  <rect x="220" y="110" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="130" text-anchor="middle" dominant-baseline="central">Geo index</text>
+  <text class="ts" x="340" y="148" text-anchor="middle" dominant-baseline="central">Redis GEOSEARCH</text>
+</g>
+<line x1="340" y1="166" x2="340" y2="198" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-coral">
+  <rect x="220" y="200" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="220" text-anchor="middle" dominant-baseline="central">Similarity filter</text>
+  <text class="ts" x="340" y="238" text-anchor="middle" dominant-baseline="central">Persona tag matching</text>
+</g>
+<line x1="340" y1="256" x2="340" y2="288" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-purple">
+  <rect x="220" y="290" width="240" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="310" text-anchor="middle" dominant-baseline="central">Match resolver</text>
+  <text class="ts" x="340" y="328" text-anchor="middle" dominant-baseline="central">Dedup + cooldown</text>
+</g>
+<line x1="340" y1="346" x2="340" y2="378" class="arr" marker-end="url(#arr-mm)"/>
+
+<g class="c-gray">
+  <rect x="220" y="380" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="402" text-anchor="middle" dominant-baseline="central">Match event → orchestrator</text>
+</g>
+
+<text class="ts" x="490" y="138" text-anchor="start">GEORADIUS r=500</text>
+<line class="leader" x1="460" y1="138" x2="488" y2="138"/>
+<text class="ts" x="490" y="228" text-anchor="start">Jaccard / cosine score</text>
+<line class="leader" x1="460" y1="228" x2="488" y2="228"/>
+<text class="ts" x="490" y="318" text-anchor="start">SETNX lock + cooldown</text>
+<line class="leader" x1="460" y1="318" x2="488" y2="318"/>
+</svg>
+<div class="caption">Fig 4 — Matching pipeline (4-stage filter)</div>
+</div>
+
+<h3 id="matching-illustration">4.1 Matching Illustration</h3>
+
+<p>The following diagram shows a concrete matching scenario. Alice (Jazz Lover) is at the center. Three other users are in the area, and the system computes similarity scores against each.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 360">
+<circle cx="280" cy="180" r="140" fill="none" stroke="var(--purple-600)" stroke-width="0.5" stroke-dasharray="6 4" opacity="0.5"/>
+<text class="ts" x="280" y="335" text-anchor="middle">Matching radius (500m)</text>
+
+<g class="c-teal"><circle cx="280" cy="180" r="18" stroke-width="0.5"/></g>
+<text class="th" x="280" y="184" text-anchor="middle" dominant-baseline="central">A</text>
+<text class="ts" x="280" y="156" text-anchor="middle">Jazz lover</text>
+
+<g class="c-teal"><circle cx="370" cy="130" r="14" stroke-width="0.5"/></g>
+<text class="th" x="370" y="134" text-anchor="middle" dominant-baseline="central">B</text>
+<text class="ts" x="370" y="110" text-anchor="middle">Vinyl collector</text>
+
+<g class="c-gray"><circle cx="200" cy="120" r="14" stroke-width="0.5"/></g>
+<text class="th" x="200" y="124" text-anchor="middle" dominant-baseline="central">C</text>
+<text class="ts" x="200" y="100" text-anchor="middle">Gamer</text>
+
+<g class="c-teal"><circle cx="340" cy="250" r="14" stroke-width="0.5"/></g>
+<text class="th" x="340" y="254" text-anchor="middle" dominant-baseline="central">D</text>
+<text class="ts" x="340" y="274" text-anchor="middle">Music blogger</text>
+
+<g class="c-gray"><circle cx="520" cy="90" r="14" stroke-width="0.5"/></g>
+<text class="th" x="520" y="94" text-anchor="middle" dominant-baseline="central">E</text>
+<text class="ts" x="520" y="74" text-anchor="middle">Out of range</text>
+
+<line x1="298" y1="174" x2="354" y2="136" stroke="var(--teal-600)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="296" y1="190" x2="326" y2="242" stroke="var(--teal-600)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="264" y1="170" x2="214" y2="128" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="4 3" opacity="0.4"/>
+
+<g class="c-purple"><rect x="470" y="150" width="170" height="32" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="555" y="166" text-anchor="middle" dominant-baseline="central">B: similarity 0.85</text></g>
+<g class="c-purple"><rect x="470" y="192" width="170" height="32" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="555" y="208" text-anchor="middle" dominant-baseline="central">D: similarity 0.72</text></g>
+<g class="c-gray"><rect x="470" y="234" width="170" height="32" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="555" y="250" text-anchor="middle" dominant-baseline="central">C: similarity 0.15</text></g>
+
+<line class="leader" x1="370" y1="144" x2="468" y2="166"/>
+<line class="leader" x1="340" y1="260" x2="468" y2="208"/>
+<line class="leader" x1="200" y1="134" x2="468" y2="250"/>
+</svg>
+<div class="caption">Fig 5 — Dual-filter matching: proximity + persona similarity</div>
+</div>
+
+<p><strong>Matching algorithm steps:</strong></p>
+
+<p>1. <strong>Proximity filter</strong> uses <code>GEOSEARCH</code> to return all islands within the radius (default 500m). User E is excluded because out of range.</p>
+
+<p>2. <strong>Bulk agent load</strong> uses a single SQL query to fetch active agents for all nearby candidates (avoids N+1).</p>
+
+<p>3. <strong>Similarity scoring</strong> computes Jaccard similarity on tag sets. For Alice (jazz) vs Bob (vinyl), tag overlap of 3 (<code>music</code>, <code>vinyl</code>, <code>analog</code>) over union of 7 yields ~0.43 — above the 0.3 threshold. User C (gamer) has no tag overlap and is dropped.</p>
+
+<p>4. <strong>Match resolver</strong> handles three critical edge cases: duplicate prevention via Redis <code>SETNX</code> locks, cooldown tracking via sorted sets (blocking repeat matches within 30 minutes), and session limit enforcement (one active session per agent).</p>
+
+<!-- ============================================================ -->
+<h2 id="gateway">5. WebSocket Gateway</h2>
+
+<p>The WebSocket Gateway is the real-time communication hub — synchronizing island positions on the map and delivering match/chat events instantly. Built with FastAPI WebSocket handlers + <code>redis.asyncio</code>.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 480">
+<defs><marker id="arr-ws" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-purple">
+  <rect x="40" y="15" width="600" height="440" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle">WebSocket gateway</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="65" width="240" height="100" rx="12" stroke-width="0.5"/>
+  <text class="th" x="200" y="88" text-anchor="middle">Connection manager</text>
+  <text class="ts" x="200" y="108" text-anchor="middle">Auth, session tracking</text>
+  <text class="ts" x="200" y="124" text-anchor="middle">Heartbeat / keepalive</text>
+  <text class="ts" x="200" y="140" text-anchor="middle">Per-user channel registry</text>
+</g>
+<g class="c-coral">
+  <rect x="360" y="65" width="240" height="100" rx="12" stroke-width="0.5"/>
+  <text class="th" x="480" y="88" text-anchor="middle">Message router</text>
+  <text class="ts" x="480" y="108" text-anchor="middle">Inbound: position, actions</text>
+  <text class="ts" x="480" y="124" text-anchor="middle">Outbound: match, chat</text>
+  <text class="ts" x="480" y="140" text-anchor="middle">Stream forwarding</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="205" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="223" text-anchor="middle" dominant-baseline="central">Map broadcast</text>
+  <text class="ts" x="160" y="239" text-anchor="middle" dominant-baseline="central">Nearby island sync</text>
+</g>
+<g class="c-coral">
+  <rect x="260" y="205" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="223" text-anchor="middle" dominant-baseline="central">Match notify</text>
+  <text class="ts" x="340" y="239" text-anchor="middle" dominant-baseline="central">Pair found event</text>
+</g>
+<g class="c-coral">
+  <rect x="440" y="205" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="223" text-anchor="middle" dominant-baseline="central">Chat relay</text>
+  <text class="ts" x="520" y="239" text-anchor="middle" dominant-baseline="central">Agent turn delivery</text>
+</g>
+
+<line x1="200" y1="165" x2="160" y2="203" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="340" y1="165" x2="340" y2="203" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="480" y1="165" x2="520" y2="203" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+
+<g class="c-gray">
+  <rect x="80" y="295" width="520" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="313" text-anchor="middle" dominant-baseline="central">Redis session streams</text>
+  <text class="ts" x="340" y="329" text-anchor="middle" dominant-baseline="central">Durable event log (replay + live)</text>
+</g>
+
+<line x1="160" y1="255" x2="160" y2="293" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="340" y1="255" x2="340" y2="293" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="520" y1="255" x2="520" y2="293" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+
+<g class="c-gray">
+  <rect x="80" y="380" width="160" height="50" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="160" y="398" text-anchor="middle" dominant-baseline="central">Gateway #1</text>
+  <text class="ts" x="160" y="414" text-anchor="middle" dominant-baseline="central">Users A, B, C</text>
+</g>
+<g class="c-gray">
+  <rect x="260" y="380" width="160" height="50" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="340" y="398" text-anchor="middle" dominant-baseline="central">Gateway #2</text>
+  <text class="ts" x="340" y="414" text-anchor="middle" dominant-baseline="central">Users D, E, F</text>
+</g>
+<g class="c-gray">
+  <rect x="440" y="380" width="160" height="50" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="520" y="398" text-anchor="middle" dominant-baseline="central">Gateway #N</text>
+  <text class="ts" x="520" y="414" text-anchor="middle" dominant-baseline="central">Horizontal scale</text>
+</g>
+
+<line x1="160" y1="345" x2="160" y2="378" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="340" y1="345" x2="340" y2="378" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+<line x1="520" y1="345" x2="520" y2="378" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-ws)"/>
+</svg>
+<div class="caption">Fig 6 — WebSocket gateway architecture with horizontal scaling</div>
+</div>
+
+<h3 id="gateway-scaling">5.1 Cross-Instance Scaling</h3>
+
+<p>The following three diagrams show the scaling problem and its solution, and then the map broadcast optimization that keeps message volume sub-quadratic.</p>
+
+<h4>Step 1: The Cross-Instance Delivery Problem</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 280">
+<defs><marker id="arr-sc1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">Problem: cross-instance delivery</text>
+<g class="c-teal"><rect x="60" y="55" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="120" y="77" text-anchor="middle" dominant-baseline="central">User A</text></g>
+<g class="c-teal"><rect x="500" y="55" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="560" y="77" text-anchor="middle" dominant-baseline="central">User B</text></g>
+<g class="c-gray"><rect x="60" y="130" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="120" y="152" text-anchor="middle" dominant-baseline="central">Gateway #1</text></g>
+<g class="c-gray"><rect x="500" y="130" width="120" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="560" y="152" text-anchor="middle" dominant-baseline="central">Gateway #2</text></g>
+<line x1="120" y1="99" x2="120" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc1)"/>
+<line x1="560" y1="99" x2="560" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc1)"/>
+<g class="c-coral"><rect x="240" y="130" width="200" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="152" text-anchor="middle" dominant-baseline="central">A matched with B</text></g>
+<text class="ts" x="340" y="210" text-anchor="middle">A and B are on different gateway instances.</text>
+<text class="ts" x="340" y="228" text-anchor="middle">How does match event reach both?</text>
+</svg>
+<div class="caption">Fig 7a — Scaling problem: users on different gateway instances</div>
+</div>
+
+<h4>Step 2: Session Stream Bridge</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 320">
+<defs><marker id="arr-sc2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">Solution: durable session streams</text>
+<g class="c-teal"><rect x="60" y="55" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="115" y="77" text-anchor="middle" dominant-baseline="central">User A</text></g>
+<g class="c-teal"><rect x="510" y="55" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="565" y="77" text-anchor="middle" dominant-baseline="central">User B</text></g>
+<g class="c-gray"><rect x="60" y="130" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="115" y="152" text-anchor="middle" dominant-baseline="central">GW #1</text></g>
+<g class="c-gray"><rect x="510" y="130" width="110" height="44" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="565" y="152" text-anchor="middle" dominant-baseline="central">GW #2</text></g>
+<line x1="115" y1="99" x2="115" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<line x1="565" y1="99" x2="565" y2="128" stroke="var(--text3)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<g class="c-coral"><rect x="220" y="130" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="152" text-anchor="middle" dominant-baseline="central">stream:session:{id}</text></g>
+<line x1="170" y1="152" x2="218" y2="152" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<line x1="462" y1="152" x2="508" y2="152" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-sc2)"/>
+<text class="ts" x="340" y="210" text-anchor="middle">Both gateways XREAD from the same session stream</text>
+<text class="ts" x="340" y="228" text-anchor="middle">Each forwards events to its connected user</text>
+<text class="ts" x="340" y="246" text-anchor="middle">Unlike Pub/Sub, late connections see full history</text>
+<g class="c-purple"><rect x="140" y="268" width="400" height="36" rx="6" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="286" text-anchor="middle" dominant-baseline="central">Replay + live via single XREAD — no race condition</text></g>
+</svg>
+<div class="caption">Fig 7b — Streams bridge gateways and solve the race condition</div>
+</div>
+
+<h4>Step 3: Map Broadcast Optimization</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<text class="th" x="340" y="28" text-anchor="middle">Optimization: grid cell channels</text>
+<g class="c-teal"><rect x="60" y="60" width="110" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="115" y="88" text-anchor="middle" dominant-baseline="central">Grid cell A3</text>
+  <text class="ts" x="115" y="108" text-anchor="middle">Users: A, B, C</text>
+  <text class="ts" x="115" y="124" text-anchor="middle">Channel: map:A3</text></g>
+<g class="c-coral"><rect x="200" y="60" width="110" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="255" y="88" text-anchor="middle" dominant-baseline="central">Grid cell B3</text>
+  <text class="ts" x="255" y="108" text-anchor="middle">Users: D, E</text>
+  <text class="ts" x="255" y="124" text-anchor="middle">Channel: map:B3</text></g>
+<g class="c-gray"><rect x="340" y="60" width="110" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="395" y="88" text-anchor="middle" dominant-baseline="central">Grid cell C3</text>
+  <text class="ts" x="395" y="108" text-anchor="middle">Users: F</text>
+  <text class="ts" x="395" y="124" text-anchor="middle">Channel: map:C3</text></g>
+<text class="ts" x="340" y="180" text-anchor="middle">Position updates only broadcast to same + adjacent cells</text>
+<text class="ts" x="340" y="198" text-anchor="middle">User A moves → publish to map:A3, map:B3</text>
+<text class="ts" x="340" y="216" text-anchor="middle">Users D, E see A's movement; F does not</text>
+<g class="c-purple"><rect x="120" y="240" width="440" height="36" rx="6" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="258" text-anchor="middle" dominant-baseline="central">O(neighbors) instead of O(all_users) per update</text></g>
+</svg>
+<div class="caption">Fig 7c — Spatial partitioning reduces broadcast volume to O(neighbors)</div>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="worker-pool">6. LLM Worker Pool</h2>
+
+<p>The LLM Worker Pool is the most cost-intensive component. It consumes tasks from Redis Streams, calls LLM APIs to generate persona replies, and writes to both the database and the session event stream.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 440">
+<defs><marker id="arr-lw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="200" y="15" width="280" height="40" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="35" text-anchor="middle" dominant-baseline="central">stream:llm_tasks</text>
+</g>
+<line x1="340" y1="55" x2="340" y2="80" class="arr" marker-end="url(#arr-lw)"/>
+
+<g class="c-purple">
+  <rect x="60" y="80" width="560" height="170" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="104" text-anchor="middle">LLM worker pool</text>
+</g>
+
+<g class="c-coral">
+  <rect x="90" y="120" width="150" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="165" y="138" text-anchor="middle" dominant-baseline="central">Context builder</text>
+  <text class="ts" x="165" y="156" text-anchor="middle" dominant-baseline="central">Assemble prompt</text>
+</g>
+<g class="c-coral">
+  <rect x="265" y="120" width="150" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="138" text-anchor="middle" dominant-baseline="central">LLM router</text>
+  <text class="ts" x="340" y="156" text-anchor="middle" dominant-baseline="central">Model selection</text>
+</g>
+<g class="c-coral">
+  <rect x="440" y="120" width="150" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="515" y="138" text-anchor="middle" dominant-baseline="central">Post-processor</text>
+  <text class="ts" x="515" y="156" text-anchor="middle" dominant-baseline="central">Validate + format</text>
+</g>
+
+<line x1="240" y1="145" x2="263" y2="145" class="arr" marker-end="url(#arr-lw)"/>
+<line x1="415" y1="145" x2="438" y2="145" class="arr" marker-end="url(#arr-lw)"/>
+
+<g class="c-gray">
+  <rect x="90" y="195" width="500" height="36" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="213" text-anchor="middle" dominant-baseline="central">Concurrency: asyncio.Semaphore(N) per worker instance</text>
+</g>
+
+<line x1="160" y1="250" x2="160" y2="280" class="arr" marker-end="url(#arr-lw)"/>
+<line x1="340" y1="250" x2="340" y2="280" class="arr" marker-end="url(#arr-lw)"/>
+<line x1="520" y1="250" x2="520" y2="280" class="arr" marker-end="url(#arr-lw)"/>
+
+<g class="c-teal">
+  <rect x="80" y="282" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="300" text-anchor="middle" dominant-baseline="central">Session stream</text>
+  <text class="ts" x="160" y="318" text-anchor="middle" dominant-baseline="central">XADD turn event</text>
+</g>
+<g class="c-teal">
+  <rect x="260" y="282" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="300" text-anchor="middle" dominant-baseline="central">XADD next turn</text>
+  <text class="ts" x="340" y="318" text-anchor="middle" dominant-baseline="central">Self-perpetuating</text>
+</g>
+<g class="c-gray">
+  <rect x="440" y="282" width="160" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="300" text-anchor="middle" dominant-baseline="central">Postgres INSERT</text>
+  <text class="ts" x="520" y="318" text-anchor="middle" dominant-baseline="central">Persist turn log</text>
+</g>
+
+<g class="c-purple">
+  <rect x="80" y="370" width="520" height="44" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="th" x="340" y="385" text-anchor="middle" dominant-baseline="central">Scale-to-zero on Railway</text>
+  <text class="ts" x="340" y="401" text-anchor="middle" dominant-baseline="central">Workers spin up on demand, idle → 0 instances</text>
+</g>
+</svg>
+<div class="caption">Fig 8 — LLM worker pool internal structure</div>
+</div>
+
+<h3 id="worker-pipeline">6.1 Worker Internal Pipeline</h3>
+
+<p>A single turn task flows through the worker in seven steps. The colors encode which subsystem is touched: coral for Python-only work, teal for database and stream writes, purple for loop control.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 720">
+<defs><marker id="arr-wi" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="220" y="20" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle" dominant-baseline="central">XREADGROUP from stream</text>
+</g>
+<line x1="340" y1="64" x2="340" y2="92" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="92" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="112" text-anchor="middle" dominant-baseline="central">1. Parse task</text>
+  <text class="ts" x="340" y="130" text-anchor="middle" dominant-baseline="central">TurnTask.from_redis</text>
+</g>
+<line x1="340" y1="148" x2="340" y2="176" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="176" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="196" text-anchor="middle" dominant-baseline="central">2. Load session context</text>
+  <text class="ts" x="340" y="214" text-anchor="middle" dominant-baseline="central">Session, agents, user names</text>
+</g>
+<line x1="340" y1="232" x2="340" y2="260" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="260" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="280" text-anchor="middle" dominant-baseline="central">3. Load history (perspective swap)</text>
+  <text class="ts" x="340" y="298" text-anchor="middle" dominant-baseline="central">Self = assistant, other = user</text>
+</g>
+<line x1="340" y1="316" x2="340" y2="344" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-coral">
+  <rect x="180" y="344" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="364" text-anchor="middle" dominant-baseline="central">4. Build prompt + call LLM</text>
+  <text class="ts" x="340" y="382" text-anchor="middle" dominant-baseline="central">Anthropic Sonnet 4.5</text>
+</g>
+<line x1="340" y1="400" x2="340" y2="428" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-teal">
+  <rect x="180" y="428" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="448" text-anchor="middle" dominant-baseline="central">5. Atomic DB transaction</text>
+  <text class="ts" x="340" y="466" text-anchor="middle" dominant-baseline="central">Insert turn + update session</text>
+</g>
+<line x1="340" y1="484" x2="340" y2="512" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-teal">
+  <rect x="180" y="512" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="532" text-anchor="middle" dominant-baseline="central">6. Publish to session stream</text>
+  <text class="ts" x="340" y="550" text-anchor="middle" dominant-baseline="central">XADD stream:session:{id}</text>
+</g>
+<line x1="340" y1="568" x2="340" y2="596" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-purple">
+  <rect x="180" y="596" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="616" text-anchor="middle" dominant-baseline="central">7. Enqueue next or end session</text>
+  <text class="ts" x="340" y="634" text-anchor="middle" dominant-baseline="central">Self-perpetuating loop</text>
+</g>
+<line x1="340" y1="652" x2="340" y2="680" class="arr" marker-end="url(#arr-wi)"/>
+
+<g class="c-gray">
+  <rect x="220" y="680" width="240" height="32" rx="8" stroke-width="0.5"/>
+  <text class="ts" x="340" y="696" text-anchor="middle" dominant-baseline="central">XACK task complete</text>
+</g>
+
+<text class="ts" x="510" y="120" text-anchor="start">Pydantic deserialize</text>
+<line class="leader" x1="500" y1="120" x2="508" y2="120"/>
+<text class="ts" x="510" y="204" text-anchor="start">3 SQL queries</text>
+<line class="leader" x1="500" y1="204" x2="508" y2="204"/>
+<text class="ts" x="510" y="288" text-anchor="start">Most expensive step</text>
+<line class="leader" x1="500" y1="288" x2="508" y2="288"/>
+<text class="ts" x="510" y="372" text-anchor="start">~3-5 sec, $0.002</text>
+<line class="leader" x1="500" y1="372" x2="508" y2="372"/>
+<text class="ts" x="510" y="456" text-anchor="start">Single commit</text>
+<line class="leader" x1="500" y1="456" x2="508" y2="456"/>
+<text class="ts" x="510" y="540" text-anchor="start">For gateway clients</text>
+<line class="leader" x1="500" y1="540" x2="508" y2="540"/>
+<text class="ts" x="510" y="624" text-anchor="start">Or status=completed</text>
+<line class="leader" x1="500" y1="624" x2="508" y2="624"/>
+</svg>
+<div class="caption">Fig 9 — Worker internal pipeline: parse → load → LLM → persist → publish → loop</div>
+</div>
+
+<p><strong>Perspective swap.</strong> Step 3 is the most subtle part. Anthropic's API expects messages in a specific format where <code>assistant</code> is the model's own past turns. Since two different personas share one conversation, the worker swaps perspectives when loading history: from speaker A's view, A's turns are <code>assistant</code> and B's turns are <code>user</code>. From speaker B's view, the labels are mirrored.</p>
+
+<p><strong>Publish order matters.</strong> Step 5 (DB commit) must come before Step 6 (stream publish). If the order were reversed, a gateway client could see a turn event referring to a turn that isn't yet persisted — and a subsequent page reload would show that turn missing. The database is the source of truth; the stream is just a notification channel.</p>
+
+<p><strong>Self-perpetuating queue.</strong> Step 7 is the key pattern. The worker enqueues the next speaker's turn into the same <code>stream:llm_tasks</code>, where another worker (or itself) will pick it up. This eliminates the need for any external coordinator. The orchestrator only ever enqueues the first task of a session.</p>
+
+<h3 id="context-builder">6.2 Context Builder Strategy</h3>
+
+<p>As conversations progress, sending the full history to the LLM would explode token costs. The sliding window strategy keeps the last 6 turns as full text and compresses earlier turns into a summary (generated by a cheaper model like Haiku). This achieves ~90% token savings on older context.</p>
+
+<h4>Prompt Structure (Layered)</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 380">
+<text class="th" x="340" y="28" text-anchor="middle">Prompt structure (layered)</text>
+<g class="c-purple"><rect x="100" y="50" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="72" text-anchor="middle" dominant-baseline="central">System: persona definition</text></g>
+<g class="c-teal"><rect x="100" y="104" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="126" text-anchor="middle" dominant-baseline="central">System: match context injection</text></g>
+<g class="c-gray"><rect x="100" y="158" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="180" text-anchor="middle" dominant-baseline="central">Compressed: earlier turns summary</text></g>
+<g class="c-coral"><rect x="100" y="212" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="234" text-anchor="middle" dominant-baseline="central">Recent: last 6 turns (full text)</text></g>
+<g class="c-gray"><rect x="100" y="266" width="480" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="288" text-anchor="middle" dominant-baseline="central">User: "Your turn. Respond as {agent}."</text></g>
+<text class="ts" x="86" y="72" text-anchor="end">Fixed</text>
+<text class="ts" x="86" y="126" text-anchor="end">Fixed</text>
+<text class="ts" x="86" y="180" text-anchor="end">Grows</text>
+<text class="ts" x="86" y="234" text-anchor="end">Window</text>
+<text class="ts" x="86" y="288" text-anchor="end">Fixed</text>
+<text class="ts" x="340" y="340" text-anchor="middle">Total target: under 2,000 tokens input</text>
+<text class="ts" x="340" y="360" text-anchor="middle">Sliding window keeps cost predictable per turn</text>
+</svg>
+<div class="caption">Fig 10a — Layered prompt structure</div>
+</div>
+
+<h4>Sliding Window Visualization</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 340">
+<text class="th" x="340" y="28" text-anchor="middle">Sliding window strategy</text>
+<g class="c-gray"><rect x="60" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="95" y="73" text-anchor="middle" dominant-baseline="central">Turn 1</text></g>
+<g class="c-gray"><rect x="140" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="175" y="73" text-anchor="middle" dominant-baseline="central">Turn 2</text></g>
+<g class="c-gray"><rect x="220" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="255" y="73" text-anchor="middle" dominant-baseline="central">Turn 3</text></g>
+<g class="c-gray"><rect x="300" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="335" y="73" text-anchor="middle" dominant-baseline="central">Turn 4</text></g>
+<g class="c-coral"><rect x="380" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="415" y="73" text-anchor="middle" dominant-baseline="central">Turn 5</text></g>
+<g class="c-coral"><rect x="460" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="495" y="73" text-anchor="middle" dominant-baseline="central">Turn 6</text></g>
+<g class="c-coral"><rect x="540" y="55" width="70" height="36" rx="6" stroke-width="0.5"/>
+  <text class="ts" x="575" y="73" text-anchor="middle" dominant-baseline="central">Turn 7</text></g>
+<path d="M60 100 L370 100" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="4 4" fill="none"/>
+<path d="M380 100 L610 100" stroke="var(--coral-600)" stroke-width="1" fill="none"/>
+<text class="ts" x="215" y="120" text-anchor="middle">Compressed into summary</text>
+<text class="ts" x="495" y="120" text-anchor="middle">Full text in context</text>
+<g class="c-teal"><rect x="80" y="150" width="520" height="70" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="175" text-anchor="middle" dominant-baseline="central">Summary (auto-generated)</text>
+  <text class="ts" x="340" y="195" text-anchor="middle" dominant-baseline="central">"A and B discovered shared love of vinyl jazz records..."</text></g>
+<text class="ts" x="340" y="256" text-anchor="middle">Turns 1-4: ~800 tokens → compressed to ~80 tokens</text>
+<text class="ts" x="340" y="276" text-anchor="middle">Turns 5-7: ~600 tokens kept as-is</text>
+<text class="ts" x="340" y="296" text-anchor="middle">90% token savings on older context</text>
+</svg>
+<div class="caption">Fig 10b — Sliding window: recent turns full text, older turns compressed</div>
+</div>
+
+<h4>Summarization Timing</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<text class="th" x="340" y="28" text-anchor="middle">When to summarize?</text>
+<g class="c-coral"><rect x="80" y="55" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="190" y="75" text-anchor="middle" dominant-baseline="central">Eager (every N turns)</text>
+  <text class="ts" x="190" y="93" text-anchor="middle" dominant-baseline="central">Extra LLM call per batch</text></g>
+<g class="c-teal"><rect x="380" y="55" width="220" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="490" y="75" text-anchor="middle" dominant-baseline="central">Lazy (on window slide)</text>
+  <text class="ts" x="490" y="93" text-anchor="middle" dominant-baseline="central">Summarize when evicted</text></g>
+<text class="ts" x="190" y="140" text-anchor="middle">Pro: always ready</text>
+<text class="ts" x="190" y="158" text-anchor="middle">Con: more LLM calls</text>
+<text class="ts" x="490" y="140" text-anchor="middle">Pro: fewer LLM calls</text>
+<text class="ts" x="490" y="158" text-anchor="middle">Con: slight latency spike</text>
+<g class="c-purple"><rect x="140" y="185" width="400" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="207" text-anchor="middle" dominant-baseline="central">Recommendation: lazy + cheap model</text></g>
+<text class="ts" x="340" y="258" text-anchor="middle">Use a fast, cheap model (Haiku) for summarization</text>
+<text class="ts" x="340" y="278" text-anchor="middle">Use a stronger model (Sonnet) for persona replies</text>
+</svg>
+<div class="caption">Fig 10c — Summarization strategy comparison</div>
+</div>
+
+<h3 id="llm-router">6.3 LLM Router Design</h3>
+
+<p>The LLM Router is a small dispatcher that decides which model to use for each task type. In the MVP there is no router — all calls go to Sonnet 4.5. But as the system grows to include summarization, consistency checks, and quality scoring, a router becomes essential for controlling cost without hardcoding model names across the codebase.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 580">
+<defs><marker id="arr-lr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="220" y="20" width="240" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="42" text-anchor="middle" dominant-baseline="central">LLMRequest(task_type, ...)</text>
+</g>
+<line x1="340" y1="64" x2="340" y2="92" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-coral">
+  <rect x="180" y="92" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="110" text-anchor="middle" dominant-baseline="central">1. Lookup task policy</text>
+  <text class="ts" x="340" y="128" text-anchor="middle" dominant-baseline="central">task_type → preferred model tier</text>
+</g>
+<line x1="340" y1="142" x2="340" y2="170" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-coral">
+  <rect x="180" y="170" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="188" text-anchor="middle" dominant-baseline="central">2. Check budget guard</text>
+  <text class="ts" x="340" y="206" text-anchor="middle" dominant-baseline="central">Per-session cost cap</text>
+</g>
+<line x1="340" y1="220" x2="340" y2="248" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-coral">
+  <rect x="180" y="248" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="266" text-anchor="middle" dominant-baseline="central">3. Resolve final model</text>
+  <text class="ts" x="340" y="284" text-anchor="middle" dominant-baseline="central">May downgrade if over budget</text>
+</g>
+<line x1="340" y1="298" x2="340" y2="326" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-teal">
+  <rect x="180" y="326" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="344" text-anchor="middle" dominant-baseline="central">4. Call LLM with retry/fallback</text>
+  <text class="ts" x="340" y="362" text-anchor="middle" dominant-baseline="central">Try primary, fall back on error</text>
+</g>
+<line x1="340" y1="376" x2="340" y2="404" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-teal">
+  <rect x="180" y="404" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="422" text-anchor="middle" dominant-baseline="central">5. Record telemetry</text>
+  <text class="ts" x="340" y="440" text-anchor="middle" dominant-baseline="central">task, model, cost, latency</text>
+</g>
+<line x1="340" y1="454" x2="340" y2="482" class="arr" marker-end="url(#arr-lr)"/>
+
+<g class="c-purple">
+  <rect x="180" y="482" width="320" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="500" text-anchor="middle" dominant-baseline="central">6. Return LLMResponse</text>
+  <text class="ts" x="340" y="518" text-anchor="middle" dominant-baseline="central">With model used + cost</text>
+</g>
+
+<text class="ts" x="510" y="118" text-anchor="start">Static config map</text>
+<line class="leader" x1="500" y1="118" x2="508" y2="118"/>
+<text class="ts" x="510" y="196" text-anchor="start">Skip if no cap set</text>
+<line class="leader" x1="500" y1="196" x2="508" y2="196"/>
+<text class="ts" x="510" y="274" text-anchor="start">Sonnet → Haiku</text>
+<line class="leader" x1="500" y1="274" x2="508" y2="274"/>
+<text class="ts" x="510" y="352" text-anchor="start">Tenacity / manual</text>
+<line class="leader" x1="500" y1="352" x2="508" y2="352"/>
+<text class="ts" x="510" y="430" text-anchor="start">Postgres or Redis</text>
+<line class="leader" x1="500" y1="430" x2="508" y2="430"/>
+</svg>
+<div class="caption">Fig 11 — LLM router decision flow</div>
+</div>
+
+<h4>Task Type Policies</h4>
+
+<table>
+<tr><th>Task</th><th>Primary</th><th>Fallback</th><th>Why</th></tr>
+<tr><td>Persona reply</td><td>Sonnet 4.5</td><td>Haiku 4.5</td><td>Quality first; fall back if Sonnet is rate-limited</td></tr>
+<tr><td>History summary</td><td>Haiku 4.5</td><td>None</td><td>Internal use only; Haiku is cheap enough</td></tr>
+<tr><td>Match context</td><td>Haiku 4.5</td><td>None</td><td>One-sentence output; cacheable</td></tr>
+<tr><td>Consistency check</td><td>Haiku 4.5</td><td>None</td><td>Classification task, not generation</td></tr>
+<tr><td>Safety check</td><td>Haiku 4.5</td><td>None</td><td>Classification task, low latency needed</td></tr>
+<tr><td>Quality score</td><td>Opus 4.6</td><td>Sonnet 4.5</td><td>Batch analytics, accuracy matters most</td></tr>
+</table>
+
+<p>The router's job is to centralize these decisions. Calling code says "this is a persona reply task"; the router picks the model. This makes it easy to change model assignments, A/B test alternatives, and enforce per-session budget caps without touching the worker logic.</p>
+
+<!-- ============================================================ -->
+<h2 id="redis">7. Redis Message Queue Patterns</h2>
+
+<p>Redis serves triple duty in Islume: <strong>Streams</strong> for durable async task queuing, <strong>Session streams</strong> for per-session event logs, and <strong>GEO/Hash/Set</strong> for ephemeral state storage. A single Redis instance handles all three roles initially.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 380">
+<defs><marker id="arr-rd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-coral">
+  <rect x="200" y="20" width="280" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="38" text-anchor="middle" dominant-baseline="central">Redis</text>
+  <text class="ts" x="340" y="56" text-anchor="middle" dominant-baseline="central">Single instance, triple role</text>
+</g>
+
+<g class="c-teal">
+  <rect x="40" y="115" width="180" height="70" rx="12" stroke-width="0.5"/>
+  <text class="th" x="130" y="138" text-anchor="middle" dominant-baseline="central">Task stream</text>
+  <text class="ts" x="130" y="156" text-anchor="middle" dominant-baseline="central">Consumer group</text>
+  <text class="ts" x="130" y="170" text-anchor="middle" dominant-baseline="central">XREADGROUP</text>
+</g>
+<g class="c-purple">
+  <rect x="250" y="115" width="180" height="70" rx="12" stroke-width="0.5"/>
+  <text class="th" x="340" y="138" text-anchor="middle" dominant-baseline="central">Session streams</text>
+  <text class="ts" x="340" y="156" text-anchor="middle" dominant-baseline="central">Per-session log</text>
+  <text class="ts" x="340" y="170" text-anchor="middle" dominant-baseline="central">XREAD from 0</text>
+</g>
+<g class="c-coral">
+  <rect x="460" y="115" width="180" height="70" rx="12" stroke-width="0.5"/>
+  <text class="th" x="550" y="138" text-anchor="middle" dominant-baseline="central">State store</text>
+  <text class="ts" x="550" y="156" text-anchor="middle" dominant-baseline="central">GEO, Hash, Set</text>
+  <text class="ts" x="550" y="170" text-anchor="middle" dominant-baseline="central">Session + position</text>
+</g>
+
+<line x1="250" y1="70" x2="130" y2="113" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-rd)"/>
+<line x1="340" y1="70" x2="340" y2="113" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-rd)"/>
+<line x1="430" y1="70" x2="550" y2="113" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-rd)"/>
+
+<g class="c-gray">
+  <rect x="40" y="230" width="180" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="130" y="248" text-anchor="middle" dominant-baseline="central">LLM workers</text>
+  <text class="ts" x="130" y="264" text-anchor="middle" dominant-baseline="central">Consume tasks</text>
+</g>
+<g class="c-gray">
+  <rect x="250" y="230" width="180" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="248" text-anchor="middle" dominant-baseline="central">WS gateway</text>
+  <text class="ts" x="340" y="264" text-anchor="middle" dominant-baseline="central">Read session streams</text>
+</g>
+<g class="c-gray">
+  <rect x="460" y="230" width="180" height="50" rx="8" stroke-width="0.5"/>
+  <text class="th" x="550" y="248" text-anchor="middle" dominant-baseline="central">Map + matching</text>
+  <text class="ts" x="550" y="264" text-anchor="middle" dominant-baseline="central">GEOSEARCH reads</text>
+</g>
+
+<line x1="130" y1="185" x2="130" y2="228" class="arr" marker-end="url(#arr-rd)"/>
+<line x1="340" y1="185" x2="340" y2="228" class="arr" marker-end="url(#arr-rd)"/>
+<line x1="550" y1="185" x2="550" y2="228" class="arr" marker-end="url(#arr-rd)"/>
+
+<g class="c-teal">
+  <rect x="100" y="320" width="480" height="36" rx="8" stroke-width="0.5" stroke-dasharray="4 4"/>
+  <text class="ts" x="340" y="338" text-anchor="middle" dominant-baseline="central">stream:llm_tasks | stream:session:{id} | geo:islands | session:{id}</text>
+</g>
+</svg>
+<div class="caption">Fig 12 — Redis triple-role: task stream + session streams + state store</div>
+</div>
+
+<h3 id="consumer-mental-model">7.1 Consumer Group Mental Model</h3>
+
+<p>The most important thing to understand about Redis Streams consumer groups: <strong>the stream and the consumer group are separate concepts</strong>. The stream is just an append-only log. The consumer group is a read-state manager layered on top, tracking which consumer got which message and whether it has been acknowledged.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 460">
+<defs><marker id="arr-cm" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="40" y="20" width="600" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="340" y="44" text-anchor="middle">stream:llm_tasks (append-only log)</text>
+</g>
+
+<g class="c-coral"><rect x="70" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="100" y="78" text-anchor="middle" dominant-baseline="central">t1</text></g>
+<g class="c-coral"><rect x="140" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="170" y="78" text-anchor="middle" dominant-baseline="central">t2</text></g>
+<g class="c-coral"><rect x="210" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="240" y="78" text-anchor="middle" dominant-baseline="central">t3</text></g>
+<g class="c-coral"><rect x="280" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="310" y="78" text-anchor="middle" dominant-baseline="central">t4</text></g>
+<g class="c-coral"><rect x="350" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="380" y="78" text-anchor="middle" dominant-baseline="central">t5</text></g>
+<g class="c-coral"><rect x="420" y="60" width="60" height="28" rx="4" stroke-width="0.5"/>
+  <text class="ts" x="450" y="78" text-anchor="middle" dominant-baseline="central">t6</text></g>
+
+<g class="c-purple">
+  <rect x="40" y="140" width="600" height="80" rx="12" stroke-width="0.5" stroke-dasharray="6 4"/>
+  <text class="th" x="340" y="164" text-anchor="middle">Consumer group: llm_workers</text>
+  <text class="ts" x="340" y="182" text-anchor="middle">Tracks: last delivered ID + pending entries per consumer</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="270" width="160" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="160" y="295" text-anchor="middle">worker-1234</text>
+  <text class="ts" x="160" y="313" text-anchor="middle">Got: t1, t4</text>
+  <text class="ts" x="160" y="329" text-anchor="middle">Pending: t4</text>
+</g>
+<g class="c-teal">
+  <rect x="260" y="270" width="160" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="340" y="295" text-anchor="middle">worker-5678</text>
+  <text class="ts" x="340" y="313" text-anchor="middle">Got: t2, t5</text>
+  <text class="ts" x="340" y="329" text-anchor="middle">Pending: none</text>
+</g>
+<g class="c-teal">
+  <rect x="440" y="270" width="160" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="520" y="295" text-anchor="middle">worker-9012</text>
+  <text class="ts" x="520" y="313" text-anchor="middle">Got: t3, t6</text>
+  <text class="ts" x="520" y="329" text-anchor="middle">Pending: none</text>
+</g>
+
+<line x1="100" y1="88" x2="120" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="170" y1="88" x2="320" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="240" y1="88" x2="500" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="310" y1="88" x2="200" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="380" y1="88" x2="360" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+<line x1="450" y1="88" x2="540" y2="268" stroke="var(--teal-600)" stroke-width="0.5" fill="none" marker-end="url(#arr-cm)"/>
+
+<text class="ts" x="340" y="385" text-anchor="middle">Each task delivered to exactly ONE worker (load balanced)</text>
+<text class="ts" x="340" y="405" text-anchor="middle">Unacked tasks stay in PEL → recoverable if worker crashes</text>
+<text class="ts" x="340" y="425" text-anchor="middle">Stream itself is unchanged — group is just a cursor + bookkeeping</text>
+</svg>
+<div class="caption">Fig 13 — Consumer group fan-out with pending entries tracking</div>
+</div>
+
+<h3 id="consumer-group">7.2 Consumer Group Walkthrough</h3>
+
+<p>Four key moments in the consumer group lifecycle, illustrating how tasks flow, how workers compete for them, and how failures are recovered.</p>
+
+<h4>Step 1: Producer Enqueues Task</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<defs><marker id="arr-cg1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">Producer: orchestrator enqueues task</text>
+<g class="c-coral"><rect x="60" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">Orchestrator</text>
+  <text class="ts" x="160" y="98" text-anchor="middle" dominant-baseline="central">Turn scheduler</text></g>
+<g class="c-teal"><rect x="340" y="60" width="280" height="90" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="82" text-anchor="middle" dominant-baseline="central">XADD stream:llm_tasks *</text>
+  <text class="ts" x="480" y="102" text-anchor="middle">session_id  ses_abc123</text>
+  <text class="ts" x="480" y="118" text-anchor="middle">agent_id  agent_jazz</text>
+  <text class="ts" x="480" y="134" text-anchor="middle">context  {history + persona}</text></g>
+<line x1="260" y1="88" x2="338" y2="88" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-cg1)"/>
+<g class="c-gray"><rect x="100" y="195" width="480" height="80" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="218" text-anchor="middle" dominant-baseline="central">stream:llm_tasks</text>
+  <text class="ts" x="340" y="240" text-anchor="middle">1712345-0: {ses_abc123, agent_jazz, ...}</text>
+  <text class="ts" x="340" y="258" text-anchor="middle">1712346-0: {ses_def456, agent_vinyl, ...}</text></g>
+<line x1="480" y1="150" x2="480" y2="170" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="480" y1="170" x2="340" y2="170" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="340" y1="170" x2="340" y2="193" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg1)"/>
+</svg>
+<div class="caption">Fig 14a — Orchestrator appends task to stream via XADD</div>
+</div>
+
+<h4>Step 2: Workers Compete for Tasks</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 320">
+<defs><marker id="arr-cg2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">Consumer group: workers compete for tasks</text>
+<g class="c-gray"><rect x="140" y="55" width="400" height="44" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="77" text-anchor="middle" dominant-baseline="central">stream:llm_tasks</text></g>
+<g class="c-purple"><rect x="60" y="145" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="140" y="165" text-anchor="middle" dominant-baseline="central">Worker #1</text>
+  <text class="ts" x="140" y="183" text-anchor="middle" dominant-baseline="central">XREADGROUP</text></g>
+<g class="c-purple"><rect x="260" y="145" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="165" text-anchor="middle" dominant-baseline="central">Worker #2</text>
+  <text class="ts" x="340" y="183" text-anchor="middle" dominant-baseline="central">XREADGROUP</text></g>
+<g class="c-purple"><rect x="460" y="145" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="540" y="165" text-anchor="middle" dominant-baseline="central">Worker #N</text>
+  <text class="ts" x="540" y="183" text-anchor="middle" dominant-baseline="central">XREADGROUP</text></g>
+<line x1="220" y1="99" x2="140" y2="143" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg2)"/>
+<line x1="340" y1="99" x2="340" y2="143" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg2)"/>
+<line x1="460" y1="99" x2="540" y2="143" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg2)"/>
+<text class="ts" x="340" y="235" text-anchor="middle">Each message delivered to exactly ONE worker</text>
+<text class="ts" x="340" y="255" text-anchor="middle">GROUP "llm_workers", CONSUMER "worker-{id}"</text>
+<text class="ts" x="340" y="275" text-anchor="middle">BLOCK 5000ms (long-poll, no busy loop)</text>
+</svg>
+<div class="caption">Fig 14b — XREADGROUP distributes messages across workers</div>
+</div>
+
+<h4>Step 3: ACK and Next Turn</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 320">
+<defs><marker id="arr-cg3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">ACK + next turn enqueue</text>
+<g class="c-purple"><rect x="60" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">LLM worker</text>
+  <text class="ts" x="160" y="98" text-anchor="middle" dominant-baseline="central">Generates reply</text></g>
+<g class="c-teal"><rect x="340" y="60" width="280" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="80" text-anchor="middle" dominant-baseline="central">XACK stream:llm_tasks</text>
+  <text class="ts" x="480" y="98" text-anchor="middle" dominant-baseline="central">Mark task complete</text></g>
+<line x1="260" y1="88" x2="338" y2="88" stroke="var(--teal-600)" stroke-width="0.5" marker-end="url(#arr-cg3)"/>
+<g class="c-coral"><rect x="60" y="160" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="180" text-anchor="middle" dominant-baseline="central">Publish turn event</text>
+  <text class="ts" x="160" y="198" text-anchor="middle" dominant-baseline="central">XADD session stream</text></g>
+<g class="c-gray"><rect x="340" y="160" width="280" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="180" text-anchor="middle" dominant-baseline="central">XADD stream:llm_tasks</text>
+  <text class="ts" x="480" y="198" text-anchor="middle" dominant-baseline="central">Enqueue next turn</text></g>
+<line x1="160" y1="116" x2="160" y2="158" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg3)"/>
+<line x1="260" y1="188" x2="338" y2="188" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg3)"/>
+<text class="ts" x="340" y="252" text-anchor="middle">Gateway receives event via session stream → User sees reply</text>
+<text class="ts" x="340" y="272" text-anchor="middle">Next turn picked up by another worker (self-perpetuating)</text>
+<text class="ts" x="340" y="292" text-anchor="middle">Loop continues until max_turns reached</text>
+</svg>
+<div class="caption">Fig 14c — Worker ACKs and enqueues the next turn</div>
+</div>
+
+<h4>Step 4: Failure Recovery via PEL</h4>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 300">
+<defs><marker id="arr-cg4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="th" x="340" y="28" text-anchor="middle">Failure recovery: pending entries list</text>
+<g class="c-coral"><rect x="60" y="60" width="200" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="80" text-anchor="middle" dominant-baseline="central">Worker #2 crashes</text>
+  <text class="ts" x="160" y="98" text-anchor="middle" dominant-baseline="central">Task not ACK'd</text></g>
+<g class="c-gray"><rect x="340" y="60" width="280" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="480" y="80" text-anchor="middle" dominant-baseline="central">Pending entries list</text>
+  <text class="ts" x="480" y="98" text-anchor="middle" dominant-baseline="central">Redis tracks unacked msgs</text></g>
+<line x1="260" y1="88" x2="338" y2="88" stroke="var(--coral-600)" stroke-width="0.5" marker-end="url(#arr-cg4)"/>
+<g class="c-teal"><rect x="140" y="160" width="400" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="180" text-anchor="middle" dominant-baseline="central">XAUTOCLAIM or XCLAIM</text>
+  <text class="ts" x="340" y="198" text-anchor="middle" dominant-baseline="central">Reassign stale tasks after 30s idle</text></g>
+<line x1="480" y1="116" x2="480" y2="135" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="480" y1="135" x2="340" y2="135" stroke="var(--text3)" stroke-width="0.5" fill="none"/>
+<line x1="340" y1="135" x2="340" y2="158" stroke="var(--text3)" stroke-width="0.5" fill="none" marker-end="url(#arr-cg4)"/>
+<text class="ts" x="340" y="248" text-anchor="middle">Healthy worker picks up orphaned task</text>
+<text class="ts" x="340" y="268" text-anchor="middle">No message loss even if workers die</text>
+</svg>
+<div class="caption">Fig 14d — XAUTOCLAIM reassigns stale tasks from dead workers</div>
+</div>
+
+<h3>Redis Key Namespace</h3>
+
+<table>
+<tr><th>Key pattern</th><th>Type</th><th>Purpose</th></tr>
+<tr><td><code>stream:llm_tasks</code></td><td>Stream</td><td>LLM task queue (consumer group: <code>llm_workers</code>)</td></tr>
+<tr><td><code>stream:session:{uuid}</code></td><td>Stream</td><td>Per-session chat events for gateway clients</td></tr>
+<tr><td><code>geo:islands</code></td><td>GEO sorted set</td><td>Active island positions</td></tr>
+<tr><td><code>session:{uuid}</code></td><td>Hash</td><td>Live session state (planned)</td></tr>
+<tr><td><code>cooldown:{a}:{b}</code></td><td>String + EXPIRE</td><td>Match cooldown window (planned)</td></tr>
+<tr><td><code>lock:match:{a}:{b}</code></td><td>String (SETNX)</td><td>Match deduplication lock (planned)</td></tr>
+</table>
+
+<h3>Why Streams Instead of Pub/Sub?</h3>
+
+<p>An early version of Islume used Redis Pub/Sub to deliver turn events from worker to gateway. It failed intermittently: messages were silently lost during the window between <code>pubsub.subscribe()</code> and the first <code>pubsub.listen()</code> iteration. Pub/Sub is fire-and-forget — a subscriber that connects after a message was published will never see it. Streams solve this structurally: messages are durable, and clients fetch from a known position using <code>XREAD</code>. Replay and live use the same mechanism. See the JOURNAL for the full debugging journey.</p>
+
+<!-- ============================================================ -->
+<h2 id="database">8. Database Schema</h2>
+
+<p>Postgres handles persistent data — user accounts, agent definitions, match history, and conversation logs. Redis handles all real-time state. The boundary is clear: Redis for "what's happening now," Postgres for "what already happened."</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 720">
+<defs><marker id="arr-db" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-teal">
+  <rect x="40" y="20" width="280" height="140" rx="12" stroke-width="0.5"/>
+  <text class="th" x="180" y="44" text-anchor="middle">users</text>
+  <text class="ts" x="60" y="66">id: uuid PK</text>
+  <text class="ts" x="60" y="82">display_name: text</text>
+  <text class="ts" x="60" y="98">email: text</text>
+  <text class="ts" x="60" y="114">auth_provider: text</text>
+  <text class="ts" x="60" y="130">created_at, last_seen_at</text>
+</g>
+
+<g class="c-teal">
+  <rect x="380" y="20" width="260" height="140" rx="12" stroke-width="0.5"/>
+  <text class="th" x="510" y="44" text-anchor="middle">islands</text>
+  <text class="ts" x="400" y="66">id: uuid PK</text>
+  <text class="ts" x="400" y="82">user_id: uuid FK</text>
+  <text class="ts" x="400" y="98">island_name, island_style</text>
+  <text class="ts" x="400" y="114">is_active: boolean</text>
+  <text class="ts" x="400" y="130">entered_map_at</text>
+</g>
+<line x1="320" y1="85" x2="378" y2="85" class="arr" marker-end="url(#arr-db)"/>
+
+<g class="c-coral">
+  <rect x="40" y="200" width="280" height="160" rx="12" stroke-width="0.5"/>
+  <text class="th" x="180" y="224" text-anchor="middle">agents</text>
+  <text class="ts" x="60" y="246">id: uuid PK</text>
+  <text class="ts" x="60" y="262">name, description: text</text>
+  <text class="ts" x="60" y="278">persona_prompt: text</text>
+  <text class="ts" x="60" y="294">tone: text</text>
+  <text class="ts" x="60" y="310">tags: text array</text>
+  <text class="ts" x="60" y="326">is_public: boolean</text>
+  <text class="ts" x="60" y="342">created_at</text>
+</g>
+
+<g class="c-purple">
+  <rect x="380" y="200" width="260" height="120" rx="12" stroke-width="0.5"/>
+  <text class="th" x="510" y="224" text-anchor="middle">user_agents</text>
+  <text class="ts" x="400" y="246">id: uuid PK</text>
+  <text class="ts" x="400" y="262">user_id: uuid FK</text>
+  <text class="ts" x="400" y="278">agent_id: uuid FK</text>
+  <text class="ts" x="400" y="294">is_active: boolean</text>
+  <text class="ts" x="400" y="310">activated_at</text>
+</g>
+<line x1="320" y1="270" x2="378" y2="270" class="arr" marker-end="url(#arr-db)"/>
+<line x1="510" y1="160" x2="510" y2="198" class="arr" marker-end="url(#arr-db)"/>
+
+<g class="c-coral">
+  <rect x="40" y="400" width="290" height="200" rx="12" stroke-width="0.5"/>
+  <text class="th" x="185" y="424" text-anchor="middle">match_sessions</text>
+  <text class="ts" x="60" y="446">id: uuid PK</text>
+  <text class="ts" x="60" y="462">user_a_id, user_b_id: uuid FK</text>
+  <text class="ts" x="60" y="478">agent_a_id, agent_b_id: uuid FK</text>
+  <text class="ts" x="60" y="494">match_context: text</text>
+  <text class="ts" x="60" y="510">similarity_score: float</text>
+  <text class="ts" x="60" y="526">status: text</text>
+  <text class="ts" x="60" y="542">turn_count, max_turns: int</text>
+  <text class="ts" x="60" y="558">started_at, ended_at</text>
+</g>
+
+<g class="c-purple">
+  <rect x="370" y="400" width="270" height="200" rx="12" stroke-width="0.5"/>
+  <text class="th" x="505" y="424" text-anchor="middle">conversation_turns</text>
+  <text class="ts" x="390" y="446">id: uuid PK</text>
+  <text class="ts" x="390" y="462">session_id: uuid FK</text>
+  <text class="ts" x="390" y="478">agent_id: uuid FK</text>
+  <text class="ts" x="390" y="494">turn_number: int</text>
+  <text class="ts" x="390" y="510">content: text</text>
+  <text class="ts" x="390" y="526">input_tokens, output_tokens</text>
+  <text class="ts" x="390" y="542">model_used: text</text>
+  <text class="ts" x="390" y="558">latency_ms: int</text>
+</g>
+<line x1="330" y1="500" x2="368" y2="500" class="arr" marker-end="url(#arr-db)"/>
+<line x1="185" y1="360" x2="185" y2="398" class="arr" marker-end="url(#arr-db)"/>
+<line x1="505" y1="320" x2="505" y2="398" class="arr" marker-end="url(#arr-db)"/>
+
+<text class="ts" x="340" y="650" text-anchor="middle">Relations: users 1→N islands, users N↔M agents via user_agents,</text>
+<text class="ts" x="340" y="668" text-anchor="middle">match_sessions references 2 users + 2 agents,</text>
+<text class="ts" x="340" y="686" text-anchor="middle">conversation_turns 1→N per match_session</text>
+</svg>
+<div class="caption">Fig 15 — Postgres schema: users, agents, sessions, conversation turns</div>
+</div>
+
+<h3>Index Strategy</h3>
+
+<table>
+<tr><th>Priority</th><th>Index</th><th>Purpose</th></tr>
+<tr><td><span class="badge b-hot">hot</span></td><td><code>islands (is_active, user_id)</code> partial</td><td>Active islands for matching</td></tr>
+<tr><td><span class="badge b-hot">hot</span></td><td><code>user_agents (user_id)</code> partial</td><td>Active agent per user</td></tr>
+<tr><td><span class="badge b-warm">warm</span></td><td><code>conversation_turns (session_id, turn_number)</code></td><td>Turn lookup per session</td></tr>
+<tr><td><span class="badge b-warm">warm</span></td><td><code>match_sessions (island_a) WHERE status='active'</code></td><td>Active sessions per island</td></tr>
+<tr><td><span class="badge b-cool">cool</span></td><td><code>conversation_turns (model_used, created_at)</code></td><td>Cost analytics by model</td></tr>
+<tr><td><span class="badge b-cool">cool</span></td><td><code>match_sessions (similarity_score, started_at)</code></td><td>Match quality analysis</td></tr>
+</table>
+
+<p><strong>Partitioning note:</strong> The <code>conversation_turns</code> table grows fastest (~30,000 rows/month at moderate usage). Monthly partitioning on <code>created_at</code> keeps analytics queries fast and simplifies data retention. Not yet implemented in MVP.</p>
+
+<!-- ============================================================ -->
+<h2 id="local-dev">9. Local Development Environment</h2>
+
+<p>Islume's local development runs directly on Ubuntu 24.04 host: infrastructure services (Postgres, Redis) as Docker Compose containers, application code (Python services) natively via <code>uv run</code>. No VMware. This keeps the feedback loop fast while still isolating stateful services.</p>
+
+<div class="diagram-card">
+<svg width="100%" viewBox="0 0 680 480">
+<defs><marker id="arr-ld" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="c-gray">
+  <rect x="40" y="20" width="600" height="440" rx="20" stroke-width="0.5"/>
+  <text class="th" x="340" y="48" text-anchor="middle">Ubuntu 24.04 host (Ryzen 7 7800X3D, 64GB RAM)</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="80" width="240" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="200" y="105" text-anchor="middle">Native (host)</text>
+  <text class="ts" x="200" y="125" text-anchor="middle">Python 3.12 + uv</text>
+  <text class="ts" x="200" y="143" text-anchor="middle">VS Code + Claude Code</text>
+</g>
+
+<g class="c-purple">
+  <rect x="360" y="80" width="240" height="80" rx="12" stroke-width="0.5"/>
+  <text class="th" x="480" y="105" text-anchor="middle">Docker Compose stack</text>
+  <text class="ts" x="480" y="125" text-anchor="middle">Infra services in containers</text>
+  <text class="ts" x="480" y="143" text-anchor="middle">Isolated networks + volumes</text>
+</g>
+
+<g class="c-coral">
+  <rect x="80" y="200" width="170" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="165" y="220" text-anchor="middle" dominant-baseline="central">redis:7-alpine</text>
+  <text class="ts" x="165" y="238" text-anchor="middle" dominant-baseline="central">port 6379</text>
+</g>
+<g class="c-coral">
+  <rect x="260" y="200" width="170" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="345" y="220" text-anchor="middle" dominant-baseline="central">postgres:16-alpine</text>
+  <text class="ts" x="345" y="238" text-anchor="middle" dominant-baseline="central">port 5432</text>
+</g>
+<g class="c-coral">
+  <rect x="440" y="200" width="170" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="525" y="220" text-anchor="middle" dominant-baseline="central">redis-insight</text>
+  <text class="ts" x="525" y="238" text-anchor="middle" dominant-baseline="central">port 5540</text>
+</g>
+
+<g class="c-teal">
+  <rect x="80" y="290" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="160" y="310" text-anchor="middle" dominant-baseline="central">Map + matching</text>
+  <text class="ts" x="160" y="328" text-anchor="middle" dominant-baseline="central">FastAPI :8001</text>
+</g>
+<g class="c-teal">
+  <rect x="260" y="290" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="310" text-anchor="middle" dominant-baseline="central">WS gateway</text>
+  <text class="ts" x="340" y="328" text-anchor="middle" dominant-baseline="central">FastAPI :8002</text>
+</g>
+<g class="c-teal">
+  <rect x="440" y="290" width="160" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="520" y="310" text-anchor="middle" dominant-baseline="central">Orchestrator</text>
+  <text class="ts" x="520" y="328" text-anchor="middle" dominant-baseline="central">FastAPI :8003</text>
+</g>
+
+<g class="c-purple">
+  <rect x="180" y="380" width="320" height="56" rx="8" stroke-width="0.5"/>
+  <text class="th" x="340" y="400" text-anchor="middle" dominant-baseline="central">LLM worker</text>
+  <text class="ts" x="340" y="418" text-anchor="middle" dominant-baseline="central">Python (1+ instances)</text>
+</g>
+
+<line x1="160" y1="346" x2="165" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="340" y1="346" x2="200" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="340" y1="346" x2="345" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="520" y1="346" x2="380" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+<line x1="340" y1="378" x2="220" y2="258" stroke="var(--text3)" stroke-width="0.5" stroke-dasharray="3 3" fill="none"/>
+</svg>
+<div class="caption">Fig 16 — Local development stack on Ubuntu host</div>
+</div>
+
+<p>See the project's README for full setup instructions. Essential tools: Docker + Docker Compose, uv (Python package manager), and an Anthropic API key. All infrastructure starts with a single <code>docker compose up -d</code> command.</p>
+
+<!-- ============================================================ -->
+<h2 id="cost">10. Cost Estimation</h2>
+
+<h3>LLM API Costs (measured)</h3>
+
+<table>
+<tr><th>Item</th><th>Measured</th></tr>
+<tr><td>Sonnet 4.5 input pricing</td><td>$3 / 1M tokens</td></tr>
+<tr><td>Sonnet 4.5 output pricing</td><td>$15 / 1M tokens</td></tr>
+<tr><td>Avg turns per session</td><td>6</td></tr>
+<tr><td>Avg input tokens (cumulative)</td><td>~2,000</td></tr>
+<tr><td>Avg output tokens (cumulative)</td><td>~600</td></tr>
+<tr><td>Avg cost per session</td><td>$0.015</td></tr>
+<tr><td>Avg latency per turn</td><td>~4 seconds</td></tr>
+</table>
+
+<h3>Railway Infrastructure (projected)</h3>
+
+<table>
+<tr><th>Service</th><th>Scale behavior</th><th>Est. cost</th></tr>
+<tr><td>Map + Matching API</td><td>Scale-to-zero</td><td>$5–15 / month</td></tr>
+<tr><td>WebSocket Gateway</td><td>Always-on (min 1 instance)</td><td>$10–25 / month</td></tr>
+<tr><td>Agent Orchestrator</td><td>Scale-to-zero</td><td>$3–10 / month</td></tr>
+<tr><td>LLM Workers</td><td>Scale-to-zero</td><td>$5–15 / month</td></tr>
+<tr><td>Redis</td><td>Always-on</td><td>$5–10 / month</td></tr>
+<tr><td>Postgres</td><td>Always-on</td><td>$5–10 / month</td></tr>
+<tr><td colspan="2"><strong>Railway total</strong></td><td><strong>$33–85 / month</strong></td></tr>
+</table>
+
+<h3>Projected Total at Various Scales</h3>
+
+<table>
+<tr><th>Sessions/day</th><th>LLM cost/month</th><th>Railway cost/month</th><th>Total/month</th></tr>
+<tr><td>10</td><td>$4.50</td><td>$35</td><td>~$40</td></tr>
+<tr><td>100</td><td>$45</td><td>$50</td><td>~$95</td></tr>
+<tr><td>1,000</td><td>$450</td><td>$80</td><td>~$530</td></tr>
+<tr><td>10,000</td><td>$4,500</td><td>$200+</td><td>~$4,700+</td></tr>
+</table>
+
+<p class="note">Note: LLM API costs dominate at scale. The planned sliding window compression (using Haiku instead of Sonnet for older turn summarization) is the primary cost optimization lever. Railway infrastructure scales much more gently.</p>
+
+<hr style="margin: 3rem 0; border: none; border-top: 1px solid var(--border2);">
+<p class="note" style="font-size: 0.85rem; text-align: center;">Islume Complete Design Document — April 2026 — MVP implemented and verified locally</p>
+
+</div>
+</body>
+</html>

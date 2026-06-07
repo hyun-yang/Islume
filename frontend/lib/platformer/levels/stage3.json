@@ -1,0 +1,43 @@
+{
+  "id": "stage3",
+  "name": "Stage 3: The Cabin",
+  "background": "forest",
+  "rows": [
+    "................................................................",
+    "................................................................",
+    ".....c............c.............c.............c.............c...",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    "................................................................",
+    ".............................................................T..",
+    ".............................................................F..",
+    ".............................................................F..",
+    ".....u........u...u...........u.........u.........u..........F..",
+    "GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD",
+    "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD"
+  ],
+  "spawn": { "x": 2, "y": 12 },
+  "goal":  { "x": 61, "y": 12 },
+  "checkpoints": [{ "x": 22, "y": 12 }, { "x": 36, "y": 12 }],
+  "actors": [
+    { "id": "c1",   "type": "enemy_crab",     "x": 6,  "y": 12, "walk_range": [3, 9] },
+    { "id": "s1",   "type": "enemy_starfish", "x": 18, "y": 12, "jump_interval_ms": 2200 },
+    { "id": "cb1",  "type": "block_coconut",  "x": 25, "y": 9  },
+    { "id": "bear", "type": "enemy_bear_boss","x": 26, "y": 12 },
+    { "id": "pine", "type": "item_pineapple", "x": 30, "y": 11 },
+    { "id": "h1",   "type": "item_heart",     "x": 45, "y": 10 },
+    { "id": "tani", "type": "npc_tani",       "x": 55, "y": 12 },
+    { "id": "sh1",  "type": "item_shell", "x":  9, "y": 11 },
+    { "id": "sh2",  "type": "item_shell", "x": 11, "y": 11 },
+    { "id": "sh3",  "type": "item_shell", "x": 16, "y": 10 },
+    { "id": "sh4",  "type": "item_shell", "x": 35, "y": 11 },
+    { "id": "sh5",  "type": "item_shell", "x": 38, "y": 11 },
+    { "id": "sh6",  "type": "item_shell", "x": 41, "y": 11 },
+    { "id": "sh7",  "type": "item_shell", "x": 48, "y": 11 },
+    { "id": "sh8",  "type": "item_shell", "x": 53, "y": 11 }
+  ]
+}
