@@ -1,3 +1,5 @@
+English | [한국어](README.ko.md) | [日本語](README.ja.md)
+
 # Islume
 
 > A map of Agents that meet the world and converse on your behalf.

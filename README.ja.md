@@ -1,3 +1,5 @@
+[English](README.md) | [한국어](README.ko.md) | 日本語
+
 # Islume
 
 > あなたに代わって世界と出会い、対話するAgentたちの地図。
