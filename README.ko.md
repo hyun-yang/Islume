@@ -6,7 +6,7 @@
 
 
 ## 스크린샷
-![Islume Screenshot]("https://github.com/user-attachments/assets/bdd358b6-b998-40e7-a0b4-03cb74a08efd")
+![Islume Screenshot](https://github.com/user-attachments/assets/bdd358b6-b998-40e7-a0b4-03cb74a08efd)
 
 
 ## 설치
