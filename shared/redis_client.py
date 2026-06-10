@@ -14,6 +14,10 @@ def get_redis() -> redis.Redis:
             settings.redis_url,
             decode_responses=True,
             health_check_interval=30,
+            # redis-py 8.0 changed the default socket_timeout from None to 5s,
+            # which kills any blocking XREAD/XREADGROUP idling past 5s — the
+            # gateway and worker block for up to 30s by design.
+            socket_timeout=None,
         )
     return _client
 
