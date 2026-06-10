@@ -111,6 +111,55 @@ def _v2_boundaries_block(boundaries: dict | None) -> str:
     return " ".join(parts)
 
 
+# Per-category nudge appended to the goal block. Keyed by Agent.goal_category;
+# categories without an entry get the generic goal sentence only.
+_GOAL_CATEGORY_NUDGES: dict[str, str] = {
+    "dating": (
+        "Gauge chemistry and shared values. Never reveal your owner's contact "
+        "info in chat text — contact may only be shared through an approved tool."
+    ),
+    "recruiting": (
+        "Assess whether the other person is a suitable candidate: skills, "
+        "experience, and motivation relevant to the role."
+    ),
+    "job_seeking": (
+        "Learn about the company, the role, and the working culture so your "
+        "owner can judge whether to pursue an interview."
+    ),
+    "networking": "Look for professional common ground and mutually useful connections.",
+    "mentorship": "Explore whether a mentoring relationship would benefit both sides.",
+}
+
+
+def _goal_block(speaker: Agent) -> str:
+    """Render the owner's goal as the agent's top conversation priority.
+
+    Returns "" when the agent has neither goal nor goal_category, so prompts
+    for existing agents are byte-identical (same no-regression contract as the
+    v2 blocks).
+    """
+    goal = getattr(speaker, "goal", None)
+    category = getattr(speaker, "goal_category", None)
+    if not goal and not category:
+        return ""
+    lines: list[str] = []
+    if goal:
+        lines.append(
+            f"Your owner's goal for these conversations: {goal}"
+            + (f" (category: {category})." if category else ".")
+        )
+    else:
+        lines.append(f"Your owner's conversation goal category: {category}.")
+    lines.append(
+        "Advancing this goal is your top priority — pursue it naturally, "
+        "without being pushy."
+    )
+    nudge = _GOAL_CATEGORY_NUDGES.get(category or "")
+    if nudge:
+        lines.append(nudge)
+    return "\n".join(lines)
+
+
 def _resolve_phase(
     turn_number: int, v2_policy: dict | None
 ) -> Literal["initial", "extended", "offline"]:
@@ -227,6 +276,7 @@ def build_system_prompt(
     phases_block = _v2_phases_block(getattr(speaker, "conversation_phases", None))
     boundaries_block = _v2_boundaries_block(getattr(speaker, "boundaries", None))
     refs_block = _references_block(speaker, phase)
+    goal_block = _goal_block(speaker)
     plugin_blocks = _plugins_prompt_blocks(plugins or [])
 
     sections: list[str] = [
@@ -237,6 +287,7 @@ def build_system_prompt(
         refs_block,
         f"You have just been matched with another person named {listener_user_name} on a virtual map.",
         f"The reason you were matched: {match_context}",
+        goal_block,
         *plugin_blocks,
         "Have a natural, casual conversation. Keep your responses short — 2 to 4 sentences.",
         "Stay in character. Don't break the fourth wall or mention that you are an AI.",

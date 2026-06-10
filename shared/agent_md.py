@@ -32,6 +32,8 @@ GoalCategory = Literal[
     "collaboration",
     "casual_chat",
     "mentorship",
+    "recruiting",
+    "job_seeking",
 ]
 InteractionMode = Literal["online_only", "offline_ok", "offline_preferred"]
 RelationshipIntent = Literal[

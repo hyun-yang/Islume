@@ -38,6 +38,8 @@ const GOAL_CATEGORIES: GoalCategory[] = [
   "collaboration",
   "casual_chat",
   "mentorship",
+  "recruiting",
+  "job_seeking",
 ];
 const INTERACTION_MODES: InteractionMode[] = [
   "online_only",

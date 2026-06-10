@@ -157,7 +157,9 @@ export type GoalCategory =
   | "companionship"
   | "collaboration"
   | "casual_chat"
-  | "mentorship";
+  | "mentorship"
+  | "recruiting"
+  | "job_seeking";
 
 export type InteractionMode = "online_only" | "offline_ok" | "offline_preferred";
 
