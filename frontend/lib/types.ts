@@ -1,5 +1,7 @@
 // API response types — mirrors backend Pydantic schemas
 
+import type { Actor, Background } from "./platformer/types";
+
 export interface NearbyIsland {
   user_id: string;
   longitude: number;
@@ -465,7 +467,28 @@ export interface DMMessage {
   created_at: string;
 }
 
-export type VisitViewMode = "world" | "loading" | "island";
+export type VisitViewMode = "world" | "loading" | "island" | "editor";
+
+// Island stage types (user-authored platformer levels) — mirrors
+// services/visit/schemas.py StageLevelData / StageResponse
+
+export interface StageLevelData {
+  background: Background;
+  rows: string[];
+  spawn: { x: number; y: number };
+  goal: { x: number; y: number };
+  actors: Actor[];
+  checkpoints: { x: number; y: number }[];
+}
+
+export interface IslandStage {
+  slot: number;
+  status: "draft" | "published";
+  cleared: boolean;
+  name: string;
+  level_data: StageLevelData;
+  updated_at: string;
+}
 
 // UI state types
 

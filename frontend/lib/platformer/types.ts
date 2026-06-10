@@ -53,7 +53,34 @@ const TILE_LEGEND: Record<string, number> = {
   "u": TILE_PF_BUSH,
 };
 
-type ActorType =
+// Reverse legend: tile id → char, for serializing editor tiles back to rows
+const TILE_CHAR: Record<number, string> = Object.fromEntries(
+  Object.entries(TILE_LEGEND).map(([ch, tile]) => [tile, ch]),
+);
+
+// Inverse of the row-decoding loop in loadLevel(); used by the stage editor
+// to produce the rows-as-strings format the backend validates and stores.
+export function encodeRows(
+  tiles: Uint8Array,
+  width: number,
+  height: number,
+): string[] {
+  const rows: string[] = [];
+  for (let y = 0; y < height; y++) {
+    let row = "";
+    for (let x = 0; x < width; x++) {
+      const ch = TILE_CHAR[tiles[y * width + x]];
+      if (ch === undefined) {
+        throw new Error(`unknown tile id ${tiles[y * width + x]} at (${x},${y})`);
+      }
+      row += ch;
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+export type ActorType =
   | "enemy_crab"
   | "enemy_starfish"
   | "enemy_frog"
@@ -79,11 +106,13 @@ export interface Actor {
   drop?: ActorType;
 }
 
+// Built-in stage ids — used for STAGE_DATA keys and audio.startBgm; custom
+// stages carry arbitrary string ids (slot-derived) and map BGM via background.
 export type StageId = "stage1" | "stage2" | "stage3";
-type Background = "beach" | "stream" | "forest";
+export type Background = "beach" | "stream" | "forest";
 
 export interface LevelMap {
-  id: StageId;
+  id: string;
   name: string;
   background: Background;
   width: number;        // in tiles
@@ -98,7 +127,7 @@ export interface LevelMap {
 
 // Raw shape loaded from JSON
 export interface LevelData {
-  id: StageId;
+  id: string;
   name: string;
   background: Background;
   rows: string[];

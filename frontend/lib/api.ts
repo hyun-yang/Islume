@@ -18,6 +18,8 @@ import type {
   TransferResponse,
   TransactionHistoryResponse,
   VisitResponse,
+  IslandStage,
+  StageLevelData,
   DMMessage,
   PluginInfo,
   NotificationItem,
@@ -522,4 +524,67 @@ export async function fetchRpsRound(
   visitId: string, roundId: string,
 ): Promise<RpsRoundResponse> {
   return rpsRequest(`${VISIT}/visits/${visitId}/rps/rounds/${roundId}`);
+}
+
+// ── Island stage endpoints (user-authored platformer levels) ──
+
+async function stageRequest<T>(input: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(input, init);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+    // 422 validation errors carry detail as an array of objects
+    const detail =
+      typeof err.detail === "string" ? err.detail : JSON.stringify(err.detail);
+    throw new Error(detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchIslandStages(
+  islandId: string, publishedOnly = false,
+): Promise<{ stages: IslandStage[] }> {
+  const qs = publishedOnly ? "?published=true" : "";
+  return stageRequest(`${VISIT}/islands/${islandId}/stages${qs}`);
+}
+
+export async function saveIslandStage(
+  islandId: string, slot: number, name: string, levelData: StageLevelData,
+): Promise<IslandStage> {
+  return stageRequest(`${VISIT}/islands/${islandId}/stages/${slot}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, level_data: levelData }),
+  });
+}
+
+export async function markIslandStageCleared(
+  islandId: string, slot: number,
+): Promise<IslandStage> {
+  return stageRequest(`${VISIT}/islands/${islandId}/stages/${slot}/cleared`, {
+    method: "POST",
+  });
+}
+
+export async function publishIslandStage(
+  islandId: string, slot: number,
+): Promise<IslandStage> {
+  return stageRequest(`${VISIT}/islands/${islandId}/stages/${slot}/publish`, {
+    method: "POST",
+  });
+}
+
+export async function unpublishIslandStage(
+  islandId: string, slot: number,
+): Promise<IslandStage> {
+  return stageRequest(`${VISIT}/islands/${islandId}/stages/${slot}/unpublish`, {
+    method: "POST",
+  });
+}
+
+export async function deleteIslandStage(
+  islandId: string, slot: number,
+): Promise<{ status: string }> {
+  return stageRequest(`${VISIT}/islands/${islandId}/stages/${slot}`, {
+    method: "DELETE",
+  });
 }
