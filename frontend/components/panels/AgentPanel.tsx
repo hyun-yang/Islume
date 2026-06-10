@@ -12,7 +12,6 @@ import {
 } from "@/hooks/useAgents";
 import type {
   AgentResponse,
-  AgentTranslation,
   AttachedPlugin,
   Demographics,
   GoalCategory,
@@ -88,36 +87,8 @@ const EMPTY_PREFERENCES = {
   work_view: "",
 };
 
-const EMPTY_KO = {
-  name: "",
-  description: "",
-  persona_prompt: "",
-  tags: "",
-};
-
 function csvSplit(s: string): string[] {
   return s.split(",").map((t) => t.trim()).filter(Boolean);
-}
-
-function koToForm(t?: AgentTranslation | null) {
-  if (!t) return EMPTY_KO;
-  return {
-    name: t.name ?? "",
-    description: t.description ?? "",
-    persona_prompt: t.persona_prompt ?? "",
-    tags: (t.tags ?? []).join(", "),
-  };
-}
-
-function buildKoTranslation(f: typeof EMPTY_KO): AgentTranslation | null {
-  const tags = csvSplit(f.tags);
-  const out: AgentTranslation = {
-    ...(f.name.trim() ? { name: f.name.trim() } : {}),
-    ...(f.description.trim() ? { description: f.description.trim() } : {}),
-    ...(f.persona_prompt.trim() ? { persona_prompt: f.persona_prompt.trim() } : {}),
-    ...(tags.length ? { tags } : {}),
-  };
-  return Object.keys(out).length ? out : null;
 }
 
 function demographicsToForm(d?: Demographics | null) {
@@ -197,12 +168,10 @@ export default function AgentPanel() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showDemographics, setShowDemographics] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
-  const [showKorean, setShowKorean] = useState(false);
   const [editingAgent, setEditingAgent] = useState<AgentResponse | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [demographics, setDemographics] = useState(EMPTY_DEMOGRAPHICS);
   const [preferences, setPreferences] = useState(EMPTY_PREFERENCES);
-  const [ko, setKo] = useState(EMPTY_KO);
   const [conversationLanguage, setConversationLanguage] = useState<string>("");
   const [attachedPlugins, setAttachedPlugins] = useState<AttachedPlugin[]>([]);
   const [templateId, setTemplateId] = useState<string>("");
@@ -212,14 +181,12 @@ export default function AgentPanel() {
     setForm(EMPTY_FORM);
     setDemographics(EMPTY_DEMOGRAPHICS);
     setPreferences(EMPTY_PREFERENCES);
-    setKo(EMPTY_KO);
     setConversationLanguage("");
     setAttachedPlugins([]);
     setShowForm(false);
     setShowAdvanced(false);
     setShowDemographics(false);
     setShowPreferences(false);
-    setShowKorean(false);
     setEditingAgent(null);
     setTemplateId("");
   };
@@ -282,14 +249,11 @@ export default function AgentPanel() {
     });
     const dm = demographicsToForm(agent.demographics);
     const pr = preferencesToForm(agent.preferences);
-    const koForm = koToForm(agent.translations?.ko);
     setDemographics(dm);
     setPreferences(pr);
-    setKo(koForm);
     setConversationLanguage(
       typeof agent.boundaries?.language === "string" ? agent.boundaries.language : "",
     );
-    setShowKorean(koForm !== EMPTY_KO);
     setEditingAgent(agent);
     setShowForm(true);
     setShowAdvanced(
@@ -330,7 +294,6 @@ export default function AgentPanel() {
 
     const dem = buildDemographics(demographics);
     const pref = buildPreferences(preferences);
-    const koTr = buildKoTranslation(ko);
 
     const base = {
       name: form.name,
@@ -352,7 +315,6 @@ export default function AgentPanel() {
       demographics: dem,
       preferences: pref,
       attached_plugins: attachedPlugins.length > 0 ? attachedPlugins : null,
-      translations: koTr ? { ko: koTr } : null,
       ...(boundaries ? { boundaries } : {}),
     };
 
@@ -715,44 +677,6 @@ export default function AgentPanel() {
                 onChange={(e) =>
                   setPreferences({ ...preferences, work_view: e.target.value })
                 }
-              />
-            </div>
-          )}
-
-          {/* Korean persona — optional. Filled in, plus conversation
-              language = ko, makes agent↔agent chat run in Korean. */}
-          <button
-            type="button"
-            onClick={() => setShowKorean((v) => !v)}
-            className="text-xs text-zinc-500 hover:text-zinc-700 self-start"
-          >
-            {showKorean ? `▼ ${t("agent.korean")}` : `▶ ${t("agent.korean")}`}
-          </button>
-          {showKorean && (
-            <div className="space-y-2 border-t border-zinc-200 pt-2">
-              <input
-                className="w-full px-3 py-1.5 border border-zinc-300 rounded text-sm"
-                placeholder={t("agent.koName")}
-                value={ko.name}
-                onChange={(e) => setKo({ ...ko, name: e.target.value })}
-              />
-              <input
-                className="w-full px-3 py-1.5 border border-zinc-300 rounded text-sm"
-                placeholder={t("agent.koDescription")}
-                value={ko.description}
-                onChange={(e) => setKo({ ...ko, description: e.target.value })}
-              />
-              <textarea
-                className="w-full px-3 py-1.5 border border-zinc-300 rounded text-sm h-20 resize-none"
-                placeholder={t("agent.koPersona")}
-                value={ko.persona_prompt}
-                onChange={(e) => setKo({ ...ko, persona_prompt: e.target.value })}
-              />
-              <input
-                className="w-full px-3 py-1.5 border border-zinc-300 rounded text-sm"
-                placeholder={`${t("agent.koTags")} (${t("agent.tagsHint")})`}
-                value={ko.tags}
-                onChange={(e) => setKo({ ...ko, tags: e.target.value })}
               />
             </div>
           )}

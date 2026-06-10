@@ -204,7 +204,7 @@ export interface AttachedPlugin {
 }
 
 // Per-locale persona overrides. Absent fields fall back to the base columns.
-export interface AgentTranslation {
+interface AgentTranslation {
   name?: string | null;
   description?: string | null;
   persona_prompt?: string | null;
