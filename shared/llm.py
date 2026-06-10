@@ -253,6 +253,19 @@ def _is_openai_reasoning_model(model_id: str) -> bool:
     return mid.startswith(("gpt-5", "o1", "o3", "o4"))
 
 
+def is_reasoning_model(model: str) -> bool:
+    """True if a full model string ('provider/id' or bare) is an OpenAI
+    reasoning model (gpt-5*/o1/o3/o4).
+
+    Their hidden reasoning tokens share the output budget, so a complex prompt
+    can burn it all on reasoning and return empty content — a poor fit for
+    short persona chat (see the worker's `_generate_turn_reply` guard). Used to
+    keep reasoning models out of the conversation-model picker.
+    """
+    provider, model_id = parse_model(model)
+    return provider == "openai" and _is_openai_reasoning_model(model_id)
+
+
 def _openai_token_kwargs(model_id: str, max_tokens: int) -> dict:
     """Per-model token kwargs for chat.completions.
 

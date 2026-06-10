@@ -36,6 +36,7 @@ from shared.llm import (
     get_available_models,
     get_system_model,
     is_provider_configured,
+    is_reasoning_model,
     parse_model,
 )
 from shared.models import Agent, MatchSession, User, UserAgent
@@ -70,8 +71,11 @@ async def health():
 
 @app.get("/models")
 async def list_models():
+    # Reasoning models (gpt-5*/o1/o3/o4) are excluded from the conversation-model
+    # picker: their hidden reasoning tokens share the output budget and can
+    # return empty content on persona chat. See the worker's empty-reply guard.
     return {
-        "models": get_available_models(),
+        "models": [m for m in get_available_models() if not is_reasoning_model(m)],
         "system_model": get_system_model(),
     }
 

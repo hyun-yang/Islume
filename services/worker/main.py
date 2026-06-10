@@ -25,6 +25,7 @@ from shared.intent_plugins import (
     ChatEventSpec,
     Plugin,
     PolicyDecision,
+    ToolCall,
     ToolDef,
     get_plugin,
     validate_arguments,
@@ -452,6 +453,43 @@ async def process_task(task: TurnTask) -> None:
         await _run_turn(task)
 
 
+async def _generate_turn_reply(
+    *,
+    system: str,
+    messages: list[dict],
+    model: str,
+    tools: list[ToolDef] | None,
+    session_id: UUID,
+    turn_number: int,
+) -> tuple[LLMResponse | GenerationResult, list[ToolCall]]:
+    """Generate a turn reply, retrying once on an empty no-tool response.
+
+    A reply with no text AND no tool call is a dead turn — e.g. an OpenAI
+    reasoning model (gpt-5*, o1/o3/o4*) spending its whole output budget on
+    hidden reasoning tokens and returning ``content=""``. Persisting it blanks
+    the turn in the UI and, worse, the empty assistant message poisons the next
+    turn's history so every following turn comes back empty too (the cascade
+    observed on gpt-5-mini from turn 16 onward). Retry once; if still empty,
+    raise so the worker loop leaves the task in the PEL (no XACK) instead of
+    storing an empty turn and self-perpetuating the dead conversation.
+    """
+    for attempt in (1, 2):
+        response = await generate(
+            system=system, messages=messages, model=model, tools=tools
+        )
+        tool_calls: list[ToolCall] = getattr(response, "tool_calls", [])
+        if (response.text or "").strip() or tool_calls:
+            return response, tool_calls
+        print(
+            f"  [empty-response] session={session_id} turn={turn_number} "
+            f"model={model} attempt={attempt}/2"
+        )
+    raise RuntimeError(
+        f"LLM returned empty content twice (session={session_id} "
+        f"turn={turn_number} model={model}); refusing to persist an empty turn"
+    )
+
+
 async def _run_turn(task: TurnTask) -> None:
     sessionmaker = get_sessionmaker()
     async with sessionmaker() as db:
@@ -509,15 +547,15 @@ async def _run_turn(task: TurnTask) -> None:
         model = agent_to_model.get(speaker.id, "claude-haiku-4-5")
 
         start = time.monotonic()
-        response: LLMResponse | GenerationResult = await generate(
+        response, tool_calls = await _generate_turn_reply(
             system=system,
             messages=messages,
             model=model,
             tools=tool_list if tool_list else None,
+            session_id=task.session_id,
+            turn_number=task.turn_number,
         )
         latency_ms = int((time.monotonic() - start) * 1000)
-
-        tool_calls = getattr(response, "tool_calls", [])
 
         turn = ConversationTurn(
             session_id=task.session_id,
