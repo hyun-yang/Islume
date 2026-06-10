@@ -332,6 +332,7 @@ async def _agent_to_response(
         preferences=agent.preferences,
         translations=agent.translations,
         boundaries=agent.boundaries,
+        attached_plugins=agent.attached_plugins,
     )
 
 
@@ -366,6 +367,7 @@ async def list_agents(user_id: UUID, session: AsyncSession = Depends(get_session
             preferences=agent.preferences,
             translations=agent.translations,
             boundaries=agent.boundaries,
+            attached_plugins=agent.attached_plugins,
         )
         for agent, is_active in result.all()
     ]
@@ -407,6 +409,11 @@ async def create_agent(
         preferences=body.preferences,
         translations=body.translations,
         boundaries=body.boundaries,
+        attached_plugins=(
+            [e.model_dump() for e in body.attached_plugins]
+            if body.attached_plugins
+            else None
+        ),
     )
     session.add(agent)
     await session.flush()

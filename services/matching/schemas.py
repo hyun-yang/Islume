@@ -1,7 +1,9 @@
 """Pydantic schemas for the Map + Matching API."""
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from shared.intent_plugins import get_plugin
 
 
 class PositionUpdate(BaseModel):
@@ -106,6 +108,24 @@ class StatusUpdate(BaseModel):
 # --- Agent schemas ---
 
 
+class AttachedPluginEntry(BaseModel):
+    """One entry of `agents.attached_plugins` — `{"plugin": id, "policy": {...}}`.
+
+    Only the plugin id is validated here; policy contents are checked at
+    tool-call time by each plugin's `policy_check`.
+    """
+
+    plugin: str
+    policy: dict = Field(default_factory=dict)
+
+    @field_validator("plugin")
+    @classmethod
+    def _known_plugin(cls, v: str) -> str:
+        if get_plugin(v) is None:
+            raise ValueError(f"unknown plugin id: {v}")
+        return v
+
+
 class AgentResponse(BaseModel):
     id: UUID
     name: str
@@ -130,6 +150,8 @@ class AgentResponse(BaseModel):
     # Per-locale persona overrides + conversation boundaries (incl. language)
     translations: dict | None = None
     boundaries: dict | None = None
+    # Intent plugins attached to this agent (raw JSONB shape)
+    attached_plugins: list[dict] | None = None
 
 
 class AgentCreate(BaseModel):
@@ -149,6 +171,7 @@ class AgentCreate(BaseModel):
     preferences: dict | None = None
     translations: dict | None = None
     boundaries: dict | None = None
+    attached_plugins: list[AttachedPluginEntry] | None = None
 
 
 class AgentUpdate(BaseModel):
@@ -167,6 +190,7 @@ class AgentUpdate(BaseModel):
     preferences: dict | None = None
     translations: dict | None = None
     boundaries: dict | None = None
+    attached_plugins: list[AttachedPluginEntry] | None = None
 
 
 class MarkdownPayload(BaseModel):
