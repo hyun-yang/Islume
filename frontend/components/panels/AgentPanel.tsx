@@ -197,6 +197,7 @@ export default function AgentPanel() {
       setForm(EMPTY_FORM);
       setDemographics(EMPTY_DEMOGRAPHICS);
       setPreferences(EMPTY_PREFERENCES);
+      setAttachedPlugins([]);
       return;
     }
     const tpl = getTemplate(id);
@@ -219,6 +220,7 @@ export default function AgentPanel() {
     const pr = preferencesToForm(d.preferences);
     setDemographics(dm);
     setPreferences(pr);
+    setAttachedPlugins(d.attached_plugins ?? []);
     setShowAdvanced(
       Boolean(
         d.goal ||
