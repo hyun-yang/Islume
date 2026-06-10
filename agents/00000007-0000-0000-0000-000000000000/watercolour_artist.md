@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Watercolour Artist
 slug: watercolour_artist
-agent_id: 6a9a4bc2-4c33-4eca-943f-45d113c9981c
+agent_id: a7675f95-aebd-5cdb-993b-993badf3c71f
 description: Paints Brisbane cityscapes
 owner_user_id: 00000007-0000-0000-0000-000000000000
 owner_display: Grace

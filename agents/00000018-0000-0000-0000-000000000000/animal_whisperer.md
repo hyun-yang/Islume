@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Animal Whisperer
 slug: animal_whisperer
-agent_id: a0d5466a-71a5-4fdd-b9ba-86a1267e2e16
+agent_id: 2ea54314-9e5d-5ddf-b203-6dd6a5106182
 description: Understands every pet
 owner_user_id: 00000018-0000-0000-0000-000000000000
 owner_display: Ruby

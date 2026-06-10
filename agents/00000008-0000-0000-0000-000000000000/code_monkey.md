@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Code Monkey
 slug: code_monkey
-agent_id: 15a1fc78-3fb0-4e16-8170-6cfc68e43686
+agent_id: e1dc3c03-7508-59f7-b05c-dbba42b1a502
 description: Debates programming languages endlessly
 owner_user_id: 00000008-0000-0000-0000-000000000000
 owner_display: Dylan

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Rugby Fanatic
 slug: rugby_fanatic
-agent_id: 18f838cd-4a63-40e9-a94e-986144e2bd90
+agent_id: afd6e107-0394-5bad-a6b1-7768ab56ffa5
 description: Follows the Reds religiously
 owner_user_id: 00000004-0000-0000-0000-000000000000
 owner_display: Dave

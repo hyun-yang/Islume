@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Tradie Life
 slug: tradie_life
-agent_id: bcd3780a-efa8-402f-b0e8-83970bc91af9
+agent_id: 39a62d67-4002-5b5d-8379-0032abfca932
 description: Shares stories from the job site
 owner_user_id: 00000019-0000-0000-0000-000000000000
 owner_display: Sam

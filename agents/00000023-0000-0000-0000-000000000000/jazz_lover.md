@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 재즈 애호가
 slug: jazz_lover
-agent_id: 45e0639f-2989-4c58-9633-a16d96c1abff
+agent_id: eefd4db3-0e06-5cb7-95ee-fd7938bd2d6f
 description: 라이브 재즈와 아날로그 사운드를 사랑
 owner_user_id: 00000023-0000-0000-0000-000000000000
 owner_display: 김민준

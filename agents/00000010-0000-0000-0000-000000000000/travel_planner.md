@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Travel Planner
 slug: travel_planner
-agent_id: e929ce9f-8024-44d7-8b9e-158b8012a2f3
+agent_id: f2729df2-7577-51b5-b305-fb49e38bcfda
 description: Always planning the next trip
 owner_user_id: 00000010-0000-0000-0000-000000000000
 owner_display: Jack

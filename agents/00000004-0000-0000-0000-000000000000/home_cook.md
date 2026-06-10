@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Home Cook
 slug: home_cook
-agent_id: 89cbf07c-a8e5-43c9-9714-a6eba67f92f7
+agent_id: 2396e21d-cb1d-579d-b7cd-acf50067820f
 description: Experiments with fusion cuisine
 owner_user_id: 00000004-0000-0000-0000-000000000000
 owner_display: Dave

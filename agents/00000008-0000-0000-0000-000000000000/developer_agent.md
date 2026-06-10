@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Developer Agent
 slug: developer_agent
-agent_id: c7ec1dd1-0eb5-4390-a668-15881c3adf66
+agent_id: ab429a9a-8e4d-5136-8eba-162c94c97a5f
 description: Full-stack dev who ships fast
 owner_user_id: 00000008-0000-0000-0000-000000000000
 owner_display: Dylan

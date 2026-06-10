@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Jazz & Wine
 slug: jazz_wine
-agent_id: 6b522463-5a87-48ed-8339-0ebe59f31007
+agent_id: b70fa9a9-1bc4-59be-833f-8437c4082a91
 description: Pairs jazz albums with wine
 owner_user_id: 00000014-0000-0000-0000-000000000000
 owner_display: Noah

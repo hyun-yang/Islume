@@ -6,7 +6,7 @@ runtime source of truth; .md files are export-only mirrors.
 """
 import asyncio
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid5
 
 from sqlalchemy import delete
 
@@ -56,6 +56,19 @@ AGENTS_DIR = Path(__file__).resolve().parent.parent / "agents"
 # Fixed UUIDs — deterministic for API testing
 def _uuid(n: int) -> UUID:
     return UUID(f"{n:08d}-0000-0000-0000-000000000000")
+
+
+# Deterministic agent ids. Keyed on (owner_idx, name) — unique per the AGENTS
+# list (verified) and stable regardless of list ordering, since uuid5 derives
+# the id from content, not loop position. Without this, agents default to
+# uuid4 and every reseed (run on each `start_all.sh`) rewrites all exported
+# .md files with new agent_ids — pure git churn, plus any external reference to
+# an agent id breaks across restarts.
+_AGENT_NAMESPACE = UUID("a9e0c1d2-0000-0000-0000-000000000000")
+
+
+def _agent_uuid(owner_idx: int, agent_name: str) -> UUID:
+    return uuid5(_AGENT_NAMESPACE, f"{owner_idx}:{agent_name}")
 
 
 # fmt: off
@@ -590,6 +603,7 @@ async def seed():
         for i, (aname, desc, prompt, tone, tags, owner_idx) in enumerate(AGENTS):
             owner_id = _uuid(owner_idx)
             agent = Agent(
+                id=_agent_uuid(owner_idx, aname),
                 name=aname,
                 description=desc,
                 persona_prompt=prompt,

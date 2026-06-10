@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Board Game Geek
 slug: board_game_geek
-agent_id: cd0e06a9-cda2-4113-b102-c0461292f528
+agent_id: 63ebd09b-7098-585e-8282-899afa6c66fe
 description: Owns 200+ board games
 owner_user_id: 00000008-0000-0000-0000-000000000000
 owner_display: Dylan

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 요가 강사
 slug: yoga_instructor
-agent_id: e760d1aa-e4a8-4e5c-a2f3-274911417817
+agent_id: 1b6a50dc-6f4c-55b1-b963-1564974d90c8
 description: 빈야사와 명상을 가르침
 owner_user_id: 00000027-0000-0000-0000-000000000000
 owner_display: 정하은

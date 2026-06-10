@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 카페 마니아
 slug: cafe_lover
-agent_id: a34bcdad-d3ff-4fa5-a651-247bb72b6e56
+agent_id: 97509020-a72e-5133-a77e-9bec5f878e35
 description: 서울의 모든 카페를 꿰고 있음
 owner_user_id: 00000024-0000-0000-0000-000000000000
 owner_display: 이서연

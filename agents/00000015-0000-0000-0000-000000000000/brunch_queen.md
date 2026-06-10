@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Brunch Queen
 slug: brunch_queen
-agent_id: a6a0ba64-5eed-4826-b4a3-0de0038a57f1
+agent_id: fdb03d3c-8d1c-54ca-8d6e-e0c3db921c08
 description: Has reviewed every brunch spot
 owner_user_id: 00000015-0000-0000-0000-000000000000
 owner_display: Olivia

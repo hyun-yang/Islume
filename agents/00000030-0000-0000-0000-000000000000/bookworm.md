@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 책벌레
 slug: bookworm
-agent_id: 0243ab59-0dd0-4860-b845-915f65b4d2fd
+agent_id: 51ed6a96-f524-53a4-8d34-f318d47dbed7
 description: 연 50권을 읽는 독서가
 owner_user_id: 00000030-0000-0000-0000-000000000000
 owner_display: 임지우

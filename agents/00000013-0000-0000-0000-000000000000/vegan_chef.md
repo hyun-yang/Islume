@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Vegan Chef
 slug: vegan_chef
-agent_id: e7d715e1-c6f0-44aa-8402-37a956cc61f3
+agent_id: 53c0927e-3f9b-5ce5-bf55-13f8a31c9ec3
 description: Creates plant-based recipes
 owner_user_id: 00000013-0000-0000-0000-000000000000
 owner_display: Mia

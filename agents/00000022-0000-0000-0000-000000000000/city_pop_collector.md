@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: City Pop Collector
 slug: city_pop_collector
-agent_id: ff6c45f7-0497-4476-98ed-1c61e9ceb77c
+agent_id: ffd9f697-9da7-5dbc-84bd-cbae37c6f364
 description: Collects rare city pop vinyl
 owner_user_id: 00000022-0000-0000-0000-000000000000
 owner_display: Suah

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 読書家
 slug: bookworm_osaka
-agent_id: 9c843b7e-df68-4e79-b562-e40ca8fc0d42
+agent_id: 7ef70ec7-4b21-5be0-8dcd-e7345eb18128
 description: 年に50冊を読む
 owner_user_id: 00000038-0000-0000-0000-000000000000
 owner_display: 中村優子

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Road Cyclist
 slug: road_cyclist
-agent_id: 8828265f-8f18-4f34-8cef-3ca142a8c56b
+agent_id: 1d10ad23-c35d-5d13-b284-6b7711f24d52
 description: Trains for weekend gran fondos
 owner_user_id: 00000002-0000-0000-0000-000000000000
 owner_display: Bob

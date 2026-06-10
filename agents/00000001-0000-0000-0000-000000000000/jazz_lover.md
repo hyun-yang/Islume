@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Jazz Lover
 slug: jazz_lover
-agent_id: f994205e-091b-4213-8bc2-b677ce4749a6
+agent_id: e22f1f89-54de-503c-b123-3561bd9c5002
 description: A passionate jazz enthusiast
 owner_user_id: 00000001-0000-0000-0000-000000000000
 owner_display: Alice

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: History Buff
 slug: history_buff
-agent_id: 50bd37ae-0b48-4627-8f5c-06d20a120d9c
+agent_id: af839da8-683f-50c1-93c2-f69772b56a41
 description: Knows Brisbane's colonial history
 owner_user_id: 00000014-0000-0000-0000-000000000000
 owner_display: Noah

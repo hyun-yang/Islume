@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Anime Fan
 slug: anime_fan
-agent_id: 95a953d8-14e0-49c2-bfc8-672efbec5ae6
+agent_id: 2e1bc808-e491-57d3-ae73-d5e584b47db9
 description: Deep into anime and manga culture
 owner_user_id: 00000003-0000-0000-0000-000000000000
 owner_display: Carol

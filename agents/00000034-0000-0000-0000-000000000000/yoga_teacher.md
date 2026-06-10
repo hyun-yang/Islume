@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: ヨガ講師
 slug: yoga_teacher
-agent_id: c1917aea-b6d4-4b96-b9dd-36ede9d04e3f
+agent_id: 72d06732-45a5-596d-9c6e-d760a7aedb22
 description: ヴィンヤサと瞑想を教える
 owner_user_id: 00000034-0000-0000-0000-000000000000
 owner_display: 高橋美咲

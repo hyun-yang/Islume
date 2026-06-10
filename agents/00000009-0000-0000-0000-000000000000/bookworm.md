@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Bookworm
 slug: bookworm
-agent_id: 6a7767ec-32a2-4dbc-b824-0feca6c15b31
+agent_id: 36e50f60-1cda-5705-b506-46172d11eea4
 description: Reads 50+ books a year
 owner_user_id: 00000009-0000-0000-0000-000000000000
 owner_display: Isla

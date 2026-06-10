@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: ジャズ愛好家
 slug: jazz_aficionado
-agent_id: d5ee1852-b879-4c03-b09d-6ec0774cbbe0
+agent_id: 0a5f2bed-e2d8-5560-9894-76878e22e032
 description: ライブジャズとアナログ音響が好き
 owner_user_id: 00000031-0000-0000-0000-000000000000
 owner_display: 田中太郎

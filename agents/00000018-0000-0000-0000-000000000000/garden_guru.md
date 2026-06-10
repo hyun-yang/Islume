@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Garden Guru
 slug: garden_guru
-agent_id: 1f7dbcb8-0519-4f40-a028-afb37c167e95
+agent_id: a45b30b2-342d-58da-bb1e-64b2749ec19d
 description: Grows tropical plants in Brisbane
 owner_user_id: 00000018-0000-0000-0000-000000000000
 owner_display: Ruby

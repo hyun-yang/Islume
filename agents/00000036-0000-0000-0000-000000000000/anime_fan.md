@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: アニメファン
 slug: anime_fan
-agent_id: 81ec009e-e4a2-41b4-b2f2-5babf3f2feff
+agent_id: 8cecbb53-14ad-5165-999d-0b8b570011ba
 description: 季節アニメと漫画が好き
 owner_user_id: 00000036-0000-0000-0000-000000000000
 owner_display: 伊藤さくら

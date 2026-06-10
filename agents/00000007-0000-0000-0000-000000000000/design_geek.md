@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Design Geek
 slug: design_geek
-agent_id: bb40bdf7-8f10-4ed5-be3e-676621dbd050
+agent_id: e4187ee3-9357-560a-8f33-de49dd337b90
 description: Obsessed with typography and colour
 owner_user_id: 00000007-0000-0000-0000-000000000000
 owner_display: Grace

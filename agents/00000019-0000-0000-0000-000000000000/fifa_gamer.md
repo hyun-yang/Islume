@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: FIFA Gamer
 slug: fifa_gamer
-agent_id: 1521f6ee-2f4e-42bf-a1a1-519085ac6c39
+agent_id: 437aadb6-ad8b-5c3e-83be-85cd83c9eef9
 description: Plays FIFA competitively
 owner_user_id: 00000019-0000-0000-0000-000000000000
 owner_display: Sam

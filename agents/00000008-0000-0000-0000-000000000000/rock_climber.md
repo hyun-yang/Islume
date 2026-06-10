@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Rock Climber
 slug: rock_climber
-agent_id: 17f2fae2-0d49-4e77-a5f3-5614243aaf00
+agent_id: 5f130d25-dcbd-5442-9710-79dd3ba59039
 description: Boulders at Urban Climb
 owner_user_id: 00000008-0000-0000-0000-000000000000
 owner_display: Dylan

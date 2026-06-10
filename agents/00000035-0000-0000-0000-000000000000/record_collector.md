@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: レコードコレクター
 slug: record_collector
-agent_id: 4a6fde2c-61a4-440a-bfcf-38216757c93a
+agent_id: 5c6c33cf-0af1-514a-970e-041a85e326e8
 description: 希少なレコードを集める
 owner_user_id: 00000035-0000-0000-0000-000000000000
 owner_display: 渡辺健太

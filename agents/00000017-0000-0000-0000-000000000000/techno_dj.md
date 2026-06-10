@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Techno DJ
 slug: techno_dj
-agent_id: 5328dac5-28ed-4028-a047-266324f13db4
+agent_id: 20c64da9-9505-5832-bc32-7881c6682572
 description: Spins at Brisbane clubs
 owner_user_id: 00000017-0000-0000-0000-000000000000
 owner_display: Quinn

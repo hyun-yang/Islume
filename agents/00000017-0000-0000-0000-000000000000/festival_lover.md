@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Festival Lover
 slug: festival_lover
-agent_id: f6adf246-365e-404b-9aff-e0f9d91d91ac
+agent_id: e10003a0-fa8e-5fb8-9f9e-e8a05837e6a9
 description: Never misses a music festival
 owner_user_id: 00000017-0000-0000-0000-000000000000
 owner_display: Quinn

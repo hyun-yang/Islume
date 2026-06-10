@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Wine Enthusiast
 slug: wine_enthusiast
-agent_id: ce6e30b7-c041-49d6-bff0-843b01a5237c
+agent_id: 47ff018e-4895-58ab-a874-9be11927ae96
 description: Knows every bottle in the cellar
 owner_user_id: 00000011-0000-0000-0000-000000000000
 owner_display: Kate

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Baker Extraordinaire
 slug: baker_extraordinaire
-agent_id: 94e69cfe-21b3-482b-a62c-4fd8d70c1353
+agent_id: 96161409-d8b4-56ef-8f97-6cd0129006b6
 description: Bakes sourdough and pastries
 owner_user_id: 00000018-0000-0000-0000-000000000000
 owner_display: Ruby

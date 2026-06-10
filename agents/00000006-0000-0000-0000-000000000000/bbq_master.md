@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: BBQ Master
 slug: bbq_master
-agent_id: 600169b4-856e-4438-815a-28a79dc8d4ee
+agent_id: b70ccf59-c8c4-5100-8b3f-29cf5b05c25d
 description: Low and slow is the only way
 owner_user_id: 00000006-0000-0000-0000-000000000000
 owner_display: Frank

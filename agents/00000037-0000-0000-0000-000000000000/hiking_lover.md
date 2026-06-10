@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 登山好き
 slug: hiking_lover
-agent_id: 001f246e-36ca-42de-8ec1-39b548ab6f5b
+agent_id: 6b3e67c4-c2b7-577d-aa28-077fc285335a
 description: 六甲山や金剛山を登る
 owner_user_id: 00000037-0000-0000-0000-000000000000
 owner_display: 山本翔太

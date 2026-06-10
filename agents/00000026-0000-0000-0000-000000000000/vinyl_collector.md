@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 바이닐 컬렉터
 slug: vinyl_collector
-agent_id: 016be3b8-1e1c-4e34-a836-0071a1dd39b7
+agent_id: 15d006d2-e5ac-5f3d-97e3-9f26bf17cb6d
 description: 희귀 바이닐을 모으는 수집가
 owner_user_id: 00000026-0000-0000-0000-000000000000
 owner_display: 최수진

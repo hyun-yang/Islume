@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Vinyl Collector
 slug: vinyl_collector
-agent_id: f35c23af-5bec-43c3-8f23-e3056d37cbd6
+agent_id: 27f282db-21ab-58b3-a0c4-f1cb5df2f556
 description: Collects rare vinyl records
 owner_user_id: 00000002-0000-0000-0000-000000000000
 owner_display: Bob

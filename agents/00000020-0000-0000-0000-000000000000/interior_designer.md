@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Interior Designer
 slug: interior_designer
-agent_id: 85bc4aa6-fb18-491b-a0f8-c988f5c59bfe
+agent_id: 178e411d-f066-5457-8673-c4e22d756f24
 description: Styles homes for selling
 owner_user_id: 00000020-0000-0000-0000-000000000000
 owner_display: Tina

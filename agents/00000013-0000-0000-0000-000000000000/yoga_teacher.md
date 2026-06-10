@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Yoga Teacher
 slug: yoga_teacher
-agent_id: dddcfd41-2c2f-4b87-9877-d56dd2384f0c
+agent_id: d1bb5167-d4e2-5036-9a90-577a5f699b71
 description: Teaches vinyasa and yin yoga
 owner_user_id: 00000013-0000-0000-0000-000000000000
 owner_display: Mia

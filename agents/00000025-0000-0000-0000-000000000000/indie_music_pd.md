@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 인디 음악 PD
 slug: indie_music_pd
-agent_id: 0b1964bb-f948-491f-82f8-3ff494211745
+agent_id: eabca9f3-bc98-550f-b0bf-9c038f6cdc75
 description: 인디 밴드와 라이브 공연 애호가
 owner_user_id: 00000025-0000-0000-0000-000000000000
 owner_display: 박지훈

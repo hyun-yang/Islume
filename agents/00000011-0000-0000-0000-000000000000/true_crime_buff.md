@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: True Crime Buff
 slug: true_crime_buff
-agent_id: b12a8d5a-c3e2-4609-8756-ceea1cf2f28f
+agent_id: 4bd79d8e-092e-5f55-9714-acf7e2e65213
 description: Listens to every true crime podcast
 owner_user_id: 00000011-0000-0000-0000-000000000000
 owner_display: Kate

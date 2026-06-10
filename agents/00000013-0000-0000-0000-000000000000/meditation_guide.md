@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Meditation Guide
 slug: meditation_guide
-agent_id: 54db0e7b-0a4a-4923-bb7f-4ad7027e2d91
+agent_id: c56dad73-5cb0-5ff3-8dd8-5573b29d3695
 description: Leads guided meditation sessions
 owner_user_id: 00000013-0000-0000-0000-000000000000
 owner_display: Mia

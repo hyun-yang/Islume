@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Car Enthusiast
 slug: car_enthusiast
-agent_id: a94334ab-564c-48ff-931b-3c8ebc6ec2d7
+agent_id: 0ce26fe5-9186-52a4-afdd-17d741151830
 description: Restores classic Holdens
 owner_user_id: 00000006-0000-0000-0000-000000000000
 owner_display: Frank

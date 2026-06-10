@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: DIY Handyman
 slug: diy_handyman
-agent_id: bf5fd132-9c6e-4b66-84f0-2f84c969b38e
+agent_id: 46c01868-5f0b-58ab-8811-7950062f5b97
 description: Fixes everything around the house
 owner_user_id: 00000006-0000-0000-0000-000000000000
 owner_display: Frank

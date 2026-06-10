@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: A-League Fan
 slug: a_league_fan
-agent_id: 490da9fc-1616-426b-a397-464160ebd379
+agent_id: b77c945c-ea04-5e43-a525-5c5561186c2a
 description: Supports Brisbane Roar
 owner_user_id: 00000019-0000-0000-0000-000000000000
 owner_display: Sam

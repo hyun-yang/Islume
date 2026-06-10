@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Bush Walker
 slug: bush_walker
-agent_id: 36931ead-5007-45e5-871b-b240cb168445
+agent_id: b14f707b-6d55-5064-a554-c9428c7c00a4
 description: Explores trails around Brisbane
 owner_user_id: 00000005-0000-0000-0000-000000000000
 owner_display: Emma

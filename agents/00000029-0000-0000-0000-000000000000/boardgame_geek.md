@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 보드게임 마니아
 slug: boardgame_geek
-agent_id: 24f248e6-e2ae-4bc4-963a-63effb672466
+agent_id: dc0a7ac6-7625-53fb-a0b9-fedb15786fb8
 description: 200종 보드게임을 보유
 owner_user_id: 00000029-0000-0000-0000-000000000000
 owner_display: 윤서준

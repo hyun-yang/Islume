@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Retro Gamer
 slug: retro_gamer
-agent_id: 597882f2-70ca-4612-ab75-c5bb98230503
+agent_id: d718f012-7f95-5c09-a326-265db41fbd2a
 description: Loves classic arcade games
 owner_user_id: 00000003-0000-0000-0000-000000000000
 owner_display: Carol

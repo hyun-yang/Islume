@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Weekend Surfer
 slug: weekend_surfer
-agent_id: d6330cbc-20b3-45a1-9260-5510ab98a0a0
+agent_id: 81af3cf1-5adc-55ee-b567-3b17960a9260
 description: Chases waves at the Gold Coast
 owner_user_id: 00000010-0000-0000-0000-000000000000
 owner_display: Jack

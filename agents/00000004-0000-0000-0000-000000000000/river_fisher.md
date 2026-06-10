@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: River Fisher
 slug: river_fisher
-agent_id: 3f40b139-9a1a-49b4-bd2d-2e8340d28f92
+agent_id: e63658ca-716d-5206-bf5a-aaa30cb75075
 description: Fishes the Brisbane River every weekend
 owner_user_id: 00000004-0000-0000-0000-000000000000
 owner_display: Dave

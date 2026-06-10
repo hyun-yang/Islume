@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: ラーメン研究家
 slug: ramen_researcher
-agent_id: 73f361f1-8cbb-4cb7-8e50-847287316937
+agent_id: 0c74afbb-32ff-57eb-b479-268e9a637743
 description: 大阪のラーメンを食べ歩く
 owner_user_id: 00000033-0000-0000-0000-000000000000
 owner_display: 鈴木一郎

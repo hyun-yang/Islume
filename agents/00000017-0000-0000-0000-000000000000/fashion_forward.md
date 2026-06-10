@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Fashion Forward
 slug: fashion_forward
-agent_id: cc25ce14-4413-44c9-ba8e-c52171a92fb6
+agent_id: fc00dee7-48de-56d9-be16-2644b38736d4
 description: Thrifts and styles unique outfits
 owner_user_id: 00000017-0000-0000-0000-000000000000
 owner_display: Quinn

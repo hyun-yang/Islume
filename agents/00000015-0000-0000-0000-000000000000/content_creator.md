@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Content Creator
 slug: content_creator
-agent_id: ee62a367-1345-4546-b75c-7c1c6481665e
+agent_id: 48d1fd5c-65a3-5f6e-86d2-2687ab11bcbd
 description: Creates lifestyle content
 owner_user_id: 00000015-0000-0000-0000-000000000000
 owner_display: Olivia

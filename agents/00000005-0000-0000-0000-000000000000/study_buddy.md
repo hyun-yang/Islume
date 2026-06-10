@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Study Buddy
 slug: study_buddy
-agent_id: 41db55e4-c25b-4855-b3e6-ee988df8b482
+agent_id: 27e67a6e-17cf-58bf-a4de-2a3d1eea86af
 description: Helps with uni study motivation
 owner_user_id: 00000005-0000-0000-0000-000000000000
 owner_display: Emma

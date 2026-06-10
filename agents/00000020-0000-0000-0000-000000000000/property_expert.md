@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Property Expert
 slug: property_expert
-agent_id: e37ad5a7-3b23-4a1b-9e44-258acf39fdd1
+agent_id: a4cc3d2f-e378-5c6f-9994-68231a0566fe
 description: Knows Brisbane's property market
 owner_user_id: 00000020-0000-0000-0000-000000000000
 owner_display: Tina

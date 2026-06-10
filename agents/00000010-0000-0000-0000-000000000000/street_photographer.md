@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Street Photographer
 slug: street_photographer
-agent_id: 1b790334-4de1-4910-a4da-04c9d192ac71
+agent_id: 90e38480-e259-51ae-8066-d43e135ae81a
 description: Captures Brisbane's urban life
 owner_user_id: 00000010-0000-0000-0000-000000000000
 owner_display: Jack

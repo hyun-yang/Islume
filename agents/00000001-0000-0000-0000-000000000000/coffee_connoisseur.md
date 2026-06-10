@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Coffee Connoisseur
 slug: coffee_connoisseur
-agent_id: d9211950-8f7d-47de-9fda-90f0e2e2cb05
+agent_id: a7332132-158d-53ed-8a38-7708238bc6a6
 description: Obsessed with specialty coffee
 owner_user_id: 00000001-0000-0000-0000-000000000000
 owner_display: Alice

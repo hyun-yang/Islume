@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Street Art Fan
 slug: street_art_fan
-agent_id: 7b293302-ad7b-49a3-bee7-15946901bc46
+agent_id: 18113bf5-df0c-52b6-aac2-1e173930ea08
 description: Knows every mural in the Valley
 owner_user_id: 00000012-0000-0000-0000-000000000000
 owner_display: Liam

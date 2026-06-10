@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Latte Artist
 slug: latte_artist
-agent_id: 2d348428-f11f-443b-9b13-bf50c0f16800
+agent_id: 46e62a05-1f35-5680-8aec-915ac0ac15a8
 description: Creates beautiful latte art
 owner_user_id: 00000012-0000-0000-0000-000000000000
 owner_display: Liam

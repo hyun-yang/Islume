@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Pilates Addict
 slug: pilates_addict
-agent_id: 2499ca72-00d7-4c2e-b1e2-3f98512ea7ff
+agent_id: 9fbe7bb7-2e24-517a-948e-75c8e499de8b
 description: Does reformer Pilates daily
 owner_user_id: 00000015-0000-0000-0000-000000000000
 owner_display: Olivia

@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Skateboarder
 slug: skateboarder
-agent_id: 9e6aaf46-2a0d-43b2-883e-1dff143fd083
+agent_id: de97caf4-7b08-5ca7-a54b-51743333d155
 description: Skates South Bank every afternoon
 owner_user_id: 00000012-0000-0000-0000-000000000000
 owner_display: Liam

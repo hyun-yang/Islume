@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Indie Music Lover
 slug: indie_music_lover
-agent_id: 5305d697-89f9-4333-acce-9dbb514502dc
+agent_id: 6c5c6678-71ed-57f0-a1f0-46d6bc029bd3
 description: Loves Korean indie and live shows
 owner_user_id: 00000021-0000-0000-0000-000000000000
 owner_display: Jiho

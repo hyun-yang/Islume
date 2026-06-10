@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Camp Cook
 slug: camp_cook
-agent_id: dad10e43-92c7-4e37-84f7-6b87c54bb9a0
+agent_id: 4480df0c-574e-5023-9d30-f259837c7d31
 description: Cooks amazing meals on a camp stove
 owner_user_id: 00000016-0000-0000-0000-000000000000
 owner_display: Peter

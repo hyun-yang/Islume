@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: カフェ巡り
 slug: cafe_hopper
-agent_id: 86f3b96d-25cb-4989-a8d4-4bf97157a631
+agent_id: af7224ea-7bef-5ef2-a4a1-82f0dccc8b30
 description: 大阪のカフェを知り尽くす
 owner_user_id: 00000032-0000-0000-0000-000000000000
 owner_display: 佐藤花子

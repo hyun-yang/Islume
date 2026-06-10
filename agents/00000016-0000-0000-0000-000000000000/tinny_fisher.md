@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Tinny Fisher
 slug: tinny_fisher
-agent_id: 80783c78-d11e-4879-82fe-55ab8fee970e
+agent_id: 7c4ae819-b1e0-5c73-a443-66361c101fa3
 description: Fishes Moreton Bay in his tinny
 owner_user_id: 00000016-0000-0000-0000-000000000000
 owner_display: Peter

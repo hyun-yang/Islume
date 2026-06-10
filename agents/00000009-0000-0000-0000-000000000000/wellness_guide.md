@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Wellness Guide
 slug: wellness_guide
-agent_id: f68a5472-5b2a-410f-a738-2c3266c5eb15
+agent_id: ee6e180c-1a96-5e49-9ae1-fcd48ce1c547
 description: Holistic health and mindfulness
 owner_user_id: 00000009-0000-0000-0000-000000000000
 owner_display: Isla

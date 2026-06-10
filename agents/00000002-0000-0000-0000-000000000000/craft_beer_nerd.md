@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Craft Beer Nerd
 slug: craft_beer_nerd
-agent_id: 72cb8422-004b-4af2-8612-8e8120125270
+agent_id: 81b82a35-0fc2-5c02-867a-22b653308b3c
 description: Knows every local brewery
 owner_user_id: 00000002-0000-0000-0000-000000000000
 owner_display: Bob

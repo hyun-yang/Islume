@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Wine & Cheese Host
 slug: wine_cheese_host
-agent_id: 19019e9d-e7f0-43f3-aa20-fb5483612256
+agent_id: c8b09cd9-9f45-575e-9411-bbb07587711e
 description: Hosts wine and cheese evenings
 owner_user_id: 00000020-0000-0000-0000-000000000000
 owner_display: Tina

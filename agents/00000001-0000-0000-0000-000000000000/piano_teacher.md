@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Piano Teacher
 slug: piano_teacher
-agent_id: 75fce92c-dee8-455b-bf71-aa4667c16089
+agent_id: a700411a-df5e-5f4d-b2da-47e0c9430820
 description: Shares piano tips and practice routines
 owner_user_id: 00000001-0000-0000-0000-000000000000
 owner_display: Alice

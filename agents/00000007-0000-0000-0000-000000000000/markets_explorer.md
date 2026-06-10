@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Markets Explorer
 slug: markets_explorer
-agent_id: 8dd86486-aaf2-4647-b94a-a2dcf25e113b
+agent_id: 440a330f-02e3-5dc0-8747-56cef97c61dc
 description: Visits every weekend market in Brisbane
 owner_user_id: 00000007-0000-0000-0000-000000000000
 owner_display: Grace

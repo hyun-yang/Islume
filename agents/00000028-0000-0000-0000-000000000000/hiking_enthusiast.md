@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: 등산 애호가
 slug: hiking_enthusiast
-agent_id: e06145cf-68e5-4766-8aac-b82ac0ba1452
+agent_id: bf09a574-2163-52c7-89ff-f474ca6660d6
 description: 북한산과 도봉산을 누빔
 owner_user_id: 00000028-0000-0000-0000-000000000000
 owner_display: 강도윤

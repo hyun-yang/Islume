@@ -3,7 +3,7 @@ schema_version: 1
 revision: 1
 name: Cosplay Creator
 slug: cosplay_creator
-agent_id: fce0d28f-28bb-4c50-a5d6-5edd6726ebc8
+agent_id: 996be0ae-ba2b-570a-9415-36c990c93c76
 description: Makes elaborate cosplay costumes
 owner_user_id: 00000003-0000-0000-0000-000000000000
 owner_display: Carol
