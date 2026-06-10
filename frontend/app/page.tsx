@@ -13,6 +13,7 @@ import WalletPanel from "@/components/panels/WalletPanel";
 import TransferModal from "@/components/panels/TransferModal";
 import VisitConfirmDialog from "@/components/island/VisitConfirmDialog";
 import IslandPlatformerView from "@/components/island-platformer/IslandPlatformerView";
+import StageEditorView from "@/components/stage-editor/StageEditorView";
 import VisitNotifications from "@/components/notifications/VisitNotifications";
 import RpsInvitationToast from "@/components/notifications/RpsInvitationToast";
 import PendingConfirmationToast from "@/components/notifications/PendingConfirmationToast";
@@ -252,6 +253,11 @@ export default function Home() {
 
   const inIslandView =
     (viewMode === "island" || viewMode === "loading") && activeVisitId;
+
+  // Fullscreen stage editor — author this island's platformer stages.
+  if (viewMode === "editor" && selectedUserId) {
+    return <StageEditorView />;
+  }
 
   // Fullscreen island exploration — hide sidebar, modals, and chrome.
   if (inIslandView) {

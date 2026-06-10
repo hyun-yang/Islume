@@ -7,10 +7,12 @@ import {
   useUpdateStatus,
   useModels,
 } from "@/hooks/useProfile";
+import { useAppStore } from "@/stores/appStore";
 import { useT } from "@/lib/i18n";
 
 export default function ProfilePanel() {
   const t = useT();
+  const setViewMode = useAppStore((s) => s.setViewMode);
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
   const updateStatus = useUpdateStatus();
@@ -238,11 +240,12 @@ export default function ProfilePanel() {
           >
             {t("profile.editProfile")}
           </button>
-          {/*
-            Map editor entry is hidden while the platformer redesign lands;
-            the editor still builds top-down maps that the new game won't
-            consume. Will be reactivated once the editor speaks platformer.
-          */}
+          <button
+            onClick={() => setViewMode("editor")}
+            className="w-full py-1.5 bg-emerald-100 text-emerald-800 rounded text-sm hover:bg-emerald-200"
+          >
+            🛠 {t("profile.stageEditor")}
+          </button>
         </div>
       )}
     </div>
