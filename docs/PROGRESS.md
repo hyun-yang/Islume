@@ -15,14 +15,13 @@
 
 ### ⏳ To Do (Backlog)
 
-- [ ] **Phase 4 — Editor MVP:** `frontend/components/stage-editor/` — `editorState.ts` (pure TS + undo/redo), `levelValidation.ts`, `EditorCanvas.tsx` (PixiJS paint), `EditorPalette.tsx`, `StageEditorView.tsx` (slot tabs, toolbar), entry via ProfilePanel + `viewMode === "editor"`.
 - [ ] **Phase 5 — Test play + clear/publish loop:** `StageTestPlay.tsx` on the extracted runtime; auto-save before test; clear → `POST cleared`; publish gated on `cleared && !dirty`.
 - [ ] **Phase 6 — Visitor integration:** fetch host's published stages in `IslandPlatformerView`, `stages[] + stageIndex` replaces `STAGE_DATA`/`NEXT_STAGE`, last-index final-stage detection (RPS/chat unlock), built-in fallback on empty/error.
 - [ ] **Phase 7 — i18n + gates:** `editor.*` keys in en/ko/ja, `npm run lint` + `tsc` + `knip` + `uv run pytest tests/`.
 
 ### 🚧 In Progress
 
-- [ ] **Phase 3 — Engine extraction:** move the Pixi init/loop/cleanup from `IslandPlatformerView.tsx` verbatim into `PlatformerGameRuntime.ts` (`createPlatformerRun`). Behavior-preserving; verify built-in stage1→3 full play.
+- [ ] **Phase 4 — Editor MVP:** `frontend/components/stage-editor/` — `editorState.ts` (pure TS + undo/redo), `levelValidation.ts`, `EditorCanvas.tsx` (PixiJS paint), `EditorPalette.tsx`, `StageEditorView.tsx` (slot tabs, toolbar), entry via ProfilePanel + `viewMode === "editor"`.
 
 ### 🛑 Blocked / Waiting
 
@@ -30,6 +29,7 @@
 
 ### ✅ Completed
 
+- [x] **Phase 3 — Engine extraction:** `createPlatformerRun()` in `PlatformerGameRuntime.ts` — Pixi init/loop/cleanup moved verbatim; runtime owns run state (hp/shells/lives/goal/checkpoint) and mirrors via callbacks; `initialShells`/`initialLives` preserve cross-stage carry-over; level compiled inside async init so malformed data flows through `onError`. Side fix: TouchInput's render-time `inputRef.current` read (latent `react-hooks/refs` violation, previously masked because the giant effect made the component unanalyzable) replaced with `gameInput` state. Verified: `tsc` 0 errors, lint clean for touched files, manual full play stage1→3 (HUD, V toggle, damage/collect, death/respawn, game-over retry, shell/lives carry-over on stage transition, final-stage chat/RPS unlock, ESC leave + re-enter) all passed.
 - [x] **Phase 2 — Frontend plumbing:** `LevelData.id`/`LevelMap.id` widened to `string` (no ripple — `tsc` clean), `encodeRows()` + reverse legend, `ActorType`/`Background` exported, `VisitViewMode` + `"editor"`, `IslandStage`/`StageLevelData` types, 6 stage API fns in `lib/api.ts`, `useIslandStages.ts` hooks (query key `["islandStages", islandId, publishedOnly]` + invalidate-by-prefix mutations). Gate passed: `npx tsc --noEmit` 0 errors; lint errors unchanged (6 pre-existing, none in touched files).
 - [x] **Phase 1 — Backend:** `island_stages` table + migration `0620ab77cd88`, level-data validation schemas, 6 stage endpoints (list/save/cleared/publish/unpublish/delete). 21 unit tests + 14/14 live endpoint smoke checks passed (state machine verified: save resets to draft/uncleared, publish 409s without clear, unpublish keeps cleared).
 - [x] **Phase 0 — Progress tracker:** created this document; plan approved (clear-to-publish required, built-in fallback, width 40–200, full element palette).
@@ -49,7 +49,8 @@
 ### 2026-06-11
 
 * **Phase 2 done:** frontend plumbing complete. The `id: StageId → string` widening produced zero tsc errors (built-in `STAGE_DATA` keys stay `StageId`-typed; `startBgm` call sites use the separately-typed `currentStage` state, so no ripple). Logged SEC-1 (stage-endpoint IDOR) as an accepted MVP gap per the system-wide-auth-PR policy.
-* **Next Steps:** Phase 3 — engine extraction (`createPlatformerRun` in `PlatformerGameRuntime.ts`), behavior-preserving, own commit, verified by built-in stage1→3 full play.
+* **Phase 3 done:** engine extracted to `PlatformerGameRuntime.ts`; manual stage1→3 full-play regression passed (user-verified, all 10 checklist items including shell/lives carry-over and final-stage unlock). Two design notes: (a) runtime owns hp/shells/lives — React state became a HUD mirror, so the stale-closure workarounds in the old loop disappeared; (b) carry-over across stages is seeded via `initialShells`/`initialLives` opts from refs.
+* **Next Steps:** Phase 4 — editor MVP (`stage-editor/` components, pure-TS editor state + undo/redo, client validation mirror, paint canvas, palette, slot tabs).
 
 ### 2026-06-10
 
