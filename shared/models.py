@@ -183,7 +183,8 @@ class MatchSession(Base):
     agent_b_id: Mapped[UUID] = mapped_column(ForeignKey("agents.id"))
     similarity_score: Mapped[float] = mapped_column(Float)
     match_context: Mapped[str] = mapped_column(Text, default="")
-    status: Mapped[str] = mapped_column(String(20), default="active")
+    # 30, not 20: "awaiting_owner_confirmation" is 27 chars
+    status: Mapped[str] = mapped_column(String(30), default="active")
     turn_count: Mapped[int] = mapped_column(Integer, default=0)
     max_turns: Mapped[int] = mapped_column(Integer, default=100)
     started_at: Mapped[datetime] = mapped_column(server_default=func.now())

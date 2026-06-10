@@ -87,6 +87,44 @@ function BarteringWithdraw({ payload }: { payload: ToolCallEventPayload }) {
   );
 }
 
+function InterviewRequest({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as { message?: string; position?: string };
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">💼 {t("tool.interviewRequested")}</span>
+      {a.position && <span> — {a.position}</span>}
+      {a.message && (
+        <div className="mt-1 text-xs text-zinc-600 italic">&ldquo;{a.message}&rdquo;</div>
+      )}
+    </div>
+  );
+}
+
+function InterviewAccept({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as { message?: string };
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">🤝 {t("tool.interviewAccepted")}</span>
+      {a.message && (
+        <div className="mt-1 text-xs text-zinc-600 italic">&ldquo;{a.message}&rdquo;</div>
+      )}
+    </div>
+  );
+}
+
+function InterviewDecline({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as { reason?: string };
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">{t("tool.interviewDeclined")}</span>
+      {a.reason && <span className="text-zinc-600"> — {a.reason}</span>}
+    </div>
+  );
+}
+
 function GenericPayload({ payload }: { payload: ToolCallEventPayload }) {
   return (
     <div className="text-sm">
@@ -112,6 +150,16 @@ function ToolCallBody({ payload }: { payload: ToolCallEventPayload }) {
         return <BarteringReference payload={payload} />;
       case "withdraw":
         return <BarteringWithdraw payload={payload} />;
+    }
+  }
+  if (payload.plugin === "job_interview") {
+    switch (payload.tool_name) {
+      case "request_interview":
+        return <InterviewRequest payload={payload} />;
+      case "accept_interview":
+        return <InterviewAccept payload={payload} />;
+      case "decline_interview":
+        return <InterviewDecline payload={payload} />;
     }
   }
   return <GenericPayload payload={payload} />;
