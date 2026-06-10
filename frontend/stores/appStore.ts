@@ -62,6 +62,10 @@ interface AppState {
   // Affinity
   affinityCheck: { score: number; summary: string; recommendation: string } | null;
 
+  // Final partner evaluation marker (content-free; each owner fetches their
+  // own private evaluation via REST). reason: "max_turns" | "session_end".
+  finalEvaluation: { reason: string; turnNumber: number | null } | null;
+
   // Wallet
   showTransferModal: boolean;
 
@@ -112,6 +116,7 @@ interface AppState {
   setSessionStatus: (status: AppState["sessionStatus"]) => void;
   addConversationTurn: (turn: ConversationTurn) => void;
   setAffinityCheck: (check: AppState["affinityCheck"]) => void;
+  setFinalEvaluation: (marker: AppState["finalEvaluation"]) => void;
   upsertToolCallEvent: (payload: ToolCallEventPayload) => void;
   setDealFinalized: (payload: DealFinalizedPayload | null) => void;
   pushPendingConfirmation: (n: PendingConfirmationNotification) => void;
@@ -212,6 +217,7 @@ export const useAppStore = create<AppState>()(
   dealFinalized: null,
   pendingConfirmations: [],
   affinityCheck: null,
+  finalEvaluation: null,
   showTransferModal: false,
 
   viewMode: "world",
@@ -305,6 +311,7 @@ export const useAppStore = create<AppState>()(
             conversationTurns: [],
             toolCallEvents: [],
             dealFinalized: null,
+            finalEvaluation: null,
           },
     ),
 
@@ -316,6 +323,8 @@ export const useAppStore = create<AppState>()(
     })),
 
   setAffinityCheck: (check) => set({ affinityCheck: check }),
+
+  setFinalEvaluation: (marker) => set({ finalEvaluation: marker }),
 
   upsertToolCallEvent: (payload) =>
     set((state) => {
@@ -356,6 +365,7 @@ export const useAppStore = create<AppState>()(
       toolCallEvents: [],
       dealFinalized: null,
       affinityCheck: null,
+      finalEvaluation: null,
       matchCandidates: [],
       selectedMatches: [],
       matchStatus: "idle",
@@ -376,6 +386,7 @@ export const useAppStore = create<AppState>()(
       dealFinalized: null,
       pendingConfirmations: [],
       affinityCheck: null,
+      finalEvaluation: null,
       viewMode: "world",
       pendingVisit: null,
       activeVisitId: null,

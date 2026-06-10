@@ -8,6 +8,7 @@ import { useSessionTurns } from "@/hooks/useSession";
 import { cancelSession, respondToAffinity } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import ToolCallCard from "@/components/session/ToolCallCard";
+import EvaluationCard from "@/components/session/EvaluationCard";
 import type { ConversationTurn, ToolCallEventPayload } from "@/lib/types";
 
 type TimelineItem =
@@ -21,6 +22,7 @@ export default function ConversationViewer() {
   const toolCallEvents = useAppStore((s) => s.toolCallEvents);
   const dealFinalized = useAppStore((s) => s.dealFinalized);
   const affinityCheck = useAppStore((s) => s.affinityCheck);
+  const finalEvaluation = useAppStore((s) => s.finalEvaluation);
   const selectedUserId = useAppStore((s) => s.selectedUserId);
   const clearSession = useAppStore((s) => s.clearSession);
   const setSessionStatus = useAppStore((s) => s.setSessionStatus);
@@ -209,8 +211,13 @@ export default function ConversationViewer() {
           </div>
         )}
 
-        {/* Affinity check card */}
-        {affinityCheck && sessionStatus === "awaiting_review" && (
+        {/* Final partner evaluation card — owner-private verdicts fetched via
+            REST; replaces the generic affinity card at the max_turns pause and
+            stays visible (read-only) after a session_end evaluation. */}
+        {finalEvaluation && <EvaluationCard />}
+
+        {/* Affinity check card (periodic mid-conversation checkpoint) */}
+        {affinityCheck && !finalEvaluation && sessionStatus === "awaiting_review" && (
           <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 space-y-3">
             <div className="text-xs font-semibold text-amber-700">
               {t("session.affinityCheck")}

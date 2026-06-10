@@ -13,6 +13,7 @@ export function useSessionStream(sessionId: string | null) {
   const addTurn = useAppStore((s) => s.addConversationTurn);
   const setSessionStatus = useAppStore((s) => s.setSessionStatus);
   const setAffinityCheck = useAppStore((s) => s.setAffinityCheck);
+  const setFinalEvaluation = useAppStore((s) => s.setFinalEvaluation);
   const upsertToolCallEvent = useAppStore((s) => s.upsertToolCallEvent);
   const setDealFinalized = useAppStore((s) => s.setDealFinalized);
 
@@ -57,6 +58,19 @@ export function useSessionStream(sessionId: string | null) {
           } catch {
             // ignore parse errors
           }
+        } else if (event.event_type === "final_evaluation") {
+          // Content-free marker — each owner fetches their private evaluation
+          // via REST (the shared stream must not carry private verdicts).
+          try {
+            const data = JSON.parse(event.content);
+            setFinalEvaluation({
+              reason: data.reason ?? "max_turns",
+              turnNumber: data.turn_number ?? null,
+            });
+            if (data.reason === "max_turns") setSessionStatus("awaiting_review");
+          } catch {
+            // ignore parse errors
+          }
         } else if (event.event_type === "session_ended") {
           setSessionStatus("ended");
         }
@@ -79,6 +93,7 @@ export function useSessionStream(sessionId: string | null) {
     addTurn,
     setSessionStatus,
     setAffinityCheck,
+    setFinalEvaluation,
     upsertToolCallEvent,
     setDealFinalized,
   ]);

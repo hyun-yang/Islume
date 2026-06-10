@@ -69,6 +69,14 @@ interface ChatReceivedEvent {
   preview: string;
 }
 
+interface EvaluationReadyEvent {
+  sessionId: string;
+  trigger: string;
+  turnNumber: number;
+  score: number;
+  summary: string;
+}
+
 export interface UseUserSocketCallbacks {
   onIncomingVisit?: (e: IncomingVisitEvent) => void;
   onVisitArrived?: (e: VisitArrivedEvent) => void;
@@ -79,6 +87,7 @@ export interface UseUserSocketCallbacks {
   onRpsCancelled?: (e: RpsCancelledEvent) => void;
   onPendingConfirmation?: (e: PendingConfirmationEvent) => void;
   onChatReceived?: (e: ChatReceivedEvent) => void;
+  onEvaluationReady?: (e: EvaluationReadyEvent) => void;
 }
 
 /**
@@ -188,6 +197,15 @@ export function useUserSocket(
             senderId: str("sender_id"),
             senderName: str("sender_name"),
             preview: str("preview"),
+          });
+          break;
+        case "evaluation:ready":
+          h.onEvaluationReady?.({
+            sessionId: str("session_id"),
+            trigger: str("trigger"),
+            turnNumber: Number(d.turn_number ?? 0),
+            score: Number(d.score ?? 0),
+            summary: str("summary"),
           });
           break;
       }

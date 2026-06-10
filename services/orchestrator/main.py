@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.config import MAX_TOTAL_TURNS
 from shared.db import get_sessionmaker
 from shared.intent_plugins import (
     PLUGINS,
@@ -28,6 +29,7 @@ from shared.models import (
     ConversationTurn,
     MatchSession,
     Notification,
+    PartnerEvaluation,
     ToolCallEvent,
     User,
     UserAgent,
@@ -277,6 +279,58 @@ async def list_session_turns(
     ]
 
 
+class EvaluationItem(BaseModel):
+    id: UUID
+    agent_id: UUID
+    evaluated_agent_id: UUID
+    goal_category: str | None
+    template: str
+    verdicts: dict
+    score: int | None
+    summary: str | None
+    turn_number: int
+    trigger: str
+    created_at: str
+
+
+@app.get("/sessions/{session_id}/evaluations", response_model=list[EvaluationItem])
+async def list_session_evaluations(
+    session_id: UUID,
+    user_id: UUID,
+    db: AsyncSession = Depends(get_session),
+):
+    """Return the requesting owner's evaluations for a session, newest first.
+
+    Evaluations are owner-private: rows are filtered by user_id, so a
+    participant only ever sees their own agent's verdicts — never the
+    partner's. (Same user_id-trust baseline as every other endpoint; real
+    enforcement arrives with the system-wide auth PR.)
+    """
+    stmt = (
+        select(PartnerEvaluation)
+        .where(PartnerEvaluation.session_id == session_id)
+        .where(PartnerEvaluation.user_id == user_id)
+        .order_by(PartnerEvaluation.created_at.desc())
+    )
+    rows = list((await db.execute(stmt)).scalars())
+    return [
+        EvaluationItem(
+            id=e.id,
+            agent_id=e.agent_id,
+            evaluated_agent_id=e.evaluated_agent_id,
+            goal_category=e.goal_category,
+            template=e.template,
+            verdicts=e.verdicts or {},
+            score=e.score,
+            summary=e.summary,
+            turn_number=e.turn_number,
+            trigger=e.trigger,
+            created_at=e.created_at.isoformat(),
+        )
+        for e in rows
+    ]
+
+
 class CreateSessionRequest(BaseModel):
     user_a_id: UUID
     user_b_id: UUID
@@ -350,8 +404,13 @@ async def affinity_response(
     body: AffinityResponseRequest,
     db: AsyncSession = Depends(get_session),
 ):
-    """Handle a user's response to an affinity check."""
-    session_obj = await db.get(MatchSession, session_id)
+    """Handle a user's response to an affinity check or final evaluation.
+
+    The row is locked (SELECT ... FOR UPDATE) so two near-simultaneous
+    "continue" responses can't both observe the other as missing and
+    double-enqueue the resume turn.
+    """
+    session_obj = await db.get(MatchSession, session_id, with_for_update=True)
     if session_obj is None:
         raise HTTPException(status_code=404, detail="Session not found")
     if session_obj.status != "awaiting_review":
@@ -390,6 +449,13 @@ async def affinity_response(
     # Check if both users responded "continue"
     if all(r == "continue" for r in responses):
         session_obj.status = "active"
+        # Final-evaluation pause: the session is AT max_turns, so resuming
+        # without extending would immediately re-trigger the checkpoint.
+        # Grant another window, hard-capped at MAX_TOTAL_TURNS.
+        if session_obj.turn_count >= session_obj.max_turns:
+            session_obj.max_turns = min(
+                session_obj.turn_count + 30, MAX_TOTAL_TURNS
+            )
         await db.commit()
 
         # Resume the conversation — enqueue next turn
@@ -403,7 +469,7 @@ async def affinity_response(
         )
         await r.xadd(STREAM_LLM_TASKS, next_task.to_redis())
 
-        return {"status": "resumed"}
+        return {"status": "resumed", "max_turns": session_obj.max_turns}
 
     # Only one user has responded so far
     await db.commit()

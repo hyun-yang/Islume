@@ -179,6 +179,15 @@ export default function Home() {
       // A durable inbox row was written before this event was published.
       queryClient.invalidateQueries({ queryKey: ["notifications", selectedUserId] });
     },
+    onEvaluationReady: (e) => {
+      // Inbox row (badge) + session status changed to awaiting_review; if the
+      // session is open, the final_evaluation stream marker drives the card.
+      queryClient.invalidateQueries({ queryKey: ["notifications", selectedUserId] });
+      queryClient.invalidateQueries({ queryKey: ["sessions", selectedUserId] });
+      queryClient.invalidateQueries({
+        queryKey: ["evaluations", e.sessionId, selectedUserId],
+      });
+    },
     onChatReceived: (e) => {
       // notification_enabled is the master switch for live surfacing; when off,
       // nothing pops (the message is still stored and readable from the inbox).

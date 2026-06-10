@@ -445,6 +445,39 @@ class IntentAgreement(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
+class PartnerEvaluation(Base):
+    """One agent's evaluation of its conversation partner.
+
+    Owner-private: rows are always filtered by user_id (the evaluating agent's
+    owner) — the partner must never see the other side's verdicts. The shared
+    MatchSession.affinity_* fields stay as the owner-agnostic score mirror;
+    this table holds the category-specific verdicts.
+
+    template: hobby | recruiting | job_seeking | dating | professional
+    trigger: max_turns | session_end
+    """
+
+    __tablename__ = "partner_evaluations"
+    __table_args__ = (
+        Index("ix_partner_evaluations_user_created", "user_id", "created_at"),
+        Index("ix_partner_evaluations_session_agent", "session_id", "agent_id"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PgUUID, primary_key=True, default=uuid4)
+    session_id: Mapped[UUID] = mapped_column(ForeignKey("match_sessions.id"))
+    agent_id: Mapped[UUID] = mapped_column(ForeignKey("agents.id"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    evaluated_agent_id: Mapped[UUID] = mapped_column(ForeignKey("agents.id"))
+    goal_category: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    template: Mapped[str] = mapped_column(String(20))
+    verdicts: Mapped[dict] = mapped_column(JSONB, default=dict)
+    score: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    turn_number: Mapped[int] = mapped_column(Integer)
+    trigger: Mapped[str] = mapped_column(String(20))
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
 class Notification(Base):
     """Durable per-user notification (inbox row).
 

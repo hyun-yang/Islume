@@ -21,6 +21,7 @@ import type {
   DMMessage,
   PluginInfo,
   NotificationItem,
+  EvaluationItem,
 } from "./types";
 
 const MATCHING = "/api/matching";
@@ -150,6 +151,17 @@ export async function respondToAffinity(
     body: JSON.stringify({ user_id: userId, action }),
   });
   if (!res.ok) throw new Error(`Affinity response failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSessionEvaluations(
+  sessionId: string,
+  userId: string,
+): Promise<EvaluationItem[]> {
+  const res = await fetch(
+    `${ORCHESTRATOR}/sessions/${sessionId}/evaluations?user_id=${userId}`,
+  );
+  if (!res.ok) throw new Error(`Evaluations fetch failed: ${res.status}`);
   return res.json();
 }
 

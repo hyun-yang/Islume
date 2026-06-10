@@ -3,6 +3,11 @@ from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Hard ceiling on a session's total turns across max_turns extensions.
+# At this cap the worker completes the session instead of pausing for review,
+# and the orchestrator refuses further extensions — bounds LLM cost.
+MAX_TOTAL_TURNS = 120
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(

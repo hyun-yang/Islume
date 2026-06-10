@@ -13,11 +13,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from services.visit.user_events import publish_user_event
+from services.worker.evaluation import analyze_partner_evaluations
 from shared.agent_md import (
     load_references,
     references_from_meta,
     select_references,
 )
+from shared.config import MAX_TOTAL_TURNS
 from shared.db import get_sessionmaker
 from shared.intent_plugins import (
     ChatEventSpec,
@@ -45,6 +47,7 @@ from shared.models import (
     Agent,
     ConversationTurn,
     MatchSession,
+    PartnerEvaluation,
     ToolCallEvent,
     User,
     UserAgent,
@@ -721,19 +724,28 @@ async def _run_turn(task: TurnTask) -> None:
         if turn_tool_calls_jsonb:
             turn.tool_calls = turn_tool_calls_jsonb
 
-        # Decide next action: continue, affinity check, or complete.
-        # Plugin-driven outcomes take precedence over affinity/turn-count logic.
+        # Decide next action: continue, affinity check, final evaluation, or
+        # complete. Plugin-driven outcomes take precedence over turn-count logic.
         next_task = None
         do_affinity_check = False
+        final_eval_trigger: str | None = None
         v2_policy = _resolve_v2_policy(speaker, listener)
 
         if end_session_now:
             session_obj.status = "completed"
+            final_eval_trigger = "session_end"
         elif pending_paused:
             session_obj.status = "awaiting_owner_confirmation"
             # next_task stays None — owner-confirm endpoint resumes the queue
         elif task.turn_number >= session_obj.max_turns:
-            session_obj.status = "completed"
+            if task.turn_number >= MAX_TOTAL_TURNS:
+                # Extension ceiling reached — record the evaluation but end.
+                session_obj.status = "completed"
+                final_eval_trigger = "session_end"
+            else:
+                # Pause for owner review; the evaluation drives the
+                # continue(+extend)/end decision via affinity-response.
+                final_eval_trigger = "max_turns"
         else:
             # Check if affinity analysis is due
             user_a = await db.get(User, session_obj.user_a_id)
@@ -816,6 +828,72 @@ async def _run_turn(task: TurnTask) -> None:
                     session_obj.user_b_affinity_response = "continue"
                 print(f"  [affinity] awaiting review: score={affinity_result['score']:.0f}, rec={affinity_result['recommendation']}")
 
+        # Final (or end-of-session) partner evaluation: one system-model call
+        # produces both sides' category-specific verdicts. Rows + inbox
+        # notifications land in the SAME transaction as the status change.
+        # Evaluations are owner-private — only the content-free marker rides
+        # the shared session stream; owners fetch their own row via REST.
+        eval_owner_by_agent: dict[UUID, UUID] = {}
+        eval_results: dict[UUID, dict] | None = None
+        if final_eval_trigger is not None:
+            eval_results = await analyze_partner_evaluations(db, session_obj, agents)
+            eval_owner_by_agent = {
+                session_obj.agent_a_id: session_obj.user_a_id,
+                session_obj.agent_b_id: session_obj.user_b_id,
+            }
+            for aid, res in eval_results.items():
+                partner_aid = (
+                    session_obj.agent_b_id
+                    if aid == session_obj.agent_a_id
+                    else session_obj.agent_a_id
+                )
+                db.add(
+                    PartnerEvaluation(
+                        session_id=session_obj.id,
+                        agent_id=aid,
+                        user_id=eval_owner_by_agent[aid],
+                        evaluated_agent_id=partner_aid,
+                        goal_category=res["goal_category"],
+                        template=res["template"],
+                        verdicts=res["verdicts"],
+                        score=res["score"],
+                        summary=res["summary"],
+                        turn_number=task.turn_number,
+                        trigger=final_eval_trigger,
+                    )
+                )
+                add_notification(
+                    db,
+                    user_id=eval_owner_by_agent[aid],
+                    type="evaluation:ready",
+                    session_id=session_obj.id,
+                    payload={
+                        "session_id": str(session_obj.id),
+                        "trigger": final_eval_trigger,
+                        "turn_number": task.turn_number,
+                        "score": res["score"],
+                        "summary": res["summary"],
+                    },
+                )
+            # Mirror the owner-agnostic score into the shared affinity fields so
+            # existing tooling keeps working; private summaries stay out.
+            scores = [r["score"] for r in eval_results.values()]
+            recs = [r["recommendation"] for r in eval_results.values()]
+            session_obj.affinity_score = sum(scores) / len(scores)
+            session_obj.affinity_recommendation = (
+                "end" if "end" in recs else "continue"
+            )
+            session_obj.affinity_checked_at = datetime.utcnow()
+            if final_eval_trigger == "max_turns":
+                session_obj.user_a_affinity_response = None
+                session_obj.user_b_affinity_response = None
+                session_obj.status = "awaiting_review"
+            print(
+                f"  [evaluation] trigger={final_eval_trigger} "
+                f"scores={[r['score'] for r in eval_results.values()]} "
+                f"status={session_obj.status}"
+            )
+
         # Durable inbox rows for pending confirmations — same transaction as
         # the status change, so the toast never references a missing row.
         for pending in pending_user_events:
@@ -859,14 +937,28 @@ async def _run_turn(task: TurnTask) -> None:
             )
             await r.xadd(session_stream(task.session_id), ev.to_redis())
 
-        # Publish follow-up events
+        # Publish follow-up events. The final_evaluation marker is content-free
+        # on purpose: the session stream is shared by both participants, and
+        # evaluations are owner-private (fetched per-owner via REST).
+        if eval_results is not None:
+            marker = ChatEvent(
+                event_type="final_evaluation",
+                session_id=task.session_id,
+                turn_number=task.turn_number,
+                content=json_module.dumps({
+                    "reason": final_eval_trigger,
+                    "turn_number": task.turn_number,
+                }),
+            )
+            await r.xadd(session_stream(task.session_id), marker.to_redis())
+
         if session_obj.status == "completed":
             end_event = ChatEvent(
                 event_type="session_ended",
                 session_id=task.session_id,
             )
             await r.xadd(session_stream(task.session_id), end_event.to_redis())
-        elif session_obj.status == "awaiting_review":
+        elif session_obj.status == "awaiting_review" and eval_results is None:
             affinity_event = ChatEvent(
                 event_type="affinity_check",
                 session_id=task.session_id,
@@ -890,6 +982,22 @@ async def _run_turn(task: TurnTask) -> None:
                 "deal:pending_confirmation",
                 pending,
             )
+
+        # Tell each owner their private evaluation is ready (live toast; the
+        # durable inbox row was committed above for offline users).
+        if eval_results is not None:
+            for aid, res in eval_results.items():
+                await publish_user_event(
+                    eval_owner_by_agent[aid],
+                    "evaluation:ready",
+                    {
+                        "session_id": str(session_obj.id),
+                        "trigger": final_eval_trigger or "",
+                        "turn_number": str(task.turn_number),
+                        "score": str(res["score"]),
+                        "summary": res["summary"],
+                    },
+                )
 
 
 async def run_worker():

@@ -92,13 +92,21 @@ interface DealFinalizedEvent {
   content: string; // JSON string: DealFinalizedPayload
 }
 
+interface FinalEvaluationEvent {
+  event_type: "final_evaluation";
+  session_id: string;
+  turn_number?: number;
+  content: string; // JSON string: {reason, turn_number} — content-free marker
+}
+
 export type SessionEvent =
   | ConnectedEvent
   | TurnEvent
   | SessionEndedEvent
   | AffinityCheckEvent
   | ToolCallEvent
-  | DealFinalizedEvent;
+  | DealFinalizedEvent
+  | FinalEvaluationEvent;
 
 // User profile types
 
@@ -274,6 +282,21 @@ export interface PluginInfo {
   description: string;
   tool_names: string[];
   policy_schema: Record<string, unknown>;
+}
+
+// One agent's owner-private evaluation of its conversation partner.
+export interface EvaluationItem {
+  id: string;
+  agent_id: string;
+  evaluated_agent_id: string;
+  goal_category: string | null;
+  template: "hobby" | "recruiting" | "job_seeking" | "dating" | "professional";
+  verdicts: Record<string, boolean | string>;
+  score: number | null;
+  summary: string | null;
+  turn_number: number;
+  trigger: "max_turns" | "session_end";
+  created_at: string;
 }
 
 // Durable per-user notification (inbox row, served by the orchestrator).
