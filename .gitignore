@@ -31,5 +31,44 @@ frontend/node_modules/
 frontend/.next/
 frontend/.env.local
 
+# Tool outputs
+.playwright-mcp/
+graphify-out/
+reports/
+.codegraph/
+.understand-anything/
+
+# Internal docs artifacts (not for public release)
+docs/intro/
+docs/qa/
+
+# Claude Code runtime
+.claude/scheduled_tasks.lock
+
+# Screenshots
+*.png
+# ...but check in sprite atlas assets
+!frontend/public/sprites/*.png
+# ...and dev ideation reference images
+!docs/dev_ideation/*.png
+
+# Internal project meta (do not publish)
+CHANGELOG.md
+AGENTS.md
+CLAUDE.md
+
+# Claude Code project config (local only)
+.claude/
+
+# Internal developer docs (do not publish)
+docs/SECURITY.md
+docs/JOURNAL.md
+docs/ARCHITECTURE.md
+
 # OS
 .DS_Store
+/uv.lock
+/docs/CODEBASE_ANALYSIS.ja.md
+/docs/CODEBASE_ANALYSIS.ko.md
+/docs/CODEBASE_ANALYSIS.md
+/docs/plans/
