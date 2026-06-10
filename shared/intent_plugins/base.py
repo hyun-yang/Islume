@@ -39,6 +39,13 @@ class ToolDef:
     description: str
     parameters: dict
     policy_check: PolicyCheck
+    # When True, the worker substitutes {"redacted": true} for this tool's
+    # arguments in everything BOTH participants can see pre-approval (the
+    # shared session stream and turn.tool_calls). The raw args stay in the
+    # ToolCallEvent audit row and the owner-only user event; the handler's
+    # own post-approval events deliver the real payload. Use for arguments
+    # that must not leak before the owner confirms (e.g. contact info).
+    redact_args: bool = False
 
 
 @dataclass(frozen=True)

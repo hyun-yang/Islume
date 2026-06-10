@@ -572,6 +572,12 @@ async def _run_turn(task: TurnTask) -> None:
                 continue
 
             tool, plugin, policy = triple
+            # Pre-approval, both participants see the session stream and
+            # turn.tool_calls — redact sensitive args there. The audit row
+            # and the handler keep the real arguments.
+            public_args: dict = (
+                {"redacted": True} if tool.redact_args else tc.arguments
+            )
             ok, vreason = validate_arguments(tool, tc.arguments)
             if not ok:
                 decision = PolicyDecision(status="auto_rejected", reason=vreason)
@@ -600,7 +606,7 @@ async def _run_turn(task: TurnTask) -> None:
             entry_jsonb: dict = {
                 "id": tc.id,
                 "name": tc.name,
-                "arguments": tc.arguments,
+                "arguments": public_args,
                 "plugin": plugin.id,
                 "tool_call_event_id": str(audit.id),
             }
@@ -624,7 +630,7 @@ async def _run_turn(task: TurnTask) -> None:
                                 "plugin": plugin.id,
                                 "tool_name": tc.name,
                                 "status": "auto_rejected",
-                                "arguments": tc.arguments,
+                                "arguments": public_args,
                                 "agent_id": str(speaker.id),
                                 "reason": "no handler",
                             },
@@ -658,7 +664,7 @@ async def _run_turn(task: TurnTask) -> None:
                                     "plugin": plugin.id,
                                     "tool_name": tc.name,
                                     "status": "auto_rejected",
-                                    "arguments": tc.arguments,
+                                    "arguments": public_args,
                                     "agent_id": str(speaker.id),
                                     "reason": f"handler error: {e}",
                                 },
@@ -690,7 +696,7 @@ async def _run_turn(task: TurnTask) -> None:
                             "plugin": plugin.id,
                             "tool_name": tc.name,
                             "status": "pending",
-                            "arguments": tc.arguments,
+                            "arguments": public_args,
                             "agent_id": str(speaker.id),
                             "policy_reason": decision.reason,
                         },
@@ -710,7 +716,7 @@ async def _run_turn(task: TurnTask) -> None:
                             "plugin": plugin.id,
                             "tool_name": tc.name,
                             "status": "auto_rejected",
-                            "arguments": tc.arguments,
+                            "arguments": public_args,
                             "agent_id": str(speaker.id),
                             "reason": decision.reason,
                         },

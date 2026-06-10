@@ -635,7 +635,9 @@ async def tool_call_respond(
                         "plugin": audit.plugin,
                         "tool_name": audit.tool_name,
                         "status": "auto_rejected",
-                        "arguments": audit.arguments,
+                        "arguments": _public_args(
+                            audit.plugin, audit.tool_name, audit.arguments
+                        ),
                         "agent_id": str(speaker.id),
                         "reason": "no handler",
                     },
@@ -665,7 +667,9 @@ async def tool_call_respond(
                             "plugin": audit.plugin,
                             "tool_name": audit.tool_name,
                             "status": "auto_rejected",
-                            "arguments": audit.arguments,
+                            "arguments": _public_args(
+                                audit.plugin, audit.tool_name, audit.arguments
+                            ),
                             "agent_id": str(speaker.id),
                             "reason": f"handler error: {e}",
                         },
@@ -695,7 +699,9 @@ async def tool_call_respond(
                     "plugin": audit.plugin,
                     "tool_name": audit.tool_name,
                     "status": "user_rejected",
-                    "arguments": audit.arguments,
+                    "arguments": _public_args(
+                        audit.plugin, audit.tool_name, audit.arguments
+                    ),
                     "agent_id": str(speaker.id),
                 },
             )
@@ -734,6 +740,19 @@ async def tool_call_respond(
     )
     await r.xadd(STREAM_LLM_TASKS, next_task.to_redis())
     return {"status": "resumed", "action": body.action}
+
+
+def _public_args(plugin_id: str, tool_name: str, arguments: dict) -> dict:
+    """Arguments as both participants may see them on the shared stream.
+
+    Tools flagged redact_args never expose their raw arguments in
+    rejected/expired events — only the handler's own post-approval events
+    deliver the real payload (e.g. contact info)."""
+    plugin = get_plugin(plugin_id)
+    tool = plugin.tool_by_name(tool_name) if plugin else None
+    if tool is not None and tool.redact_args:
+        return {"redacted": True}
+    return arguments
 
 
 def _find_policy(speaker: Agent, plugin_id: str) -> dict:
@@ -813,7 +832,9 @@ async def _pending_confirmation_sweeper() -> None:
                                     "plugin": a.plugin,
                                     "tool_name": a.tool_name,
                                     "status": "expired",
-                                    "arguments": a.arguments,
+                                    "arguments": _public_args(
+                                        a.plugin, a.tool_name, a.arguments
+                                    ),
                                     "agent_id": str(a.agent_id),
                                 }
                             ),

@@ -19,10 +19,12 @@ from shared.intent_plugins.base import (
     ToolHandler,
     validate_arguments,
 )
+from shared.intent_plugins.dating_contact import plugin as _dating_contact
 from shared.intent_plugins.job_interview import plugin as _job_interview
 
 PLUGINS: dict[str, Plugin] = {
     _bartering.id: _bartering,
+    _dating_contact.id: _dating_contact,
     _job_interview.id: _job_interview,
 }
 

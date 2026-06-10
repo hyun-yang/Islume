@@ -125,6 +125,77 @@ function InterviewDecline({ payload }: { payload: ToolCallEventPayload }) {
   );
 }
 
+function OfflineMeetingProposal({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as { place_hint?: string; time_hint?: string; message?: string };
+  const hint = [a.place_hint, a.time_hint].filter(Boolean).join(" · ");
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">💜 {t("tool.offlineProposed")}</span>
+      {hint && <span> — {hint}</span>}
+      {a.message && (
+        <div className="mt-1 text-xs text-zinc-600 italic">&ldquo;{a.message}&rdquo;</div>
+      )}
+    </div>
+  );
+}
+
+function OfflineMeetingAccept({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as { message?: string };
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">💜 {t("tool.offlineAccepted")}</span>
+      {a.message && (
+        <div className="mt-1 text-xs text-zinc-600 italic">&ldquo;{a.message}&rdquo;</div>
+      )}
+    </div>
+  );
+}
+
+function OfflineMeetingDecline({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as { reason?: string };
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">{t("tool.offlineDeclined")}</span>
+      {a.reason && <span className="text-zinc-600"> — {a.reason}</span>}
+    </div>
+  );
+}
+
+function ShareContact({ payload }: { payload: ToolCallEventPayload }) {
+  const t = useT();
+  const a = payload.arguments as {
+    redacted?: boolean;
+    channel?: string;
+    handle?: string;
+    message?: string;
+  };
+  // Pre-approval the shared stream carries {"redacted": true} only.
+  if (a.redacted) {
+    return (
+      <div className="text-sm">
+        <span className="font-semibold">🔒 {t("tool.contactRedacted")}</span>
+      </div>
+    );
+  }
+  return (
+    <div className="text-sm">
+      <span className="font-semibold">📇 {t("tool.contactShared")}</span>
+      {a.channel && (
+        <span>
+          {" "}
+          — {a.channel}: <span className="font-mono">{a.handle}</span>
+        </span>
+      )}
+      {a.message && (
+        <div className="mt-1 text-xs text-zinc-600 italic">&ldquo;{a.message}&rdquo;</div>
+      )}
+    </div>
+  );
+}
+
 function GenericPayload({ payload }: { payload: ToolCallEventPayload }) {
   return (
     <div className="text-sm">
@@ -160,6 +231,18 @@ function ToolCallBody({ payload }: { payload: ToolCallEventPayload }) {
         return <InterviewAccept payload={payload} />;
       case "decline_interview":
         return <InterviewDecline payload={payload} />;
+    }
+  }
+  if (payload.plugin === "dating_contact") {
+    switch (payload.tool_name) {
+      case "propose_offline_meeting":
+        return <OfflineMeetingProposal payload={payload} />;
+      case "accept_offline_meeting":
+        return <OfflineMeetingAccept payload={payload} />;
+      case "decline_offline_meeting":
+        return <OfflineMeetingDecline payload={payload} />;
+      case "share_contact":
+        return <ShareContact payload={payload} />;
     }
   }
   return <GenericPayload payload={payload} />;
