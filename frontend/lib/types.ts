@@ -276,6 +276,16 @@ export interface PluginInfo {
   policy_schema: Record<string, unknown>;
 }
 
+// Durable per-user notification (inbox row, served by the orchestrator).
+export interface NotificationItem {
+  id: string;
+  type: string;
+  session_id: string | null;
+  payload: Record<string, unknown>;
+  read_at: string | null;
+  created_at: string;
+}
+
 // Bartering-specific policy shape — typed for the form.
 export interface BarteringPolicy {
   role: "seller" | "buyer";

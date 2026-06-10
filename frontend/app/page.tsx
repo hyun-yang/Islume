@@ -16,6 +16,7 @@ import IslandPlatformerView from "@/components/island-platformer/IslandPlatforme
 import VisitNotifications from "@/components/notifications/VisitNotifications";
 import RpsInvitationToast from "@/components/notifications/RpsInvitationToast";
 import PendingConfirmationToast from "@/components/notifications/PendingConfirmationToast";
+import NotificationInbox from "@/components/notifications/NotificationInbox";
 import HostRpsContainer from "@/components/visit/HostRpsContainer";
 import HostChatContainer from "@/components/visit/HostChatContainer";
 import { useAppStore } from "@/stores/appStore";
@@ -175,6 +176,8 @@ export default function Home() {
         session_id: e.sessionId,
         summary: e.summary,
       });
+      // A durable inbox row was written before this event was published.
+      queryClient.invalidateQueries({ queryKey: ["notifications", selectedUserId] });
     },
     onChatReceived: (e) => {
       // notification_enabled is the master switch for live surfacing; when off,
@@ -283,6 +286,7 @@ export default function Home() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 shrink-0">
             <h1 className="text-lg font-semibold text-zinc-800">{t("sidebar.title")}</h1>
             <div className="flex items-center gap-2">
+              <NotificationInbox />
               <LanguageToggle />
               <button
                 onClick={() => setSidebarOpen(false)}

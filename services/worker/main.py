@@ -49,6 +49,7 @@ from shared.models import (
     User,
     UserAgent,
 )
+from shared.notifications import add_notification
 from shared.redis_client import close_redis, get_redis
 from shared.telemetry import get_tracer, init_telemetry
 
@@ -814,6 +815,17 @@ async def _run_turn(task: TurnTask) -> None:
                 if user_b and user_b.auto_approve_affinity and affinity_result["recommendation"] == "continue":
                     session_obj.user_b_affinity_response = "continue"
                 print(f"  [affinity] awaiting review: score={affinity_result['score']:.0f}, rec={affinity_result['recommendation']}")
+
+        # Durable inbox rows for pending confirmations — same transaction as
+        # the status change, so the toast never references a missing row.
+        for pending in pending_user_events:
+            add_notification(
+                db,
+                user_id=speaker_user_id,
+                type="deal:pending_confirmation",
+                session_id=session_obj.id,
+                payload=pending,
+            )
 
         await db.commit()
 

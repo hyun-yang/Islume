@@ -27,10 +27,12 @@ from shared.models import (
     Agent,
     ConversationTurn,
     MatchSession,
+    Notification,
     ToolCallEvent,
     User,
     UserAgent,
 )
+from shared.notifications import add_notification
 from shared.redis_client import close_redis, get_redis
 
 # How long a pending owner-confirmation lives before the sweeper expires it.
@@ -138,6 +140,78 @@ async def list_user_sessions(
             )
         )
     return summaries
+
+
+class NotificationItem(BaseModel):
+    id: UUID
+    type: str
+    session_id: UUID | None
+    payload: dict
+    read_at: str | None
+    created_at: str
+
+
+@app.get("/users/{user_id}/notifications", response_model=list[NotificationItem])
+async def list_notifications(
+    user_id: UUID,
+    unread_only: bool = False,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_session),
+):
+    """Return a user's durable notifications, newest first.
+
+    The Redis user stream is live-only; this is the inbox a user checks for
+    anything that happened while they were away.
+    """
+    stmt = (
+        select(Notification)
+        .where(Notification.user_id == user_id)
+        .order_by(Notification.created_at.desc())
+        .limit(min(limit, 200))
+    )
+    if unread_only:
+        stmt = stmt.where(Notification.read_at.is_(None))
+    rows = list((await db.execute(stmt)).scalars())
+    return [
+        NotificationItem(
+            id=n.id,
+            type=n.type,
+            session_id=n.session_id,
+            payload=n.payload or {},
+            read_at=n.read_at.isoformat() if n.read_at else None,
+            created_at=n.created_at.isoformat(),
+        )
+        for n in rows
+    ]
+
+
+class MarkReadRequest(BaseModel):
+    ids: list[UUID] | None = None
+    all: bool = False
+
+
+@app.post("/users/{user_id}/notifications/mark-read")
+async def mark_notifications_read(
+    user_id: UUID,
+    body: MarkReadRequest,
+    db: AsyncSession = Depends(get_session),
+):
+    """Mark the given notification ids (or all unread) as read."""
+    if not body.all and not body.ids:
+        raise HTTPException(status_code=422, detail="Provide ids or all=true")
+    stmt = (
+        select(Notification)
+        .where(Notification.user_id == user_id)
+        .where(Notification.read_at.is_(None))
+    )
+    if not body.all:
+        stmt = stmt.where(Notification.id.in_(body.ids or []))
+    rows = list((await db.execute(stmt)).scalars())
+    now = datetime.utcnow()
+    for n in rows:
+        n.read_at = now
+    await db.commit()
+    return {"status": "ok", "marked": len(rows)}
 
 
 class TurnResponse(BaseModel):
@@ -626,6 +700,18 @@ async def _pending_confirmation_sweeper() -> None:
                 for audit in expired:
                     audit.status = "expired"
                     audit.resolved_at = datetime.utcnow()
+                    # Inbox row in the same transaction (commit-before-publish).
+                    add_notification(
+                        db,
+                        user_id=audit.user_id,
+                        type="deal:expired",
+                        session_id=audit.session_id,
+                        payload={
+                            "tool_call_id": str(audit.id),
+                            "plugin": audit.plugin,
+                            "tool_name": audit.tool_name,
+                        },
+                    )
                 if not expired:
                     await db.commit()
                     continue

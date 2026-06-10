@@ -445,6 +445,32 @@ class IntentAgreement(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
+class Notification(Base):
+    """Durable per-user notification (inbox row).
+
+    The Redis user stream (stream:user:{id}) is live-only — the gateway reads
+    from "$", so a user who is offline at publish time never sees the event.
+    This table is the durable record; call sites insert a row in the SAME
+    transaction as the state change, commit, then publish_user_event.
+    """
+
+    __tablename__ = "notifications"
+    __table_args__ = (
+        Index("ix_notifications_user_read", "user_id", "read_at"),
+        Index("ix_notifications_user_created", "user_id", "created_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PgUUID, primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    type: Mapped[str] = mapped_column(String(40))
+    session_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("match_sessions.id"), nullable=True
+    )
+    payload: Mapped[dict] = mapped_column(JSONB, default=dict)
+    read_at: Mapped[datetime | None] = mapped_column(nullable=True)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
 class ToolCallEvent(Base):
     """Audit row for every tool call (plugin-agnostic).
 

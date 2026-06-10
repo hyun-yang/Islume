@@ -20,6 +20,7 @@ import type {
   VisitResponse,
   DMMessage,
   PluginInfo,
+  NotificationItem,
 } from "./types";
 
 const MATCHING = "/api/matching";
@@ -149,6 +150,30 @@ export async function respondToAffinity(
     body: JSON.stringify({ user_id: userId, action }),
   });
   if (!res.ok) throw new Error(`Affinity response failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchNotifications(
+  userId: string,
+  unreadOnly = false,
+): Promise<NotificationItem[]> {
+  const res = await fetch(
+    `${ORCHESTRATOR}/users/${userId}/notifications?unread_only=${unreadOnly}`,
+  );
+  if (!res.ok) throw new Error(`Notifications fetch failed: ${res.status}`);
+  return res.json();
+}
+
+export async function markNotificationsRead(
+  userId: string,
+  ids?: string[],
+): Promise<{ status: string; marked: number }> {
+  const res = await fetch(`${ORCHESTRATOR}/users/${userId}/notifications/mark-read`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(ids && ids.length > 0 ? { ids } : { all: true }),
+  });
+  if (!res.ok) throw new Error(`Mark-read failed: ${res.status}`);
   return res.json();
 }
 
