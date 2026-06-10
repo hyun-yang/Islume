@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   HAND_EMOJI,
-  type Hand, type Outcome,
+  type Hand,
 } from "@/lib/visit/rps";
 import { fetchBalance, submitRpsPick, createRpsRound } from "@/lib/api";
 import { useAppStore } from "@/stores/appStore";

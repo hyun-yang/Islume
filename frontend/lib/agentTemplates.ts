@@ -1,8 +1,4 @@
-import type {
-  AgentCreate,
-  Demographics,
-  Preferences,
-} from "./types";
+import type { AgentCreate } from "./types";
 
 export interface AgentTemplate {
   id: string;

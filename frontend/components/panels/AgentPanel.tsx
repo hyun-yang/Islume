@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   useAgents,
   useCreateAgent,
@@ -719,17 +719,13 @@ function MarkdownEditorModal({
   const t = useT();
   const { data, isLoading, error: loadError } = useAgentMarkdown(agentId);
   const save = useSaveAgentMarkdown();
-  const [draft, setDraft] = useState<string>("");
-  const [original, setOriginal] = useState<string>("");
+  // Draft is derived, not synced: the user's edit if any, else the loaded
+  // markdown. Avoids a setState-in-effect sync that clobbers edits on refetch.
+  const [draftEdit, setDraftEdit] = useState<string | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (data?.markdown !== undefined) {
-      setDraft(data.markdown);
-      setOriginal(data.markdown);
-    }
-  }, [data?.markdown]);
-
+  const original = data?.markdown ?? "";
+  const draft = draftEdit ?? original;
   const dirty = draft !== original;
 
   const handleSave = () => {
@@ -737,9 +733,8 @@ function MarkdownEditorModal({
     save.mutate(
       { agentId, markdown: draft },
       {
-        onSuccess: (resp) => {
-          setDraft(resp.markdown);
-          setOriginal(resp.markdown);
+        onSuccess: () => {
+          setDraftEdit(null);
           onClose();
         },
         onError: (err) => {
@@ -786,7 +781,7 @@ function MarkdownEditorModal({
               className="w-full h-[60vh] px-3 py-2 border border-zinc-300 rounded font-mono text-xs leading-relaxed resize-none"
               spellCheck={false}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={(e) => setDraftEdit(e.target.value)}
             />
           )}
           {serverError && (
