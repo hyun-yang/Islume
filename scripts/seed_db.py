@@ -31,22 +31,10 @@ from shared.crypto import build_tx_data, generate_keypair, sign_transaction
 from shared.db import get_sessionmaker
 from shared.models import (
     Agent,
-    Asset,
-    AssetTransfer,
-    ChatMember,
-    ChatMessage,
-    ChatRoom,
-    ConversationTurn,
-    DirectMessage,
-    IntentAgreement,
-    IntentProposal,
-    Inventory,
+    Base,
     LedgerEntry,
-    MatchSession,
-    ToolCallEvent,
     User,
     UserAgent,
-    VisitSession,
     Wallet,
 )
 from shared.redis_client import close_redis, get_redis
@@ -553,27 +541,14 @@ def _default_body(fm: AgentFrontmatter, persona_prompt: str, tone: str) -> str:
 async def seed():
     sessionmaker = get_sessionmaker()
     async with sessionmaker() as session:
-        # Clear existing (order matters: FK dependencies)
-        await session.execute(delete(DirectMessage))
-        await session.execute(delete(VisitSession))
-        await session.execute(delete(AssetTransfer))
-        await session.execute(delete(Asset))
-        await session.execute(delete(Inventory))
-        await session.execute(delete(LedgerEntry))
-        await session.execute(delete(Wallet))
-        await session.execute(delete(ChatMessage))
-        await session.execute(delete(ChatMember))
-        await session.execute(delete(ChatRoom))
-        # Intent tables reference match_sessions (IntentAgreement also
-        # references intent_proposals), so clear them before MatchSession.
-        await session.execute(delete(ToolCallEvent))
-        await session.execute(delete(IntentAgreement))
-        await session.execute(delete(IntentProposal))
-        await session.execute(delete(ConversationTurn))
-        await session.execute(delete(MatchSession))
-        await session.execute(delete(UserAgent))
-        await session.execute(delete(Agent))
-        await session.execute(delete(User))
+        # Clear existing data for a clean reseed. Delete every table in reverse
+        # dependency order (children before parents) straight from the ORM
+        # metadata, so a newly added table with an FK can never reintroduce the
+        # ordering bug this replaced: partner_evaluations, notifications, and
+        # the island_* maps were each missing from the old hand-maintained list
+        # and broke `DELETE FROM match_sessions` / `users` with FK violations.
+        for table in reversed(Base.metadata.sorted_tables):
+            await session.execute(delete(table))
 
         # System user (treasury for ISL genesis)
         system_user = User(
