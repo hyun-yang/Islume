@@ -386,6 +386,32 @@ class IslandTiledMap(Base):
     )
 
 
+class IslandStage(Base):
+    """A user-authored platformer stage (Mario Maker style), max 3 per island.
+
+    status/cleared invariant: published implies cleared. Maintained by the
+    API transitions only — PUT always resets to draft/uncleared, publish
+    409s unless cleared.
+    """
+
+    __tablename__ = "island_stages"
+    __table_args__ = (
+        Index("ix_island_stages_unique", "island_id", "slot", unique=True),
+    )
+
+    id: Mapped[UUID] = mapped_column(PgUUID, primary_key=True, default=uuid4)
+    island_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"))
+    slot: Mapped[int] = mapped_column(Integer)  # 1..3, validated at the API layer
+    status: Mapped[str] = mapped_column(String(16), default="draft")
+    cleared: Mapped[bool] = mapped_column(Boolean, default=False)
+    name: Mapped[str] = mapped_column(String(64))
+    level_data: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now()
+    )
+
+
 class DirectMessage(Base):
     __tablename__ = "direct_messages"
     __table_args__ = (

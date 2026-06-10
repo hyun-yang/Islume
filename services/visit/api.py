@@ -5,7 +5,7 @@ import random
 from datetime import datetime
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import func as sa_func
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,6 +17,9 @@ from services.visit.schemas import (
     CreateVisitRequest,
     MessageListResponse,
     MessageResponse,
+    StageListResponse,
+    StageResponse,
+    StageSaveRequest,
     TerrainResponse,
     UpdateVisitRequest,
     VisitResponse,
@@ -28,6 +31,7 @@ from shared.db import get_sessionmaker
 from shared.models import (
     DirectMessage,
     IslandMapEdit,
+    IslandStage,
     IslandTiledMap,
     IslandVoxelMap,
     User,
@@ -494,6 +498,144 @@ async def save_tiled_map(
 
     await db.commit()
     return {"status": "ok", "version": tmap.version}
+
+
+# ── Island Stage Endpoints ──
+#
+# User-authored platformer stages (max 3 slots per island). State machine:
+# PUT always resets to draft/uncleared (editing a published stage
+# auto-unpublishes it), publish requires cleared — so a published stage with
+# unverified edits cannot exist. Visitors query with ?published=true and
+# fall back to the built-in stages client-side when the list is empty.
+
+
+def _stage_to_response(s: IslandStage) -> StageResponse:
+    return StageResponse(
+        slot=s.slot,
+        status=s.status,
+        cleared=s.cleared,
+        name=s.name,
+        level_data=s.level_data,
+        updated_at=s.updated_at.isoformat(),
+    )
+
+
+async def _get_stage(db: AsyncSession, user_id: UUID, slot: int) -> IslandStage:
+    stmt = select(IslandStage).where(
+        IslandStage.island_id == user_id,
+        IslandStage.slot == slot,
+    )
+    result = await db.execute(stmt)
+    stage = result.scalar_one_or_none()
+    if not stage:
+        raise HTTPException(status_code=404, detail="Stage not found")
+    return stage
+
+
+@router.get("/islands/{user_id}/stages", response_model=StageListResponse)
+async def list_island_stages(
+    user_id: UUID,
+    published: bool = Query(False),
+    db: AsyncSession = Depends(get_session),
+):
+    stmt = select(IslandStage).where(IslandStage.island_id == user_id)
+    if published:
+        stmt = stmt.where(IslandStage.status == "published")
+    stmt = stmt.order_by(IslandStage.slot)
+    result = await db.execute(stmt)
+    stages = result.scalars().all()
+    return StageListResponse(stages=[_stage_to_response(s) for s in stages])
+
+
+@router.put("/islands/{user_id}/stages/{slot}", response_model=StageResponse)
+async def save_island_stage(
+    user_id: UUID,
+    body: StageSaveRequest,
+    slot: int = Path(ge=1, le=3),
+    db: AsyncSession = Depends(get_session),
+):
+    stmt = select(IslandStage).where(
+        IslandStage.island_id == user_id,
+        IslandStage.slot == slot,
+    )
+    result = await db.execute(stmt)
+    stage = result.scalar_one_or_none()
+
+    level_data = body.level_data.model_dump(exclude_none=True)
+    if stage:
+        stage.name = body.name
+        stage.level_data = level_data
+        stage.cleared = False
+        stage.status = "draft"
+    else:
+        stage = IslandStage(
+            island_id=user_id,
+            slot=slot,
+            name=body.name,
+            level_data=level_data,
+        )
+        db.add(stage)
+
+    await db.commit()
+    await db.refresh(stage)
+    return _stage_to_response(stage)
+
+
+@router.post("/islands/{user_id}/stages/{slot}/cleared", response_model=StageResponse)
+async def mark_island_stage_cleared(
+    user_id: UUID,
+    slot: int = Path(ge=1, le=3),
+    db: AsyncSession = Depends(get_session),
+):
+    stage = await _get_stage(db, user_id, slot)
+    stage.cleared = True
+    await db.commit()
+    await db.refresh(stage)
+    return _stage_to_response(stage)
+
+
+@router.post("/islands/{user_id}/stages/{slot}/publish", response_model=StageResponse)
+async def publish_island_stage(
+    user_id: UUID,
+    slot: int = Path(ge=1, le=3),
+    db: AsyncSession = Depends(get_session),
+):
+    stage = await _get_stage(db, user_id, slot)
+    if not stage.cleared:
+        raise HTTPException(
+            status_code=409, detail="Stage must be cleared before publishing"
+        )
+    stage.status = "published"
+    await db.commit()
+    await db.refresh(stage)
+    return _stage_to_response(stage)
+
+
+@router.post("/islands/{user_id}/stages/{slot}/unpublish", response_model=StageResponse)
+async def unpublish_island_stage(
+    user_id: UUID,
+    slot: int = Path(ge=1, le=3),
+    db: AsyncSession = Depends(get_session),
+):
+    stage = await _get_stage(db, user_id, slot)
+    # cleared stays true: the level data is unchanged, so re-publishing
+    # without a re-clear is legitimate.
+    stage.status = "draft"
+    await db.commit()
+    await db.refresh(stage)
+    return _stage_to_response(stage)
+
+
+@router.delete("/islands/{user_id}/stages/{slot}")
+async def delete_island_stage(
+    user_id: UUID,
+    slot: int = Path(ge=1, le=3),
+    db: AsyncSession = Depends(get_session),
+):
+    stage = await _get_stage(db, user_id, slot)
+    await db.delete(stage)
+    await db.commit()
+    return {"status": "deleted"}
 
 
 # ── RPS Mini-Game Endpoints ──
