@@ -7,12 +7,13 @@ import { useT } from "@/lib/i18n";
 import {
   useIslandStages,
   useSaveIslandStage,
+  useMarkStageCleared,
   usePublishIslandStage,
   useUnpublishIslandStage,
   useDeleteIslandStage,
 } from "@/hooks/useIslandStages";
 import { validateLevel } from "@/lib/platformer/levelValidation";
-import { TILE_PF_GROUND } from "@/lib/platformer/types";
+import { TILE_PF_GROUND, type LevelData } from "@/lib/platformer/types";
 
 import {
   EditorModel, newDefaultLevel, levelFromStageData,
@@ -21,6 +22,7 @@ import {
 import type { EditorTool } from "./palette";
 import EditorCanvas from "./EditorCanvas";
 import EditorPalette from "./EditorPalette";
+import StageTestPlay from "./StageTestPlay";
 
 const SLOTS = [1, 2, 3] as const;
 
@@ -31,6 +33,7 @@ export default function StageEditorView() {
 
   const stagesQuery = useIslandStages(selectedUserId);
   const save = useSaveIslandStage(selectedUserId);
+  const markCleared = useMarkStageCleared(selectedUserId);
   const publish = usePublishIslandStage(selectedUserId);
   const unpublish = useUnpublishIslandStage(selectedUserId);
   const deleteStage = useDeleteIslandStage(selectedUserId);
@@ -43,6 +46,8 @@ export default function StageEditorView() {
   const [tool, setTool] = useState<EditorTool>({ kind: "tile", tile: TILE_PF_GROUND });
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // Referentially-stable snapshot of the level under test; non-null = testing.
+  const [testLevel, setTestLevel] = useState<LevelData | null>(null);
   const loadedSlotRef = useRef<number | null>(null);
 
   const stages = stagesQuery.data?.stages;
@@ -118,6 +123,26 @@ export default function StageEditorView() {
     );
   };
 
+  // Test = validate → auto-save → play. Saving first (which resets the
+  // cleared flag server-side) kills the "cleared an old version" race; the
+  // save is skipped only when the server already holds exactly this content.
+  const handleTest = () => {
+    if (!model || !validation.ok || save.isPending) return;
+    const finalName = name.trim() || defaultName;
+    model.level.name = finalName;
+    const data = model.toStageLevelData();
+    const enterTest = () =>
+      setTestLevel({ ...data, id: `custom-${slot}`, name: finalName });
+    if (dirty || !stage) {
+      save.mutate(
+        { slot, name: finalName, levelData: data },
+        { onSuccess: () => { setDirty(false); enterTest(); } },
+      );
+    } else {
+      enterTest();
+    }
+  };
+
   const handleDelete = () => {
     setConfirmingDelete(false);
     deleteStage.mutate(slot, {
@@ -137,13 +162,26 @@ export default function StageEditorView() {
   };
 
   const mutationError =
-    save.error?.message ?? publish.error?.message ??
-    unpublish.error?.message ?? deleteStage.error?.message;
+    save.error?.message ?? markCleared.error?.message ??
+    publish.error?.message ?? unpublish.error?.message ??
+    deleteStage.error?.message;
 
   const canPublish =
     !!stage && stage.cleared && !dirty && stage.status !== "published";
 
   if (!selectedUserId) return null;
+
+  if (testLevel) {
+    return (
+      <div className="flex h-screen w-screen overflow-hidden">
+        <StageTestPlay
+          level={testLevel}
+          onClear={() => markCleared.mutate(slot)}
+          onExit={() => setTestLevel(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-zinc-950 text-white">
@@ -242,9 +280,9 @@ export default function StageEditorView() {
           {save.isPending ? t("common.saving") : t("editor.save")}
         </button>
         <button
-          disabled
-          title={t("editor.testSoon")}
-          className="px-3 py-1.5 rounded bg-sky-700 text-sm font-semibold opacity-40 cursor-not-allowed"
+          onClick={handleTest}
+          disabled={!validation.ok || save.isPending}
+          className="px-3 py-1.5 rounded bg-sky-600 text-sm font-semibold hover:bg-sky-500 disabled:opacity-40"
         >
           ▶ {t("editor.test")}
         </button>
