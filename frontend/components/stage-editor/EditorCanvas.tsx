@@ -319,12 +319,16 @@ export default function EditorCanvas({ model, version, tool, onMutate, onThumbna
       });
 
       // ---- Palette thumbnails (one-time extraction) ----
+      // Each await yields, so cleanup (slot switch, StrictMode re-mount) can
+      // destroy the app mid-loop — re-check cancelled before touching it.
       const thumbs: Record<string, string> = {};
       for (const { tile } of PALETTE_TILES) {
+        if (cancelled || !app) return;
         const tex = tileTextures.get(tile);
         if (tex) thumbs[tileThumbKey(tile)] = await app.renderer.extract.base64(tex);
       }
       for (const { type } of PALETTE_ACTORS) {
+        if (cancelled || !app) return;
         thumbs[actorThumbKey(type)] = await app.renderer.extract.base64(actorTex[type]);
       }
       if (!cancelled) onThumbnailsRef.current(thumbs);
