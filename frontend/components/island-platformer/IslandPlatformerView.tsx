@@ -1,32 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useAppStore } from "@/stores/appStore";
 import { useT } from "@/lib/i18n";
 import { useVisitSocket } from "@/hooks/useVisitSocket";
 import { useEndVisit } from "@/hooks/useVisit";
+import { useIslandStages } from "@/hooks/useIslandStages";
 import { fetchVisitMessages, createRpsRound } from "@/lib/api";
 import type { DMMessage } from "@/lib/types";
 import VisitChatPanel from "@/components/island/VisitChatPanel";
 import RPSGameDialog from "@/components/visit/RPSGameDialog";
 
-import type { LevelData, StageId } from "@/lib/platformer/types";
+import type { Background, LevelData, StageId } from "@/lib/platformer/types";
 import { sound } from "@/lib/platformer/audio";
 import stage1Data from "@/lib/platformer/levels/stage1.json";
 import stage2Data from "@/lib/platformer/levels/stage2.json";
 import stage3Data from "@/lib/platformer/levels/stage3.json";
 
-const STAGE_DATA: Record<StageId, LevelData> = {
-  stage1: stage1Data as LevelData,
-  stage2: stage2Data as LevelData,
-  stage3: stage3Data as LevelData,
+// Played when the host has no published custom stages (or the fetch fails —
+// this feature must never block a visit).
+const BUILTIN_STAGES: LevelData[] = [
+  stage1Data as LevelData,
+  stage2Data as LevelData,
+  stage3Data as LevelData,
+];
+
+// Custom stages carry no StageId, so BGM follows the background theme;
+// built-ins keep their own track via their id.
+const BGM_BY_BACKGROUND: Record<Background, StageId> = {
+  beach: "stage1",
+  stream: "stage2",
+  forest: "stage3",
 };
 
-const NEXT_STAGE: Partial<Record<StageId, StageId>> = {
-  stage1: "stage2",
-  stage2: "stage3",
-};
+function bgmTrackFor(level: LevelData): StageId {
+  if (level.id === "stage1" || level.id === "stage2" || level.id === "stage3") {
+    return level.id;
+  }
+  return BGM_BY_BACKGROUND[level.background];
+}
 
 import {
   createPlatformerRun, MAX_HP, START_LIVES, type PlatformerRun,
@@ -59,9 +72,7 @@ export default function IslandPlatformerView({ visitId }: Props) {
   const [hp, setHp] = useState(MAX_HP);
   const [shells, setShells] = useState(0);
   const [lives, setLives] = useState(START_LIVES);
-  const [currentStage, setCurrentStage] = useState<StageId>("stage1");
-  const stageName = STAGE_DATA[currentStage].name;
-  const isFinalStage = currentStage === "stage3";
+  const [stageIndex, setStageIndex] = useState(0);
 
   // Visit chat state
   const [messages, setMessages] = useState<DMMessage[]>([]);
@@ -75,6 +86,28 @@ export default function IslandPlatformerView({ visitId }: Props) {
   const activeVisitHostName = useAppStore((s) => s.activeVisitHostName);
   const setVisitStatus = useAppStore((s) => s.setVisitStatus);
   const endVisit = useEndVisit();
+
+  // Host's published custom stages, played in slot order; built-ins when the
+  // host has none or the fetch fails (this feature must never block a visit).
+  // `null` while loading so the game never starts on the wrong stage set.
+  const stagesQuery = useIslandStages(activeVisitHostId, true);
+  const stages: LevelData[] | null = useMemo(() => {
+    if (stagesQuery.isLoading) return null;
+    const published = stagesQuery.data?.stages;
+    if (!published || published.length === 0) return BUILTIN_STAGES;
+    return published.map((s) => ({
+      ...s.level_data,
+      id: `custom-${s.slot}`,
+      name: s.name,
+    }));
+  }, [stagesQuery.isLoading, stagesQuery.data]);
+
+  // stageIndex starts at 0 per mount; ending a visit unmounts this view, so
+  // a fresh visit always starts from the first stage (as before with
+  // currentStage = "stage1").
+  const level = stages?.[Math.min(stageIndex, stages.length - 1)] ?? null;
+  const stageName = level?.name ?? "";
+  const isFinalStage = stages !== null && stageIndex >= stages.length - 1;
 
   // Single exit path — fires DELETE /visits/{id} so the backend marks the
   // visit as "ended" instead of leaving an orphaned active row. The hook's
@@ -165,10 +198,10 @@ export default function IslandPlatformerView({ visitId }: Props) {
   }, []);
 
   const handleNextStage = useCallback(() => {
-    // The currentStage change tears down this run and builds the next one.
+    // The stageIndex change tears down this run and builds the next one.
     setHp(MAX_HP);
     setStatus("loading");
-    setCurrentStage((cur) => NEXT_STAGE[cur] ?? cur);
+    setStageIndex((i) => i + 1);
   }, []);
 
   const handleLeave = useCallback(() => {
@@ -181,11 +214,11 @@ export default function IslandPlatformerView({ visitId }: Props) {
 
   // ---- Main PIXI init (engine lives in PlatformerGameRuntime.ts) ----
   useEffect(() => {
-    if (!canvasRef.current) return;
+    if (!canvasRef.current || !level) return;
     const run = createPlatformerRun({
       mount: canvasRef.current,
-      level: STAGE_DATA[currentStage],
-      bgmTrack: currentStage,
+      level,
+      bgmTrack: bgmTrackFor(level),
       initialShells: shellsRef.current,
       initialLives: livesRef.current,
       callbacks: {
@@ -196,7 +229,7 @@ export default function IslandPlatformerView({ visitId }: Props) {
         onCleared: () => {
           // Only the final stage triggers the visit-arrival socket event so DM
           // chat unlocks once the player has actually completed the journey.
-          if (currentStage === "stage3") {
+          if (isFinalStage) {
             socketRef.current.sendArrive();
           }
           setStatus("cleared");
@@ -214,9 +247,9 @@ export default function IslandPlatformerView({ visitId }: Props) {
       runRef.current = null;
       setGameInput(null);
     };
-    // Stage transitions trigger a full re-init via the currentStage dep;
-    // visitId forces a fresh run per visit. Socket arrives via socketRef.
-  }, [visitId, currentStage]);
+    // Stage transitions re-init via the `level` dep (stageIndex / fetched
+    // stages); visitId forces a fresh run per visit. Socket via socketRef.
+  }, [visitId, level, isFinalStage]);
 
   // ---- Render ----
   if (error) {

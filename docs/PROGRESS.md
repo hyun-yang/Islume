@@ -15,11 +15,11 @@
 
 ### ⏳ To Do (Backlog)
 
-- [ ] **Phase 7 — i18n + gates:** `editor.*` keys in en/ko/ja, `npm run lint` + `tsc` + `knip` + `uv run pytest tests/`.
+*(empty)*
 
 ### 🚧 In Progress
 
-- [ ] **Phase 6 — Visitor integration:** fetch host's published stages in `IslandPlatformerView`, `stages[] + stageIndex` replaces `STAGE_DATA`/`NEXT_STAGE`, last-index final-stage detection (RPS/chat unlock), built-in fallback on empty/error.
+- [ ] **Phase 7 — i18n + gates:** `editor.*` keys in en/ko/ja, `npm run lint` + `tsc` + `knip` + `uv run pytest tests/`.
 
 ### 🛑 Blocked / Waiting
 
@@ -27,6 +27,7 @@
 
 ### ✅ Completed
 
+- [x] **Phase 6 — Visitor integration:** `IslandPlatformerView` fetches the host's published stages (`useIslandStages(activeVisitHostId, true)`); `stages[] + stageIndex` replaced `STAGE_DATA`/`NEXT_STAGE`/`currentStage`; final stage = last index (drives `sendArrive`, EndingDialog `isFinalStage`, RPS unlock); built-ins on empty list or fetch error (the feature never blocks a visit); `stages === null` while loading so the game never starts on the wrong set; custom-stage BGM mapped from background. Verified in the browser: Bob visiting Alice (1 published custom stage) → custom flat level played, clearing it (first == last) showed the arrival dialog with Start chat + Play RPS and unlocked chat; Bob visiting Kate (0 published) → built-in "Stage 1: Sunny Beach" fallback.
 - [x] **Phase 5 — Test play + clear/publish loop:** `StageTestPlay.tsx` runs the author's level on `createPlatformerRun` (HUD + cleared/game-over overlays only; BGM mapped from background; ESC exits). Test = validate → auto-save → play; the save is skipped only when `!dirty && stage` (server already holds exactly this content), preserving the "cleared an old version" race block. `onCleared` fires once → `POST cleared`; Publish enables on `cleared && !dirty`. Verified end-to-end in the browser: Test → auto-save (draft/uncleared) → flag reached → "Stage cleared!" overlay → `cleared=True` in DB → back to editor → Publish enabled → `status=published` + stage appears in `?published=true`.
 - [x] **Phase 4 — Editor MVP:** `stage-editor/` — `EditorModel` (pure TS, mutable model + 20-deep undo/redo snapshots; paint strokes never trigger per-tile React renders), `levelValidation.ts` (client mirror of `services/visit/schemas.py`, returns `editor.err.*` i18n keys), `EditorCanvas.tsx` (PlatformerRenderer reuse over a live LevelMap view sharing the model's Uint8Array; grid/spawn-marker/actor-ghost/hover overlays synced by version counter; arrow-key + middle-drag pan; palette thumbnails extracted once via `renderer.extract.base64`), `EditorPalette.tsx`, `StageEditorView.tsx` (slot tabs with 🟢/⭐/📝 badges, name/width/background controls, Save/Test/Publish/Unpublish/Delete/Exit, dirty tracking, delete-confirm dialog), entry via ProfilePanel button + `viewMode === "editor"` fullscreen branch, `editor.*` i18n keys in en/ko/ja. Verified: tsc + lint clean; browser smoke — entry, paint, dirty indicator, Save→backend row (draft/uncleared, tiles match), undo, slot-switch with discard confirm + badges, Exit. Test button is rendered disabled until Phase 5.
 - [x] **Phase 3 — Engine extraction:** `createPlatformerRun()` in `PlatformerGameRuntime.ts` — Pixi init/loop/cleanup moved verbatim; runtime owns run state (hp/shells/lives/goal/checkpoint) and mirrors via callbacks; `initialShells`/`initialLives` preserve cross-stage carry-over; level compiled inside async init so malformed data flows through `onError`. Side fix: TouchInput's render-time `inputRef.current` read (latent `react-hooks/refs` violation, previously masked because the giant effect made the component unanalyzable) replaced with `gameInput` state. Verified: `tsc` 0 errors, lint clean for touched files, manual full play stage1→3 (HUD, V toggle, damage/collect, death/respawn, game-over retry, shell/lives carry-over on stage transition, final-stage chat/RPS unlock, ESC leave + re-enter) all passed.
@@ -52,7 +53,8 @@
 * **Phase 3 done:** engine extracted to `PlatformerGameRuntime.ts`; manual stage1→3 full-play regression passed (user-verified, all 10 checklist items including shell/lives carry-over and final-stage unlock). Two design notes: (a) runtime owns hp/shells/lives — React state became a HUD mirror, so the stale-closure workarounds in the old loop disappeared; (b) carry-over across stages is seeded via `initialShells`/`initialLives` opts from refs.
 * **Phase 4 done:** editor MVP complete and smoke-tested in the browser (entry → paint → save → backend verified end-to-end; the state machine resets to draft/uncleared on save as designed). Known cosmetic nit: the banana palette thumbnail extracts dark — texture renders fine in-game; revisit if it bothers anyone.
 * **Phase 5 done:** full Mario-Maker loop verified live in the browser (automated: held ArrowRight across the default flat stage to the flag). Note for future testing: `KeyboardInput` reads `e.code`, not `e.key` — synthetic key events must set `code`. Alice's slot-1 stage is left published in the local DB as the fixture for Phase 6 visitor testing.
-* **Next Steps:** Phase 6 — visitor integration: published-stages query in `IslandPlatformerView`, `stages[] + stageIndex` replaces `STAGE_DATA`/`NEXT_STAGE`, last-index detection for RPS/chat unlock, built-in fallback on empty/error.
+* **Phase 6 done:** visitor integration verified in the browser (custom-1-stage island → final-stage unlock on its only stage; 0-published island → built-in fallback). Testing note: in the headless browser the map's island layer can stay empty — MapLibre's glyph fetches 404 there, `isStyleLoaded()` stays false after `load` already fired, so the deferred `setData` never runs; re-triggering the effect (switch user away/back) repopulates it. Not reproducible in a real browser; logged in case it shows up in CI later.
+* **Next Steps:** Phase 7 — final gates (lint, tsc, knip, pytest) + any leftover i18n keys.
 
 ### 2026-06-10
 
