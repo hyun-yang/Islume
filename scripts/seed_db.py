@@ -649,6 +649,7 @@ async def seed():
         system_wallet = Wallet(
             id=_uuid(100), user_id=_uuid(0),
             public_key=sys_pub, encrypted_private_key=sys_enc_priv,
+            balance=-GENESIS_AMOUNT * len(USERS),
         )
         session.add(system_wallet)
         await session.flush()
@@ -658,6 +659,7 @@ async def seed():
             wallet = Wallet(
                 id=_uuid(200 + idx), user_id=uid,
                 public_key=pub, encrypted_private_key=enc_priv,
+                balance=GENESIS_AMOUNT,
             )
             session.add(wallet)
             await session.flush()
@@ -692,9 +694,9 @@ async def seed():
             lon, lat = pos
             await r.geoadd("geo:islands", [lon, lat, str(uid)])
             registered += 1
-    # Cache wallet balances
+    # Cache wallet balances (TTL matches the wallet service's write-through)
     for uid, *_rest in USERS:
-        await r.set(f"wallet:balance:{uid}", "1000")
+        await r.set(f"wallet:balance:{uid}", "1000", ex=60)
 
     await close_redis()
 

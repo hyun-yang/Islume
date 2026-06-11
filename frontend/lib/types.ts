@@ -415,6 +415,7 @@ export interface TransferRequest {
   amount: number;
   tx_type: string;
   metadata?: Record<string, unknown>;
+  idempotency_key?: string;
 }
 
 export interface TransferResponse {
@@ -424,6 +425,7 @@ export interface TransferResponse {
   amount: number;
   tx_type: string;
   created_at: string;
+  idempotent_replay: boolean;
 }
 
 interface LedgerEntry {

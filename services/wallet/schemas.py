@@ -24,6 +24,7 @@ class TransferRequest(BaseModel):
     amount: int = Field(..., gt=0)
     tx_type: str = "tip"
     metadata: dict | None = None
+    idempotency_key: str | None = Field(None, min_length=1, max_length=128)
 
 
 class TransferResponse(BaseModel):
@@ -33,6 +34,7 @@ class TransferResponse(BaseModel):
     amount: int
     tx_type: str
     created_at: str
+    idempotent_replay: bool = False
 
 
 class LedgerEntryResponse(BaseModel):

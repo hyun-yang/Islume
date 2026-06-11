@@ -16,7 +16,10 @@ export function useTransfer() {
   const queryClient = useQueryClient();
   const selectedUserId = useAppStore((s) => s.selectedUserId);
   return useMutation({
-    mutationFn: (data: TransferRequest) => transferISL(data),
+    // Every transfer intent gets one idempotency key, so a network retry of
+    // the same intent can never double-spend (caller-supplied key wins).
+    mutationFn: (data: TransferRequest) =>
+      transferISL({ idempotency_key: crypto.randomUUID(), ...data }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wallet", selectedUserId] });
       queryClient.invalidateQueries({ queryKey: ["balance", selectedUserId] });

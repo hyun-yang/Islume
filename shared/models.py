@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     Float,
     ForeignKey,
     Index,
@@ -13,6 +14,7 @@ from sqlalchemy import (
     LargeBinary,
     String,
     Text,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql import UUID as PgUUID
@@ -263,6 +265,15 @@ class ChatMessage(Base):
 
 class Wallet(Base):
     __tablename__ = "wallets"
+    __table_args__ = (
+        # System wallet (all-zeros user) is the treasury and may go negative.
+        # IS NOT DISTINCT FROM: user_id is nullable; NULL must not bypass the CHECK.
+        CheckConstraint(
+            "balance >= 0 OR user_id IS NOT DISTINCT FROM"
+            " '00000000-0000-0000-0000-000000000000'::uuid",
+            name="ck_wallets_balance_non_negative",
+        ),
+    )
 
     id: Mapped[UUID] = mapped_column(PgUUID, primary_key=True, default=uuid4)
     user_id: Mapped[UUID | None] = mapped_column(
@@ -270,14 +281,21 @@ class Wallet(Base):
     )
     public_key: Mapped[bytes] = mapped_column(LargeBinary)
     encrypted_private_key: Mapped[bytes] = mapped_column(LargeBinary)
+    balance: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, default=0, server_default="0"
+    )
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
 class LedgerEntry(Base):
     __tablename__ = "ledger_entries"
     __table_args__ = (
-        Index("ix_ledger_entries_tx_id", "tx_id"),
+        # Doubles as the idempotency guard: tx_id is derived from the
+        # client's idempotency key, so a retried transfer hits this constraint.
+        UniqueConstraint("tx_id", "account_id", name="uq_ledger_entries_tx_account"),
         Index("ix_ledger_entries_account_created", "account_id", "created_at"),
+        CheckConstraint("amount <> 0", name="ck_ledger_entries_amount_nonzero"),
+        CheckConstraint("currency = 'ISL'", name="ck_ledger_entries_currency_isl"),
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)

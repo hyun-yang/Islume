@@ -114,6 +114,7 @@ async def _transfer(
     to_user_id: UUID,
     amount: int,
     metadata: dict[str, object],
+    idempotency_key: str,
 ) -> tuple[bool, str | None]:
     settings = get_settings()
     url = f"{settings.wallet_service_url}/transactions/transfer"
@@ -123,16 +124,35 @@ async def _transfer(
         "amount": amount,
         "tx_type": "rps_bet",
         "metadata": metadata,
+        "idempotency_key": idempotency_key,
     }
-    async with httpx.AsyncClient(timeout=5.0) as client:
-        resp = await client.post(url, json=payload)
-        if resp.status_code == 200 or resp.status_code == 201:
+    # The idempotency key makes retries safe: a retry whose original request
+    # actually committed replays the stored transfer instead of double-spending.
+    last_detail: str | None = None
+    for _attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=5.0) as client:
+                resp = await client.post(url, json=payload)
+        except httpx.TransportError as e:
+            last_detail = f"{e.__class__.__name__}"
+            continue
+        if resp.status_code in (200, 201):
             return True, None
+        if resp.status_code >= 500:
+            last_detail = f"HTTP {resp.status_code}"
+            continue
+        # 4xx is a clean rejection (e.g. insufficient balance) — retrying
+        # cannot succeed, so surface the detail for the cancel reason.
         try:
             detail = resp.json().get("detail", f"HTTP {resp.status_code}")
         except Exception:
             detail = f"HTTP {resp.status_code}"
         return False, str(detail)
+    print(
+        f"WARN: RPS wallet transfer unavailable after retries"
+        f" (key={idempotency_key}): {last_detail}"
+    )
+    return False, "wallet_unavailable"
 
 
 async def _publish_round(
@@ -264,6 +284,7 @@ async def submit_pick(
                     "visitor_pick": h["visitor_pick"],
                     "host_pick": h["host_pick"],
                 },
+                idempotency_key=f"rps:{round_id}",
             )
             if not ok:
                 # Cancel: do not mutate balances.

@@ -40,6 +40,14 @@ def build_tx_data(
     currency: str,
     tx_type: str,
 ) -> bytes:
+    """Canonical signing payload for a ledger transaction.
+
+    FROZEN FORMAT: the exact byte output (key order, separators, encoding)
+    is what every stored ledger signature was computed over. Changing it —
+    even switching json.dumps separators — invalidates all existing
+    signatures. The golden-bytes test in tests/test_crypto_tx_data.py
+    guards this; if it fails, revert the change.
+    """
     return json.dumps(
         {
             "amount": amount,
