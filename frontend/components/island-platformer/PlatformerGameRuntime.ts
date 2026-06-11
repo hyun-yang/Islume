@@ -29,7 +29,7 @@ export const MAX_HP = 3;
 export const START_LIVES = 3;
 const SHELLS_PER_LIFE = 100;
 
-export interface PlatformerRunCallbacks {
+interface PlatformerRunCallbacks {
   /** Init finished; the run is live. Delivers the input for TouchInput. */
   onReady(input: KeyboardInput): void;
   /** Goal flag reached — player already locked, bgm stopped. */

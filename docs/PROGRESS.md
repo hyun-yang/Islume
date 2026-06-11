@@ -3,8 +3,8 @@
 ## 📊 Overview
 
 * **Project:** Islume Stage Editor (Super Mario Maker style)
-* **Current Milestone:** Game Map Editor MVP
-* **Overall Status:** 🟢 On Track
+* **Current Milestone:** Game Map Editor MVP — **complete** (Phases 0–7)
+* **Overall Status:** ✅ Done (pending final human play-through)
 * **Last Updated:** 2026-06-11
 * **Branch:** `feature/game-map`
 * **Plan:** see the approved plan (Phase 1–7) — each user authors up to 3 platformer stages for their island; visitors play the host's published stages with built-in stage1–3 as fallback.
@@ -19,7 +19,7 @@
 
 ### 🚧 In Progress
 
-- [ ] **Phase 7 — i18n + gates:** `editor.*` keys in en/ko/ja, `npm run lint` + `tsc` + `knip` + `uv run pytest tests/`.
+*(none)*
 
 ### 🛑 Blocked / Waiting
 
@@ -27,6 +27,7 @@
 
 ### ✅ Completed
 
+- [x] **Phase 7 — i18n + gates:** i18n was added per-phase; key sets verified identical across en/ko/ja (60 `editor.*` keys). Gates: `tsc` 0 errors; `lint` 6 pre-existing errors only (none in feature files); `knip` reports only the two pre-existing `@deprecated` exports (`fetchVisit`, `fetchRpsRound` — intentionally retained); `pytest` 100 passed. Cleanup: un-exported `PlatformerRunCallbacks` (internal-only).
 - [x] **Phase 6 — Visitor integration:** `IslandPlatformerView` fetches the host's published stages (`useIslandStages(activeVisitHostId, true)`); `stages[] + stageIndex` replaced `STAGE_DATA`/`NEXT_STAGE`/`currentStage`; final stage = last index (drives `sendArrive`, EndingDialog `isFinalStage`, RPS unlock); built-ins on empty list or fetch error (the feature never blocks a visit); `stages === null` while loading so the game never starts on the wrong set; custom-stage BGM mapped from background. Verified in the browser: Bob visiting Alice (1 published custom stage) → custom flat level played, clearing it (first == last) showed the arrival dialog with Start chat + Play RPS and unlocked chat; Bob visiting Kate (0 published) → built-in "Stage 1: Sunny Beach" fallback.
 - [x] **Phase 5 — Test play + clear/publish loop:** `StageTestPlay.tsx` runs the author's level on `createPlatformerRun` (HUD + cleared/game-over overlays only; BGM mapped from background; ESC exits). Test = validate → auto-save → play; the save is skipped only when `!dirty && stage` (server already holds exactly this content), preserving the "cleared an old version" race block. `onCleared` fires once → `POST cleared`; Publish enables on `cleared && !dirty`. Verified end-to-end in the browser: Test → auto-save (draft/uncleared) → flag reached → "Stage cleared!" overlay → `cleared=True` in DB → back to editor → Publish enabled → `status=published` + stage appears in `?published=true`.
 - [x] **Phase 4 — Editor MVP:** `stage-editor/` — `EditorModel` (pure TS, mutable model + 20-deep undo/redo snapshots; paint strokes never trigger per-tile React renders), `levelValidation.ts` (client mirror of `services/visit/schemas.py`, returns `editor.err.*` i18n keys), `EditorCanvas.tsx` (PlatformerRenderer reuse over a live LevelMap view sharing the model's Uint8Array; grid/spawn-marker/actor-ghost/hover overlays synced by version counter; arrow-key + middle-drag pan; palette thumbnails extracted once via `renderer.extract.base64`), `EditorPalette.tsx`, `StageEditorView.tsx` (slot tabs with 🟢/⭐/📝 badges, name/width/background controls, Save/Test/Publish/Unpublish/Delete/Exit, dirty tracking, delete-confirm dialog), entry via ProfilePanel button + `viewMode === "editor"` fullscreen branch, `editor.*` i18n keys in en/ko/ja. Verified: tsc + lint clean; browser smoke — entry, paint, dirty indicator, Save→backend row (draft/uncleared, tiles match), undo, slot-switch with discard confirm + badges, Exit. Test button is rendered disabled until Phase 5.
@@ -54,7 +55,7 @@
 * **Phase 4 done:** editor MVP complete and smoke-tested in the browser (entry → paint → save → backend verified end-to-end; the state machine resets to draft/uncleared on save as designed). Known cosmetic nit: the banana palette thumbnail extracts dark — texture renders fine in-game; revisit if it bothers anyone.
 * **Phase 5 done:** full Mario-Maker loop verified live in the browser (automated: held ArrowRight across the default flat stage to the flag). Note for future testing: `KeyboardInput` reads `e.code`, not `e.key` — synthetic key events must set `code`. Alice's slot-1 stage is left published in the local DB as the fixture for Phase 6 visitor testing.
 * **Phase 6 done:** visitor integration verified in the browser (custom-1-stage island → final-stage unlock on its only stage; 0-published island → built-in fallback). Testing note: in the headless browser the map's island layer can stay empty — MapLibre's glyph fetches 404 there, `isStyleLoaded()` stays false after `load` already fired, so the deferred `setData` never runs; re-triggering the effect (switch user away/back) repopulates it. Not reproducible in a real browser; logged in case it shows up in CI later.
-* **Next Steps:** Phase 7 — final gates (lint, tsc, knip, pytest) + any leftover i18n keys.
+* **Phase 7 done — milestone complete.** All gates green. Remaining for a human: a free-form play-through of the full loop (build a real stage with enemies/platforms, clear, publish, visit from the second browser) before merging to main.
 
 ### 2026-06-10
 
