@@ -1,7 +1,7 @@
 import { Container, Sprite, type Texture } from "pixi.js";
 import {
   type LevelMap, type Actor as ActorData,
-  TILE_PF_SIZE, SOLID_PF_TILES,
+  TILE_PF_SIZE, SOLID_PF_TILES, TILE_PF_WATER,
 } from "@/lib/platformer/types";
 import { type EnemyTextureSet } from "@/lib/platformer/enemyTextures";
 import { type ItemTextureSet } from "@/lib/platformer/itemTextures";
@@ -353,6 +353,32 @@ class HeartFruit extends BaseActor {
 function tileSolid(level: LevelMap, tx: number, ty: number): boolean {
   if (tx < 0 || tx >= level.width || ty < 0 || ty >= level.height) return false;
   return SOLID_PF_TILES.has(level.tiles[ty * level.width + tx]);
+}
+
+function tileWater(level: LevelMap, tx: number, ty: number): boolean {
+  if (tx < 0 || tx >= level.width || ty < 0 || ty >= level.height) return false;
+  return level.tiles[ty * level.width + tx] === TILE_PF_WATER;
+}
+
+// Default patrol bounds for a log without an explicit walk_range: the
+// contiguous water span beneath it, inset by the log's half-width so the
+// log's edges never leave the water. Returns centerX bounds in tile units
+// (Log multiplies by TILE; fractions are fine). A log not over water — or
+// over a span narrower than itself — stays put.
+function logWaterRange(level: LevelMap, x: number, waterRow: number): [number, number] {
+  if (!tileWater(level, x, waterRow)) return [x + 0.5, x + 0.5];
+  let x0 = x;
+  while (tileWater(level, x0 - 1, waterRow)) x0--;
+  let x1 = x;
+  while (tileWater(level, x1 + 1, waterRow)) x1++;
+  const halfW = LOG_W / 2 / TILE;
+  const min = x0 + halfW;
+  const max = x1 + 1 - halfW;
+  if (min > max) {
+    const mid = (x0 + x1 + 1) / 2;
+    return [mid, mid];
+  }
+  return [min, max];
 }
 
 // ----- Bear (boss): blocks the path until knocked out by a falling coconut -----
@@ -1174,8 +1200,11 @@ export class ActorManager {
     spawnCoconut: (x: number, y: number) => void,
     taniTex: CharacterTextureSet | undefined,
   ): BaseActor | null {
+    // Actor (x, y) is the tile the actor occupies — its feet/bottom sit on
+    // that tile's bottom edge, i.e. (y + 1) * TILE. This matches the editor's
+    // click-to-place semantics; built-in stage JSONs use the same convention.
     const tileCenterX = data.x * TILE + TILE / 2;
-    const groundY = data.y * TILE;
+    const bottomY = (data.y + 1) * TILE;
     const tileCenterY = data.y * TILE + TILE / 2;
     const platformTex = this.platformTex;
     const bossTex = this.bossTex;
@@ -1183,13 +1212,13 @@ export class ActorManager {
     switch (data.type) {
       case "enemy_crab":
         return new Crab(
-          tileCenterX, groundY,
+          tileCenterX, bottomY,
           data.walk_range ?? [data.x - 2, data.x + 2],
           enemyTex.crab,
         );
       case "enemy_starfish":
         return new Starfish(
-          tileCenterX, groundY,
+          tileCenterX, bottomY,
           data.jump_interval_ms ?? 1800,
           enemyTex.starfish[0],
         );
@@ -1197,26 +1226,26 @@ export class ActorManager {
         if (!platformTex) return null;
         const facing: -1 | 1 = (data.walk_range && data.walk_range[0] > data.x) ? 1 : -1;
         return new Frog(
-          tileCenterX, groundY, enemyTex.frog,
+          tileCenterX, bottomY, enemyTex.frog,
           platformTex.waterDrop[0], facing, spawnProjectile,
         );
       }
       case "platform_log": {
         if (!platformTex) return null;
         return new Log(
-          tileCenterX, groundY,
-          data.walk_range ?? [data.x - 4, data.x + 4],
+          tileCenterX, bottomY,
+          data.walk_range ?? logWaterRange(this.level, data.x, data.y + 1),
           platformTex.log[0],
         );
       }
       case "platform_lily": {
         if (!platformTex) return null;
-        return new LilyPad(tileCenterX, groundY, platformTex.lily[0]);
+        return new LilyPad(tileCenterX, bottomY, platformTex.lily[0]);
       }
       case "whale": {
         if (!platformTex) return null;
         return new Whale(
-          tileCenterX, groundY, platformTex.whale,
+          tileCenterX, bottomY, platformTex.whale,
           data.jump_interval_ms ?? 2000,
         );
       }
@@ -1231,13 +1260,13 @@ export class ActorManager {
         return new Pineapple(tileCenterX, tileCenterY, bossTex.pineapple);
       case "block_coconut":
         if (!bossTex) return null;
-        return new CoconutBlock(tileCenterX, groundY, bossTex.coconutBlock, spawnCoconut);
+        return new CoconutBlock(tileCenterX, bottomY, bossTex.coconutBlock, spawnCoconut);
       case "enemy_bear_boss":
         if (!bossTex) return null;
-        return new Bear(tileCenterX, groundY, bossTex.bear);
+        return new Bear(tileCenterX, bottomY, bossTex.bear);
       case "npc_tani":
         if (!taniTex) return null;
-        return new TaniNPC(tileCenterX, groundY, taniTex);
+        return new TaniNPC(tileCenterX, bottomY, taniTex);
       default:
         return null;
     }

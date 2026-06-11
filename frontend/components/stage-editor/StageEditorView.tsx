@@ -328,13 +328,18 @@ export default function StageEditorView() {
         <EditorPalette tool={tool} onToolChange={setTool} thumbs={thumbs} />
         <div className="flex-1 relative">
           {model ? (
-            <EditorCanvas
-              model={model}
-              version={version}
-              tool={tool}
-              onMutate={markMutated}
-              onThumbnails={setThumbs}
-            />
+            <>
+              <EditorCanvas
+                model={model}
+                version={version}
+                tool={tool}
+                onMutate={markMutated}
+                onThumbnails={setThumbs}
+              />
+              <div className="absolute bottom-2 right-2 z-10 px-2 py-1 rounded bg-zinc-900/70 text-[11px] text-zinc-300 pointer-events-none">
+                {t("editor.panHint")}
+              </div>
+            </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-zinc-400">
               {t("editor.loading")}

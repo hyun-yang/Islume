@@ -318,6 +318,7 @@ export const ko: Record<string, string> = {
   "editor.deleteConfirmTitle": "이 스테이지를 삭제할까요?",
   "editor.deleteConfirmBody": "스테이지와 발행 상태가 영구히 삭제됩니다.",
   "editor.loading": "에디터 불러오는 중...",
+  "editor.panHint": "이동: 휠 스크롤 · Space + 드래그 · ← →",
   "editor.section.tools": "도구",
   "editor.section.tiles": "타일",
   "editor.section.actors": "액터",

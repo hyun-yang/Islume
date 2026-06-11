@@ -318,6 +318,7 @@ export const ja: Record<string, string> = {
   "editor.deleteConfirmTitle": "このステージを削除しますか？",
   "editor.deleteConfirmBody": "ステージと公開状態は完全に削除されます。",
   "editor.loading": "エディターを読み込み中...",
+  "editor.panHint": "移動: ホイールスクロール · Space + ドラッグ · ← →",
   "editor.section.tools": "ツール",
   "editor.section.tiles": "タイル",
   "editor.section.actors": "アクター",

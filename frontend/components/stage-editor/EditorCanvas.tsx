@@ -182,11 +182,18 @@ export default function EditorCanvas({ model, version, tool, onMutate, onThumbna
       syncOverlays();
 
       // ---- Camera + input ----
-      const cam = { x: 0, y: 0 };
+      // The 16-tile strip is always zoomed to fill the viewport height, so
+      // navigation is horizontal only: wheel scroll, Space/middle-drag pan,
+      // or arrow keys. cam.x / zoom live here; the ticker clamps and applies.
+      const cam = { x: 0 };
+      let zoom = 1;
       const keys = new Set<string>();
       let painting = false;
       let panning = false;
+      let spaceHeld = false;
       let lastPan = { x: 0, y: 0 };
+
+      const canvas = app.canvas;
 
       const isFormTarget = (e: Event) =>
         e.target instanceof HTMLInputElement ||
@@ -195,20 +202,28 @@ export default function EditorCanvas({ model, version, tool, onMutate, onThumbna
 
       onKeyDown = (e: KeyboardEvent) => {
         if (isFormTarget(e)) return;
-        if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) {
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
           keys.add(e.key);
+          e.preventDefault();
+        } else if (e.code === "Space") {
+          spaceHeld = true;
+          canvas.style.cursor = "grab";
           e.preventDefault();
         }
       };
-      onKeyUp = (e: KeyboardEvent) => keys.delete(e.key);
+      onKeyUp = (e: KeyboardEvent) => {
+        keys.delete(e.key);
+        if (e.code === "Space") {
+          spaceHeld = false;
+          canvas.style.cursor = "";
+        }
+      };
       window.addEventListener("keydown", onKeyDown);
       window.addEventListener("keyup", onKeyUp);
 
-      const canvas = app.canvas;
-
       const toTile = (e: PointerEvent): { x: number; y: number } => ({
-        x: Math.floor((e.offsetX + cam.x) / TILE_PF_SIZE),
-        y: Math.floor((e.offsetY + cam.y) / TILE_PF_SIZE),
+        x: Math.floor((e.offsetX / zoom + cam.x) / TILE_PF_SIZE),
+        y: Math.floor(e.offsetY / zoom / TILE_PF_SIZE),
       });
 
       const inLevel = (p: { x: number; y: number }) =>
@@ -224,7 +239,7 @@ export default function EditorCanvas({ model, version, tool, onMutate, onThumbna
       };
 
       canvas.addEventListener("pointerdown", (e) => {
-        if (e.button === 1) {
+        if (e.button === 1 || (e.button === 0 && spaceHeld)) {
           panning = true;
           lastPan = { x: e.clientX, y: e.clientY };
           e.preventDefault();
@@ -249,8 +264,7 @@ export default function EditorCanvas({ model, version, tool, onMutate, onThumbna
 
       canvas.addEventListener("pointermove", (e) => {
         if (panning) {
-          cam.x -= e.clientX - lastPan.x;
-          cam.y -= e.clientY - lastPan.y;
+          cam.x -= (e.clientX - lastPan.x) / zoom;
           lastPan = { x: e.clientX, y: e.clientY };
           return;
         }
@@ -274,25 +288,34 @@ export default function EditorCanvas({ model, version, tool, onMutate, onThumbna
       // Middle-click autoscroll would fight the pan gesture
       canvas.addEventListener("auxclick", (e) => e.preventDefault());
 
+      // Wheel (vertical or trackpad horizontal) scrolls along the level.
+      canvas.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+          cam.x += d / zoom;
+        },
+        { passive: false },
+      );
+
       initialized = true;
 
       app.ticker.add(() => {
         if (!app || !renderer) return;
-        if (keys.has("ArrowLeft")) cam.x -= PAN_SPEED;
-        if (keys.has("ArrowRight")) cam.x += PAN_SPEED;
-        if (keys.has("ArrowUp")) cam.y -= PAN_SPEED;
-        if (keys.has("ArrowDown")) cam.y += PAN_SPEED;
+        if (keys.has("ArrowLeft")) cam.x -= PAN_SPEED / zoom;
+        if (keys.has("ArrowRight")) cam.x += PAN_SPEED / zoom;
 
         const screenW = app.screen.width;
         const screenH = app.screen.height;
-        const maxCamX = Math.max(0, model.level.width * TILE_PF_SIZE - screenW);
+        zoom = screenH / LEVEL_PX_H; // fit the 16-tile strip to the viewport
+        const viewW = screenW / zoom; // visible width in world px
+        const maxCamX = Math.max(0, model.level.width * TILE_PF_SIZE - viewW);
         cam.x = Math.max(0, Math.min(cam.x, maxCamX));
-        if (screenH >= LEVEL_PX_H) {
-          cam.y = -(screenH - LEVEL_PX_H) / 2; // center the strip vertically
-        } else {
-          cam.y = Math.max(0, Math.min(cam.y, LEVEL_PX_H - screenH));
-        }
-        renderer.update(cam.x, cam.y, screenW, screenH);
+        renderer.update(cam.x, 0, viewW, LEVEL_PX_H);
+        // renderer.update positions the world unscaled; re-apply with zoom.
+        world.scale.set(zoom);
+        world.x = -cam.x * zoom;
       });
 
       // ---- Palette thumbnails (one-time extraction) ----

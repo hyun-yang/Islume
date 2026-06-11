@@ -98,7 +98,9 @@ export type ActorType =
 export interface Actor {
   id: string;
   type: ActorType;
-  x: number;            // tile coords (bottom-center)
+  // Tile the actor occupies. Ground-anchored actors stand with their feet on
+  // this tile's bottom edge ((y+1)*tile); items render centered in the tile.
+  x: number;
   y: number;
   walk_range?: [number, number];
   jump_interval_ms?: number;

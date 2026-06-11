@@ -320,6 +320,7 @@ export const en: Record<string, string> = {
   "editor.deleteConfirmTitle": "Delete this stage?",
   "editor.deleteConfirmBody": "The stage and its publish state will be permanently removed.",
   "editor.loading": "Loading editor...",
+  "editor.panHint": "Pan: scroll wheel · Space + drag · ← →",
   "editor.section.tools": "Tools",
   "editor.section.tiles": "Tiles",
   "editor.section.actors": "Actors",
