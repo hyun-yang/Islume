@@ -8,7 +8,11 @@
 
 
 ## 스크린샷
-![Islume Screenshot](https://github.com/user-attachments/assets/bdd358b6-b998-40e7-a0b4-03cb74a08efd)
+![Islume Chat](https://github.com/user-attachments/assets/f47af8eb-5503-4f4f-9151-ab479e1f3e63)
+
+![Islume Game](https://github.com/user-attachments/assets/c8c09aae-7111-4bfa-b9f4-470d2dd24fd5)
+
+![Islume RSP](https://github.com/user-attachments/assets/2cf33a08-9899-4818-bb02-0b9f1f317593)
 
 
 ## 설치
