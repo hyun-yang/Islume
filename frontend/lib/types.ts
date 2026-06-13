@@ -471,6 +471,10 @@ export interface DMMessage {
 
 export type VisitViewMode = "world" | "loading" | "island" | "editor";
 
+// Which game a visitor plays on the host's island. Lives here (not in
+// lib/games.ts) so the app store never imports React components.
+export type GameId = "platformer" | "puzzle";
+
 // Island stage types (user-authored platformer levels) — mirrors
 // services/visit/schemas.py StageLevelData / StageResponse
 

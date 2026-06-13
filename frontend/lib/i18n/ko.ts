@@ -296,6 +296,19 @@ export const ko: Record<string, string> = {
   "game.shellsTryAgain": "개의 조개를 모았어요. 다시 도전할래요?",
   "game.endVisit": "방문 종료",
 
+  // Game selection + puzzle (Shell Swap)
+  "games.choose": "게임 선택",
+  "games.platformer.title": "섬 모험",
+  "games.platformer.desc": "호스트의 스테이지를 달리고 뛰어넘어요",
+  "games.puzzle.title": "조개 퍼즐",
+  "games.puzzle.desc": "섬 아이템 3개를 맞춰 목표 점수를 달성해요",
+  "puzzle.loading": "퍼즐 불러오는 중…",
+  "puzzle.failedToLoad": "퍼즐을 불러오지 못했습니다",
+  "puzzle.score": "점수",
+  "puzzle.moves": "남은 이동",
+  "puzzle.outOfMoves": "이동 횟수를 모두 썼어요!",
+  "puzzle.shuffled": "움직일 수 있는 수가 없어 판을 섞었어요!",
+
   // Stage editor
   "profile.stageEditor": "스테이지 에디터",
   "editor.defaultName": "스테이지",

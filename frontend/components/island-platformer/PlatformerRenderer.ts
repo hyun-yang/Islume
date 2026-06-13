@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, type Texture } from "pixi.js";
 import { type LevelMap, TILE_PF_EMPTY } from "@/lib/platformer/types";
-import { SpritePool } from "./SpritePool";
+import { SpritePool } from "@/lib/game-core/SpritePool";
 
 // Stage layout
 //   stage

@@ -298,6 +298,19 @@ export const en: Record<string, string> = {
   "game.shellsTryAgain": "shells collected. Try again?",
   "game.endVisit": "End visit",
 
+  // Game selection + puzzle (Shell Swap)
+  "games.choose": "Choose a game",
+  "games.platformer.title": "Island Adventure",
+  "games.platformer.desc": "Run and jump through the host's stages",
+  "games.puzzle.title": "Shell Swap",
+  "games.puzzle.desc": "Match 3 island treats to reach the target score",
+  "puzzle.loading": "Loading puzzle…",
+  "puzzle.failedToLoad": "Failed to load puzzle",
+  "puzzle.score": "Score",
+  "puzzle.moves": "Moves",
+  "puzzle.outOfMoves": "Out of moves!",
+  "puzzle.shuffled": "No moves left — board shuffled!",
+
   // Stage editor
   "profile.stageEditor": "Stage Editor",
   "editor.defaultName": "Stage",

@@ -296,6 +296,19 @@ export const ja: Record<string, string> = {
   "game.shellsTryAgain": "個の貝を集めました。もう一度挑戦しますか？",
   "game.endVisit": "訪問を終了",
 
+  // Game selection + puzzle (Shell Swap)
+  "games.choose": "ゲームを選ぶ",
+  "games.platformer.title": "島のぼうけん",
+  "games.platformer.desc": "ホストのステージを走ってジャンプしよう",
+  "games.puzzle.title": "シェルスワップ",
+  "games.puzzle.desc": "島のアイテムを3つそろえて目標スコアを目指そう",
+  "puzzle.loading": "パズルを読み込み中…",
+  "puzzle.failedToLoad": "パズルの読み込みに失敗しました",
+  "puzzle.score": "スコア",
+  "puzzle.moves": "残り手数",
+  "puzzle.outOfMoves": "手数がなくなりました！",
+  "puzzle.shuffled": "動かせる手がないため、ばんめんをシャッフルしました！",
+
   // Stage editor
   "profile.stageEditor": "ステージエディター",
   "editor.defaultName": "ステージ",

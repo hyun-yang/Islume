@@ -12,8 +12,8 @@ import ChatPanel from "@/components/chat/ChatPanel";
 import WalletPanel from "@/components/panels/WalletPanel";
 import TransferModal from "@/components/panels/TransferModal";
 import VisitConfirmDialog from "@/components/island/VisitConfirmDialog";
-import IslandPlatformerView from "@/components/island-platformer/IslandPlatformerView";
 import StageEditorView from "@/components/stage-editor/StageEditorView";
+import { gameById } from "@/lib/games";
 import VisitNotifications from "@/components/notifications/VisitNotifications";
 import RpsInvitationToast from "@/components/notifications/RpsInvitationToast";
 import PendingConfirmationToast from "@/components/notifications/PendingConfirmationToast";
@@ -81,6 +81,7 @@ export default function Home() {
   const matchStatus = useAppStore((s) => s.matchStatus);
   const viewMode = useAppStore((s) => s.viewMode);
   const activeVisitId = useAppStore((s) => s.activeVisitId);
+  const activeVisitGameId = useAppStore((s) => s.activeVisitGameId);
   const requestVisit = useAppStore((s) => s.requestVisit);
   const openChatWith = useAppStore((s) => s.openChatWith);
 
@@ -260,10 +261,12 @@ export default function Home() {
   }
 
   // Fullscreen island exploration — hide sidebar, modals, and chrome.
+  // Which game view renders is the visitor's pick from VisitConfirmDialog.
   if (inIslandView) {
+    const GameView = gameById(activeVisitGameId).component;
     return (
       <div className="flex h-screen w-screen overflow-hidden">
-        <IslandPlatformerView visitId={activeVisitId!} />
+        <GameView visitId={activeVisitId!} />
         <VisitNotifications />
         <RpsInvitationToast />
         <PendingConfirmationToast />

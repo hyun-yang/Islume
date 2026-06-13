@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import type {
   ConversationTurn,
   DealFinalizedPayload,
+  GameId,
   MatchCandidate,
   PendingConfirmationNotification,
   ToolCallEventPayload,
@@ -75,6 +76,8 @@ interface AppState {
   activeVisitId: string | null;
   activeVisitHostId: string | null;
   activeVisitHostName: string | null;
+  // Which game the visitor chose for this visit (not persisted)
+  activeVisitGameId: GameId;
   visitStatus: "active" | "arrived" | "ended" | null;
 
   // Visit notifications (host-side toasts)
@@ -128,7 +131,7 @@ interface AppState {
   // Visit actions
   requestVisit: (hostId: string, hostName: string) => void;
   cancelVisitRequest: () => void;
-  beginVisit: (visitId: string, hostId: string, hostName: string) => void;
+  beginVisit: (visitId: string, hostId: string, hostName: string, gameId: GameId) => void;
   setViewMode: (mode: VisitViewMode) => void;
   setVisitStatus: (status: AppState["visitStatus"]) => void;
   endVisitState: () => void;
@@ -225,6 +228,7 @@ export const useAppStore = create<AppState>()(
   activeVisitId: null,
   activeVisitHostId: null,
   activeVisitHostName: null,
+  activeVisitGameId: "platformer",
   visitStatus: null,
 
   visitToasts: [],
@@ -392,6 +396,7 @@ export const useAppStore = create<AppState>()(
       activeVisitId: null,
       activeVisitHostId: null,
       activeVisitHostName: null,
+      activeVisitGameId: "platformer",
       visitStatus: null,
     }),
 
@@ -400,12 +405,13 @@ export const useAppStore = create<AppState>()(
 
   cancelVisitRequest: () => set({ pendingVisit: null }),
 
-  beginVisit: (visitId, hostId, hostName) =>
+  beginVisit: (visitId, hostId, hostName, gameId) =>
     set({
       pendingVisit: null,
       activeVisitId: visitId,
       activeVisitHostId: hostId,
       activeVisitHostName: hostName,
+      activeVisitGameId: gameId,
       visitStatus: "active",
       viewMode: "loading",
     }),
@@ -421,6 +427,7 @@ export const useAppStore = create<AppState>()(
       activeVisitId: null,
       activeVisitHostId: null,
       activeVisitHostName: null,
+      activeVisitGameId: "platformer",
       visitStatus: null,
     }),
 

@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { createVisit, endVisit } from "@/lib/api";
 import { useAppStore } from "@/stores/appStore";
+import type { GameId } from "@/lib/types";
 
 export function useStartVisit() {
   const beginVisit = useAppStore((s) => s.beginVisit);
@@ -11,16 +12,18 @@ export function useStartVisit() {
       visitorId,
       hostId,
       hostName,
+      gameId,
     }: {
       visitorId: string;
       hostId: string;
       hostName: string;
+      gameId: GameId;
     }) => {
       const visit = await createVisit(visitorId, hostId);
-      return { visit, hostName };
+      return { visit, hostName, gameId };
     },
-    onSuccess: ({ visit, hostName }) => {
-      beginVisit(visit.id, visit.host_id, hostName);
+    onSuccess: ({ visit, hostName, gameId }) => {
+      beginVisit(visit.id, visit.host_id, hostName, gameId);
     },
     onError: () => {
       cancelVisitRequest();
