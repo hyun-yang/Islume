@@ -50,6 +50,19 @@ class Settings(BaseSettings):
     wallet_master_key: str = ""
     wallet_service_url: str = "http://localhost:8004"
 
+    # Solana / SPL withdrawal (hybrid: Postgres ledger is source of truth,
+    # SPL tokens minted on-chain only on withdrawal). Devnet defaults.
+    solana_rpc_url: str = "https://api.devnet.solana.com"
+    solana_cluster: str = "devnet"  # devnet | testnet | mainnet-beta
+    solana_commitment: str = "confirmed"  # processed | confirmed | finalized
+    solana_isl_mint: str = ""  # mint pubkey (base58) from scripts/solana_create_mint.py
+    solana_mint_authority_secret: str = ""  # base58 OR 64-byte hex secret — NEVER commit
+    solana_decimals: int = 0  # 1 ISL == 1 base unit (guard; keep 0)
+    solana_rpc_timeout: float = 30.0  # AsyncClient HTTP timeout (seconds)
+    solana_confirm_timeout: float = 60.0  # max seconds to wait for confirmation
+    solana_mint_max_attempts: int = 3  # reclaim attempts before marking failed
+    solana_min_withdrawal: int = 1  # smallest ISL amount allowed to withdraw
+
     # App
     log_level: str = "INFO"
     environment: str = "development"

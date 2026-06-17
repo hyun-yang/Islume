@@ -72,6 +72,7 @@ kill_port 8004
 kill_port 8005
 # Kill any running workers
 pkill -f "services/worker/main.py" 2>/dev/null || true
+pkill -f "services.worker.solana_mint" 2>/dev/null || true
 
 # --- 1. Infrastructure (Docker Compose) ---
 log "Starting Docker Compose (Postgres + Redis)..."
@@ -112,6 +113,7 @@ uv run python scripts/seed_db.py
 # --- 4. Clear stale Redis streams (keep geo:islands — seeded positions) ---
 log "Clearing stale Redis streams..."
 docker exec islume-redis redis-cli DEL stream:llm_tasks >/dev/null 2>&1 || true
+docker exec islume-redis redis-cli DEL stream:solana_mints >/dev/null 2>&1 || true
 
 # --- 5. Start backend services ---
 PIDS=()
@@ -138,6 +140,10 @@ PIDS+=($!)
 
 log "Starting LLM Worker..."
 uv run python services/worker/main.py > /tmp/islume-worker.log 2>&1 &
+PIDS+=($!)
+
+log "Starting Solana Mint Worker..."
+uv run python -m services.worker.solana_mint > /tmp/islume-solana-mint.log 2>&1 &
 PIDS+=($!)
 
 # Wait for HTTP services to be ready
@@ -180,11 +186,12 @@ log "  Orchestrator:  http://localhost:8003"
 log "  Wallet:        http://localhost:8004"
 log "  Visit:         http://localhost:8005"
 log "  Worker:        running (background)"
+log "  Mint Worker:   running (background, Solana SPL)"
 if [ "$WITH_FRONTEND" = "1" ]; then
   log "  Frontend:      http://localhost:3000  (default UI locale: $LANG_VERSION)"
 fi
 log ""
-log "  Logs: /tmp/islume-{matching,orchestrator,gateway,wallet,visit,worker,frontend}.log"
+log "  Logs: /tmp/islume-{matching,orchestrator,gateway,wallet,visit,worker,solana-mint,frontend}.log"
 log "  Redis Insight: http://localhost:5540"
 log ""
 log "  PIDs: ${PIDS[*]}"

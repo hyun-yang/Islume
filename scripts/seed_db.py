@@ -557,6 +557,16 @@ async def seed():
         )
         session.add(system_user)
 
+        # On-chain escrow owner — receives the credit side of every withdrawal so
+        # the double-entry invariant holds. Matches ESCROW_USER_ID in
+        # services/wallet/main.py.
+        escrow_user = User(
+            id=UUID("00000000-0000-0000-0000-0000000000e5"),
+            display_name="Escrow", email="escrow@islume.local",
+            is_active=False, is_visible=False, tier="system",
+        )
+        session.add(escrow_user)
+
         # Create users
         user_objects = {}
         for uid, name, email, sex, age, job, suburb, radius, active, visible, tier, model in USERS:
@@ -652,6 +662,18 @@ async def seed():
             balance=-GENESIS_AMOUNT * len(USERS),
         )
         session.add(system_wallet)
+        await session.flush()
+
+        # On-chain escrow wallet: balance == total ISL withdrawn on-chain.
+        # Only ever credited, so it stays >= 0 (no negative-balance exemption).
+        esc_pub, esc_enc_priv = generate_keypair()
+        escrow_wallet = Wallet(
+            id=UUID("00000000-0000-0000-0000-0000000000e6"),
+            user_id=UUID("00000000-0000-0000-0000-0000000000e5"),
+            public_key=esc_pub, encrypted_private_key=esc_enc_priv,
+            balance=0,
+        )
+        session.add(escrow_wallet)
         await session.flush()
 
         for idx, (uid, _name, *_rest) in enumerate(USERS, 1):

@@ -428,6 +428,30 @@ export interface TransferResponse {
   idempotent_replay: boolean;
 }
 
+export interface WithdrawalRequest {
+  from_user_id: string;
+  amount: number;
+  destination_address: string;
+  idempotency_key?: string;
+}
+
+export interface WithdrawalResponse {
+  withdrawal_id: string;
+  user_id: string;
+  amount: number;
+  destination_address: string;
+  status: string;
+  solana_signature: string | null;
+  error: string | null;
+  created_at: string;
+  idempotent_replay: boolean;
+}
+
+export interface WithdrawalListResponse {
+  withdrawals: WithdrawalResponse[];
+  total: number;
+}
+
 interface LedgerEntry {
   id: number;
   tx_id: string;

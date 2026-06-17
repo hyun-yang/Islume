@@ -1,15 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet, useTransactions } from "@/hooks/useWallet";
+import { useWallet, useTransactions, useWithdrawals } from "@/hooks/useWallet";
 import { useAppStore } from "@/stores/appStore";
 import { useT } from "@/lib/i18n";
+
+// Status badge color per withdrawal status.
+const STATUS_CLASS: Record<string, string> = {
+  pending: "text-amber-600",
+  minting: "text-amber-600",
+  confirmed: "text-emerald-600",
+  failed: "text-red-500",
+};
 
 export default function WalletPanel() {
   const t = useT();
   const { data: wallet, isLoading } = useWallet();
   const { data: txData } = useTransactions(5, 0);
+  const { data: withdrawalData } = useWithdrawals(5);
   const setShowTransferModal = useAppStore((s) => s.setShowTransferModal);
+  const setShowWithdrawModal = useAppStore((s) => s.setShowWithdrawModal);
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -29,12 +39,20 @@ export default function WalletPanel() {
     <div className="p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-sm font-semibold text-zinc-700">{t("wallet.title")}</h2>
-        <button
-          onClick={() => setShowTransferModal(true)}
-          className="px-3 py-1 text-xs font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors"
-        >
-          {t("wallet.sendIsl")}
-        </button>
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => setShowTransferModal(true)}
+            className="px-3 py-1 text-xs font-medium text-white bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors"
+          >
+            {t("wallet.sendIsl")}
+          </button>
+          <button
+            onClick={() => setShowWithdrawModal(true)}
+            className="px-3 py-1 text-xs font-medium text-zinc-700 bg-zinc-100 rounded-md hover:bg-zinc-200 transition-colors"
+          >
+            {t("wallet.withdraw")}
+          </button>
+        </div>
       </div>
 
       <div className="mb-3">
@@ -88,6 +106,46 @@ export default function WalletPanel() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {withdrawalData && withdrawalData.withdrawals.length > 0 && (
+        <div className="mt-3">
+          <div className="text-xs font-medium text-zinc-500 mb-2">
+            {t("wallet.withdrawals")}
+          </div>
+          <div className="space-y-1.5">
+            {withdrawalData.withdrawals.map((w) => (
+              <div
+                key={w.withdrawal_id}
+                className="flex items-center justify-between text-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-red-500 font-medium">
+                    -{w.amount.toLocaleString()}
+                  </span>
+                  <span className={STATUS_CLASS[w.status] ?? "text-zinc-400"}>
+                    {t(`wallet.status.${w.status}`)}
+                  </span>
+                </div>
+                {w.solana_signature ? (
+                  <a
+                    href={`https://explorer.solana.com/tx/${w.solana_signature}?cluster=devnet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {t("wallet.viewOnExplorer")}
+                  </a>
+                ) : (
+                  <span className="text-zinc-400 font-mono">
+                    {w.destination_address.slice(0, 4)}…
+                    {w.destination_address.slice(-4)}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

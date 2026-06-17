@@ -69,6 +69,7 @@ interface AppState {
 
   // Wallet
   showTransferModal: boolean;
+  showWithdrawModal: boolean;
 
   // Visit
   viewMode: VisitViewMode;
@@ -125,6 +126,7 @@ interface AppState {
   pushPendingConfirmation: (n: PendingConfirmationNotification) => void;
   dismissPendingConfirmation: (toolCallId: string) => void;
   setShowTransferModal: (show: boolean) => void;
+  setShowWithdrawModal: (show: boolean) => void;
   clearSession: () => void;
   reset: () => void;
 
@@ -222,6 +224,7 @@ export const useAppStore = create<AppState>()(
   affinityCheck: null,
   finalEvaluation: null,
   showTransferModal: false,
+  showWithdrawModal: false,
 
   viewMode: "world",
   pendingVisit: null,
@@ -360,6 +363,7 @@ export const useAppStore = create<AppState>()(
     })),
 
   setShowTransferModal: (show) => set({ showTransferModal: show }),
+  setShowWithdrawModal: (show) => set({ showWithdrawModal: show }),
 
   clearSession: () =>
     set({

@@ -28,6 +28,7 @@ done
 
 # Kill any remaining workers
 pkill -f "services/worker/main.py" 2>/dev/null || true
+pkill -f "services.worker.solana_mint" 2>/dev/null || true
 
 log "All services stopped."
 log "Docker containers (Postgres/Redis) are still running."

@@ -284,6 +284,10 @@ class Wallet(Base):
     balance: Mapped[int] = mapped_column(
         BigInteger, nullable=False, default=0, server_default="0"
     )
+    # Last external Solana address used for withdrawal — UX convenience only
+    # (pre-fill the form). Not authoritative: withdrawals.destination_address
+    # is the record of truth per withdrawal.
+    solana_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
@@ -307,6 +311,44 @@ class LedgerEntry(Base):
     tx_metadata: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     signature: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class Withdrawal(Base):
+    """An on-chain SPL mint backing an ISL debit. The ISL move (user → escrow)
+    lives in ledger_entries; this row tracks the on-chain side. Never put the
+    mint into the ledger — a third, unpaired entry would break /audit/ledger."""
+
+    __tablename__ = "withdrawals"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending','minting','confirmed','failed')",
+            name="ck_withdrawals_status",
+        ),
+        CheckConstraint("amount > 0", name="ck_withdrawals_amount_positive"),
+        # One on-chain withdrawal per ISL debit; also an idempotency guard for enqueue.
+        UniqueConstraint("ledger_tx_id", name="uq_withdrawals_ledger_tx_id"),
+        Index("ix_withdrawals_user_created", "user_id", "created_at"),
+        Index("ix_withdrawals_status", "status"),
+    )
+
+    id: Mapped[UUID] = mapped_column(PgUUID, primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    wallet_id: Mapped[UUID] = mapped_column(ForeignKey("wallets.id"), nullable=False)
+    # The ISL debit transaction this withdrawal corresponds to (user→escrow tx_id).
+    ledger_tx_id: Mapped[UUID] = mapped_column(PgUUID, nullable=False)
+    amount: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    destination_address: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(12), nullable=False, default="pending")
+    solana_signature: Mapped[str | None] = mapped_column(String(96), nullable=True)
+    error: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    attempts: Mapped[int] = mapped_column(
+        BigInteger, nullable=False, default=0, server_default="0"
+    )
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        server_default=func.now(), onupdate=func.now()
+    )
+    confirmed_at: Mapped[datetime | None] = mapped_column(nullable=True)
 
 
 class Inventory(Base):

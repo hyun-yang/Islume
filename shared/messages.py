@@ -81,6 +81,23 @@ class ChatEvent(BaseModel):
 STREAM_LLM_TASKS = "stream:llm_tasks"
 CONSUMER_GROUP = "llm_workers"
 
+# On-chain SPL mint tasks (wallet service enqueues; mint worker consumes).
+STREAM_SOLANA_MINTS = "stream:solana_mints"
+SOLANA_MINTERS = "solana_minters"
+
+
+class WithdrawalTask(BaseModel):
+    """A task to mint an already-debited ISL withdrawal on-chain. Carries only
+    the withdrawal id — the worker loads the durable row from Postgres."""
+    withdrawal_id: UUID
+
+    def to_redis(self) -> dict[str, str]:
+        return {"withdrawal_id": str(self.withdrawal_id)}
+
+    @classmethod
+    def from_redis(cls, data: dict[str, str]) -> "WithdrawalTask":
+        return cls(withdrawal_id=UUID(data["withdrawal_id"]))
+
 
 def session_stream(session_id: UUID) -> str:
     """Stream key for a specific session's chat events."""

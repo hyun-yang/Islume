@@ -17,7 +17,11 @@ from services.wallet.schemas import (
     TransferRequest,
     TransferResponse,
     WalletResponse,
+    WithdrawalListResponse,
+    WithdrawalRequest,
+    WithdrawalResponse,
 )
+from shared.config import get_settings
 from shared.crypto import (
     build_tx_data,
     generate_keypair,
@@ -25,12 +29,24 @@ from shared.crypto import (
     verify_signature,
 )
 from shared.db import get_sessionmaker
-from shared.messages import WalletEvent, wallet_stream
-from shared.models import LedgerEntry, User, Wallet
+from shared.messages import (
+    STREAM_SOLANA_MINTS,
+    WalletEvent,
+    WithdrawalTask,
+    wallet_stream,
+)
+from shared.models import LedgerEntry, User, Wallet, Withdrawal
 from shared.redis_client import close_redis, get_redis
+from shared.solana import is_valid_solana_address
 
 GENESIS_AMOUNT = 1000
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000000")
+# Reserved on-chain escrow wallet: receives the credit side of every withdrawal
+# so the double-entry invariant holds. escrow.balance == total ISL withdrawn
+# on-chain == on-chain SPL supply (withdraw-only flow). Seeded in seed_db.py
+# alongside the system wallet. Only ever credited, so it stays >= 0 and needs
+# no negative-balance exemption.
+ESCROW_USER_ID = UUID("00000000-0000-0000-0000-0000000000e5")
 BALANCE_CACHE_TTL = 60  # seconds; bounds staleness if invalidation ever fails
 
 
@@ -341,6 +357,172 @@ async def transfer(body: TransferRequest, session: AsyncSession = Depends(get_se
         amount=body.amount,
         tx_type=body.tx_type,
         created_at=debit.created_at.isoformat(),
+    )
+
+
+def _withdrawal_response(
+    w: Withdrawal, idempotent_replay: bool = False
+) -> WithdrawalResponse:
+    return WithdrawalResponse(
+        withdrawal_id=w.id,
+        user_id=w.user_id,
+        amount=w.amount,
+        destination_address=w.destination_address,
+        status=w.status,
+        solana_signature=w.solana_signature,
+        error=w.error,
+        created_at=w.created_at.isoformat(),
+        idempotent_replay=idempotent_replay,
+    )
+
+
+async def _find_withdrawal_replay(
+    session: AsyncSession, tx_id: UUID, body: WithdrawalRequest
+) -> WithdrawalResponse | None:
+    """Look up a previously-committed withdrawal for this derived tx_id. Returns
+    the stored result as an idempotent replay, None if none exists, or 409 if the
+    key was reused with different parameters."""
+    result = await session.execute(
+        select(Withdrawal).where(Withdrawal.ledger_tx_id == tx_id)
+    )
+    w = result.scalar_one_or_none()
+    if w is None:
+        return None
+    if (
+        w.user_id != body.from_user_id
+        or w.amount != body.amount
+        or w.destination_address != body.destination_address
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Idempotency key reused with different parameters",
+        )
+    return _withdrawal_response(w, idempotent_replay=True)
+
+
+@app.post("/withdrawals", response_model=WithdrawalResponse, status_code=202)
+async def create_withdrawal(
+    body: WithdrawalRequest, session: AsyncSession = Depends(get_session)
+):
+    """Debit ISL (user → escrow) and enqueue an on-chain SPL mint. Returns 202;
+    the mint worker mints, confirms, and updates the withdrawal row.
+
+    Mirrors `transfer`: same lock order, signing, idempotency, IntegrityError
+    handling, and commit-before-publish."""
+    if not is_valid_solana_address(body.destination_address):
+        raise HTTPException(status_code=400, detail="Invalid Solana address")
+    if body.amount < get_settings().solana_min_withdrawal:
+        raise HTTPException(status_code=400, detail="Amount below minimum withdrawal")
+
+    user_result = await session.execute(
+        select(Wallet).where(Wallet.user_id == body.from_user_id)
+    )
+    user_wallet = user_result.scalar_one_or_none()
+    if not user_wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+
+    escrow_result = await session.execute(
+        select(Wallet).where(Wallet.user_id == ESCROW_USER_ID)
+    )
+    escrow_wallet = escrow_result.scalar_one_or_none()
+    if not escrow_wallet:
+        raise HTTPException(status_code=500, detail="Escrow wallet not found")
+
+    if body.idempotency_key:
+        tx_id = derive_tx_id(body.from_user_id, body.idempotency_key)
+        replay = await _find_withdrawal_replay(session, tx_id, body)
+        if replay is not None:
+            return replay
+    else:
+        tx_id = uuid4()
+
+    # Lock both wallets in deterministic id order (deadlock-free, mirrors transfer).
+    first, second = sorted((user_wallet, escrow_wallet), key=lambda w: w.id)
+    await session.refresh(first, with_for_update=True)
+    await session.refresh(second, with_for_update=True)
+
+    if user_wallet.balance < body.amount:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+
+    tx_data = build_tx_data(
+        str(tx_id), str(user_wallet.id), str(escrow_wallet.id),
+        body.amount, "ISL", "withdrawal",
+    )
+    sig = sign_transaction(user_wallet.encrypted_private_key, tx_data)
+    if not verify_signature(user_wallet.public_key, tx_data, sig):
+        raise HTTPException(status_code=500, detail="Signature self-check failed")
+
+    meta = {"destination": body.destination_address}
+    session.add(LedgerEntry(
+        tx_id=tx_id, account_id=user_wallet.id, amount=-body.amount,
+        currency="ISL", tx_type="withdrawal", tx_metadata=meta, signature=sig,
+    ))
+    session.add(LedgerEntry(
+        tx_id=tx_id, account_id=escrow_wallet.id, amount=body.amount,
+        currency="ISL", tx_type="withdrawal", tx_metadata=meta, signature=sig,
+    ))
+    withdrawal = Withdrawal(
+        user_id=body.from_user_id, wallet_id=user_wallet.id, ledger_tx_id=tx_id,
+        amount=body.amount, destination_address=body.destination_address,
+        status="pending",
+    )
+    session.add(withdrawal)
+
+    user_wallet.balance -= body.amount
+    escrow_wallet.balance += body.amount
+    user_wallet.solana_address = body.destination_address  # UX convenience only
+
+    try:
+        await session.commit()
+    except IntegrityError as e:
+        await session.rollback()
+        constraint = str(getattr(e, "orig", e))
+        if (
+            "uq_ledger_entries_tx_account" in constraint
+            or "uq_withdrawals_ledger_tx_id" in constraint
+        ):
+            replay = await _find_withdrawal_replay(session, tx_id, body)
+            if replay is not None:
+                return replay
+        if "ck_wallets_balance_non_negative" in constraint:
+            raise HTTPException(status_code=400, detail="Insufficient balance") from None
+        raise
+    await session.refresh(withdrawal)
+
+    await _cache_balance(body.from_user_id, user_wallet.balance)
+
+    # Commit-before-publish: the ISL debit is durable before we enqueue the mint.
+    # A failed enqueue leaves status="pending" (recoverable by re-enqueue) rather
+    # than rolling back a committed debit.
+    try:
+        await get_redis().xadd(
+            STREAM_SOLANA_MINTS, WithdrawalTask(withdrawal_id=withdrawal.id).to_redis()
+        )
+    except Exception as e:
+        print(f"WARN: solana mint enqueue failed for withdrawal {withdrawal.id}: {e}")
+
+    return _withdrawal_response(withdrawal)
+
+
+@app.get("/wallets/{user_id}/withdrawals", response_model=WithdrawalListResponse)
+async def get_withdrawals(
+    user_id: UUID,
+    limit: int = Query(20, ge=1, le=100),
+    session: AsyncSession = Depends(get_session),
+):
+    count_result = await session.execute(
+        select(sa_func.count()).where(Withdrawal.user_id == user_id)
+    )
+    total = count_result.scalar_one()
+    result = await session.execute(
+        select(Withdrawal)
+        .where(Withdrawal.user_id == user_id)
+        .order_by(Withdrawal.created_at.desc())
+        .limit(limit)
+    )
+    return WithdrawalListResponse(
+        withdrawals=[_withdrawal_response(w) for w in result.scalars()],
+        total=total,
     )
 
 

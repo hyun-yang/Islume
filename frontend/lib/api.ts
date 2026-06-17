@@ -17,6 +17,9 @@ import type {
   TransferRequest,
   TransferResponse,
   TransactionHistoryResponse,
+  WithdrawalRequest,
+  WithdrawalResponse,
+  WithdrawalListResponse,
   VisitResponse,
   IslandStage,
   StageLevelData,
@@ -418,6 +421,32 @@ export async function fetchTransactions(
     `${WALLET}/wallets/${userId}/transactions?limit=${limit}&offset=${offset}`,
   );
   if (!res.ok) throw new Error(`Transactions fetch failed: ${res.status}`);
+  return res.json();
+}
+
+export async function createWithdrawal(
+  data: WithdrawalRequest,
+): Promise<WithdrawalResponse> {
+  const res = await fetch(`${WALLET}/withdrawals`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res
+      .json()
+      .catch(() => ({ detail: `Withdrawal failed: ${res.status}` }));
+    throw new Error(err.detail || `Withdrawal failed: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchWithdrawals(
+  userId: string,
+  limit = 20,
+): Promise<WithdrawalListResponse> {
+  const res = await fetch(`${WALLET}/wallets/${userId}/withdrawals?limit=${limit}`);
+  if (!res.ok) throw new Error(`Withdrawals fetch failed: ${res.status}`);
   return res.json();
 }
 

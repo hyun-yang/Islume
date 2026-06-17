@@ -11,6 +11,7 @@ import SessionListPanel from "@/components/session/SessionListPanel";
 import ChatPanel from "@/components/chat/ChatPanel";
 import WalletPanel from "@/components/panels/WalletPanel";
 import TransferModal from "@/components/panels/TransferModal";
+import WithdrawModal from "@/components/panels/WithdrawModal";
 import VisitConfirmDialog from "@/components/island/VisitConfirmDialog";
 import StageEditorView from "@/components/stage-editor/StageEditorView";
 import { gameById } from "@/lib/games";
@@ -278,6 +279,7 @@ export default function Home() {
   return (
     <div className="flex h-screen">
       <TransferModal />
+      <WithdrawModal />
       <VisitConfirmDialog />
       <VisitNotifications />
       <RpsInvitationToast />

@@ -21,6 +21,10 @@ dependencies = [
     "websockets>=16.0",
     "pynacl>=1.6.2",
     "pyyaml>=6.0.3",
+    "solana==0.36.12",
+    # solders is pulled in by solana, but we import it directly (Keypair, Pubkey,
+    # Signature) so declare it. Pinned to the version solana==0.36.12 resolves.
+    "solders==0.27.1",
     "opentelemetry-api>=1.27.0,<1.30.0",
     "opentelemetry-sdk>=1.27.0,<1.30.0",
     "opentelemetry-exporter-otlp-proto-http>=1.27.0,<1.30.0",
@@ -35,6 +39,13 @@ dev = [
     "ruff>=0.15.9",
     "vulture>=2.16",
 ]
+
+[tool.uv]
+# solana-py declares websockets<=15.0.1 (only for its rpc.websocket_api module,
+# which we never import — we use the HTTP AsyncClient + spl.token only). The
+# gateway needs websockets>=16.0 via uvicorn[standard]. Override keeps the
+# battle-tested gateway dependency untouched and forces it onto solana-py.
+override-dependencies = ["websockets>=16.0"]
 
 [build-system]
 requires = ["hatchling"]

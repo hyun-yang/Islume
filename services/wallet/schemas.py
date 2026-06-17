@@ -37,6 +37,30 @@ class TransferResponse(BaseModel):
     idempotent_replay: bool = False
 
 
+class WithdrawalRequest(BaseModel):
+    from_user_id: UUID
+    amount: int = Field(..., gt=0)
+    destination_address: str = Field(..., min_length=32, max_length=64)
+    idempotency_key: str | None = Field(None, min_length=1, max_length=128)
+
+
+class WithdrawalResponse(BaseModel):
+    withdrawal_id: UUID
+    user_id: UUID
+    amount: int
+    destination_address: str
+    status: str
+    solana_signature: str | None = None
+    error: str | None = None
+    created_at: str
+    idempotent_replay: bool = False
+
+
+class WithdrawalListResponse(BaseModel):
+    withdrawals: list[WithdrawalResponse]
+    total: int
+
+
 class LedgerEntryResponse(BaseModel):
     id: int
     tx_id: UUID
