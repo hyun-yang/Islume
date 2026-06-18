@@ -399,6 +399,7 @@ export interface WalletResponse {
   id: string;
   user_id: string;
   public_key: string;
+  solana_address: string;
   balance: number;
   created_at: string;
 }

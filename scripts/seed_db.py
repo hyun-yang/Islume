@@ -27,7 +27,7 @@ from shared.agent_md import (
     render_agent_md,
     slugify,
 )
-from shared.crypto import build_tx_data, generate_keypair, sign_transaction
+from shared.crypto import build_tx_data, derive_keypair, sign_transaction
 from shared.db import get_sessionmaker
 from shared.models import (
     Agent,
@@ -655,7 +655,7 @@ async def seed():
 
         # --- Wallets + genesis ISL ---
         GENESIS_AMOUNT = 1000
-        sys_pub, sys_enc_priv = generate_keypair()
+        sys_pub, sys_enc_priv = derive_keypair(_uuid(0))
         system_wallet = Wallet(
             id=_uuid(100), user_id=_uuid(0),
             public_key=sys_pub, encrypted_private_key=sys_enc_priv,
@@ -666,7 +666,7 @@ async def seed():
 
         # On-chain escrow wallet: balance == total ISL withdrawn on-chain.
         # Only ever credited, so it stays >= 0 (no negative-balance exemption).
-        esc_pub, esc_enc_priv = generate_keypair()
+        esc_pub, esc_enc_priv = derive_keypair(UUID("00000000-0000-0000-0000-0000000000e5"))
         escrow_wallet = Wallet(
             id=UUID("00000000-0000-0000-0000-0000000000e6"),
             user_id=UUID("00000000-0000-0000-0000-0000000000e5"),
@@ -677,7 +677,7 @@ async def seed():
         await session.flush()
 
         for idx, (uid, _name, *_rest) in enumerate(USERS, 1):
-            pub, enc_priv = generate_keypair()
+            pub, enc_priv = derive_keypair(uid)
             wallet = Wallet(
                 id=_uuid(200 + idx), user_id=uid,
                 public_key=pub, encrypted_private_key=enc_priv,

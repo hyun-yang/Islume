@@ -8,6 +8,7 @@ class WalletResponse(BaseModel):
     id: UUID
     user_id: UUID
     public_key: str
+    solana_address: str
     balance: int
     created_at: str
 

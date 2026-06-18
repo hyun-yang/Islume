@@ -24,7 +24,7 @@ from services.wallet.schemas import (
 from shared.config import get_settings
 from shared.crypto import (
     build_tx_data,
-    generate_keypair,
+    derive_keypair,
     sign_transaction,
     verify_signature,
 )
@@ -37,7 +37,7 @@ from shared.messages import (
 )
 from shared.models import LedgerEntry, User, Wallet, Withdrawal
 from shared.redis_client import close_redis, get_redis
-from shared.solana import is_valid_solana_address
+from shared.solana import is_valid_solana_address, solana_address_from_pubkey
 
 GENESIS_AMOUNT = 1000
 SYSTEM_USER_ID = UUID("00000000-0000-0000-0000-000000000000")
@@ -102,6 +102,7 @@ def _wallet_response(wallet: Wallet, balance: int) -> WalletResponse:
         id=wallet.id,
         user_id=wallet.user_id,
         public_key=wallet.public_key.hex(),
+        solana_address=solana_address_from_pubkey(wallet.public_key),
         balance=balance,
         created_at=wallet.created_at.isoformat(),
     )
@@ -128,7 +129,7 @@ async def create_wallet(user_id: UUID, session: AsyncSession = Depends(get_sessi
     if not sys_wallet:
         raise HTTPException(status_code=500, detail="System wallet not found")
 
-    pub, enc_priv = generate_keypair()
+    pub, enc_priv = derive_keypair(user_id)
     wallet = Wallet(
         user_id=user_id, public_key=pub, encrypted_private_key=enc_priv,
         balance=GENESIS_AMOUNT,
@@ -470,7 +471,6 @@ async def create_withdrawal(
 
     user_wallet.balance -= body.amount
     escrow_wallet.balance += body.amount
-    user_wallet.solana_address = body.destination_address  # UX convenience only
 
     try:
         await session.commit()

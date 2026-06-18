@@ -27,10 +27,10 @@ export default function WalletPanel() {
     return <div className="p-4 text-sm text-zinc-400">{t("wallet.loadingWallet")}</div>;
   }
 
-  const truncatedKey = `${wallet.public_key.slice(0, 8)}...${wallet.public_key.slice(-8)}`;
+  const truncatedAddress = `${wallet.solana_address.slice(0, 6)}…${wallet.solana_address.slice(-6)}`;
 
-  const copyKey = () => {
-    navigator.clipboard.writeText(wallet.public_key);
+  const copyAddress = () => {
+    navigator.clipboard.writeText(wallet.solana_address);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
@@ -62,14 +62,27 @@ export default function WalletPanel() {
         </div>
       </div>
 
-      <div className="mb-3">
-        <button
-          onClick={copyKey}
-          className="text-xs text-zinc-500 hover:text-zinc-700 font-mono transition-colors"
-          title={t("wallet.copyKeyTitle")}
-        >
-          {copied ? t("wallet.copied") : truncatedKey}
-        </button>
+      <div className="mb-3 space-y-0.5">
+        <div className="text-[10px] uppercase tracking-wide text-zinc-400">
+          {t("wallet.solanaAddressLabel")}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={copyAddress}
+            className="text-xs text-zinc-500 hover:text-zinc-700 font-mono transition-colors"
+            title={t("wallet.copyAddressTitle")}
+          >
+            {copied ? t("wallet.copied") : truncatedAddress}
+          </button>
+          <a
+            href={`https://explorer.solana.com/address/${wallet.solana_address}?cluster=devnet`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-500 hover:underline"
+          >
+            {t("wallet.viewOnExplorer")}
+          </a>
+        </div>
       </div>
 
       {txData && txData.entries.length > 0 && (

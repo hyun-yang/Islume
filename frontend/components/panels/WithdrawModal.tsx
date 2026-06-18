@@ -71,9 +71,20 @@ export default function WithdrawModal() {
 
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-medium text-zinc-600 mb-1">
-              {t("wallet.solanaAddress")}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-medium text-zinc-600">
+                {t("wallet.solanaAddress")}
+              </label>
+              {wallet?.solana_address && (
+                <button
+                  type="button"
+                  onClick={() => setAddress(wallet.solana_address)}
+                  className="text-[11px] text-blue-500 hover:underline"
+                >
+                  {t("wallet.useMyAddress")}
+                </button>
+              )}
+            </div>
             <input
               type="text"
               value={address}

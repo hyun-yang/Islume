@@ -69,6 +69,24 @@ def is_valid_solana_address(address: str) -> bool:
         return False
 
 
+def solana_address_from_pubkey(public_key: bytes) -> str:
+    """Base58 Solana address for a wallet's 32-byte Ed25519 public key.
+
+    A custodial wallet's `public_key` IS a valid Solana account address: a Solana
+    pubkey is just the base58 encoding of a 32-byte Ed25519 public key — the same
+    curve shared/crypto.py already generates. So every existing wallet has a
+    receive-capable on-chain address with no new key material; we derive it on
+    read (no storage, no backfill).
+
+    Length is checked here so a malformed key raises a clean ValueError instead
+    of letting Pubkey.from_bytes panic in Rust (pyo3 PanicException) on the HTTP
+    request path.
+    """
+    if len(public_key) != 32:
+        raise ValueError(f"Ed25519 public key must be 32 bytes, got {len(public_key)}")
+    return str(Pubkey.from_bytes(public_key))
+
+
 async def mint_isl_to(destination_address: str, amount: int) -> str:
     """Submit an SPL mint of `amount` ISL to an external address. Ensures the
     recipient's ATA exists (fee payer = authority), then mints. Does NOT wait

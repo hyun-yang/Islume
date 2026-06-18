@@ -1,5 +1,8 @@
 """Ed25519 keypair management and transaction signing for the ISL wallet."""
+import hashlib
+import hmac
 import json
+from uuid import UUID
 
 import nacl.secret
 import nacl.signing
@@ -17,6 +20,23 @@ def _get_master_key() -> bytes:
 
 def generate_keypair() -> tuple[bytes, bytes]:
     signing_key = nacl.signing.SigningKey.generate()
+    public_key = bytes(signing_key.verify_key)
+    encrypted_private_key = encrypt_private_key(bytes(signing_key))
+    return public_key, encrypted_private_key
+
+
+def derive_keypair(user_id: UUID) -> tuple[bytes, bytes]:
+    """Deterministic Ed25519 keypair for a user, derived from user_id + the
+    secret master key. Same user_id -> same keypair -> same Solana address,
+    forever — stable across DB wipes / re-seeds with nothing stored.
+
+    The seed is HMAC-SHA256(master_key, user_id), so the key is unpredictable
+    without WALLET_MASTER_KEY — which already decrypts every wallet's stored
+    private key, so determinism adds no new single point of compromise. This is
+    a Devnet/testing posture only; mainnet wants per-wallet entropy + HSM/KMS.
+    """
+    seed = hmac.new(_get_master_key(), user_id.bytes, hashlib.sha256).digest()
+    signing_key = nacl.signing.SigningKey(seed)
     public_key = bytes(signing_key.verify_key)
     encrypted_private_key = encrypt_private_key(bytes(signing_key))
     return public_key, encrypted_private_key

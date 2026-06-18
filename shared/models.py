@@ -284,9 +284,12 @@ class Wallet(Base):
     balance: Mapped[int] = mapped_column(
         BigInteger, nullable=False, default=0, server_default="0"
     )
-    # Last external Solana address used for withdrawal — UX convenience only
-    # (pre-fill the form). Not authoritative: withdrawals.destination_address
-    # is the record of truth per withdrawal.
+    # Reserved (currently unused). The wallet's own Solana address is derived on
+    # read from public_key (shared/solana.py:solana_address_from_pubkey) — a
+    # custodial Ed25519 public key IS a base58 Solana account address — so nothing
+    # writes this column today. Kept as a future home for a stored/indexed address
+    # if on-chain deposit (SPL→ISL) is added; withdrawals.destination_address stays
+    # the per-withdrawal record of truth.
     solana_address: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
