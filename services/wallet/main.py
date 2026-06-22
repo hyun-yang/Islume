@@ -1,8 +1,9 @@
 """Wallet service: custodial Ed25519 wallets, double-entry ISL ledger, transfers."""
+import hmac
 from contextlib import asynccontextmanager
 from uuid import UUID, uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, Header, HTTPException, Query
 from sqlalchemy import func as sa_func
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -11,6 +12,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from services.wallet.audit import check_balances, check_tx_group, verify_tx_signature
 from services.wallet.idempotency import derive_tx_id
 from services.wallet.schemas import (
+    AdminAdjustRequest,
+    AdminAdjustResponse,
     BalanceResponse,
     LedgerEntryResponse,
     TransactionHistoryResponse,
@@ -36,6 +39,7 @@ from shared.messages import (
     wallet_stream,
 )
 from shared.models import LedgerEntry, User, Wallet, Withdrawal
+from shared.notifications import add_notification
 from shared.redis_client import close_redis, get_redis
 from shared.solana import is_valid_solana_address, solana_address_from_pubkey
 
@@ -63,6 +67,22 @@ async def get_session():
     sessionmaker = get_sessionmaker()
     async with sessionmaker() as session:
         yield session
+
+
+def require_admin(x_admin_key: str | None = Header(None, alias="X-Admin-Key")) -> None:
+    """Gate privileged wallet ops behind a shared key (X-Admin-Key header).
+
+    Constant-time compare against ADMIN_API_KEY. An empty key disables the
+    admin endpoints entirely (the default), so an unconfigured deployment can
+    never expose money-minting mutations. This is a minimal gate, not full auth.
+    """
+    configured = get_settings().admin_api_key
+    if (
+        not configured
+        or not x_admin_key
+        or not hmac.compare_digest(x_admin_key, configured)
+    ):
+        raise HTTPException(status_code=403, detail="Admin authorization required")
 
 
 @app.get("/health")
@@ -357,6 +377,178 @@ async def transfer(body: TransferRequest, session: AsyncSession = Depends(get_se
         to_user_id=body.to_user_id,
         amount=body.amount,
         tx_type=body.tx_type,
+        created_at=debit.created_at.isoformat(),
+    )
+
+
+async def _find_adjust_replay(
+    session: AsyncSession,
+    tx_id: UUID,
+    body: AdminAdjustRequest,
+    target_wallet_id: UUID,
+) -> AdminAdjustResponse | None:
+    """Look up a previously-committed admin adjustment with this tx_id.
+
+    Returns it as an idempotent replay, None if absent, or raises 409 if the
+    key was reused with different parameters.
+    """
+    result = await session.execute(
+        select(LedgerEntry).where(LedgerEntry.tx_id == tx_id)
+    )
+    entries = list(result.scalars())
+    if not entries:
+        return None
+
+    target_entry = next(
+        (e for e in entries if e.account_id == target_wallet_id), None
+    )
+    expected = body.amount if body.direction == "credit" else -body.amount
+    if (
+        target_entry is None
+        or target_entry.amount != expected
+        or target_entry.tx_type != "admin_adjustment"
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="Idempotency key reused with different parameters",
+        )
+
+    balance = await session.scalar(
+        select(Wallet.balance).where(Wallet.id == target_wallet_id)
+    )
+    return AdminAdjustResponse(
+        tx_id=tx_id,
+        user_id=body.user_id,
+        direction=body.direction,
+        amount=body.amount,
+        new_balance=balance or 0,
+        reason=body.reason,
+        created_at=target_entry.created_at.isoformat(),
+        idempotent_replay=True,
+    )
+
+
+@app.post("/admin/adjustments", response_model=AdminAdjustResponse)
+async def admin_adjust(
+    body: AdminAdjustRequest,
+    session: AsyncSession = Depends(get_session),
+    _: None = Depends(require_admin),
+):
+    """Admin-only ISL adjustment via a balanced ledger pair against the treasury.
+
+    credit → treasury debits, user credits (genesis-like grant).
+    debit  → user debits, treasury credits (claw-back).
+    Never overwrites a balance directly, so the double-entry audit stays green.
+    Only the treasury may go negative; a debit can't overdraw the user.
+    """
+    if body.user_id in (SYSTEM_USER_ID, ESCROW_USER_ID):
+        raise HTTPException(status_code=400, detail="Cannot adjust a reserved wallet")
+
+    target_result = await session.execute(
+        select(Wallet).where(Wallet.user_id == body.user_id)
+    )
+    target_wallet = target_result.scalar_one_or_none()
+    if not target_wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+
+    treasury_result = await session.execute(
+        select(Wallet).where(Wallet.user_id == SYSTEM_USER_ID)
+    )
+    treasury_wallet = treasury_result.scalar_one_or_none()
+    if not treasury_wallet:
+        raise HTTPException(status_code=500, detail="System wallet not found")
+
+    target_wallet_id = target_wallet.id  # plain value: survives rollback expiry
+    if body.idempotency_key:
+        tx_id = derive_tx_id(SYSTEM_USER_ID, f"admin_adjust:{body.idempotency_key}")
+        replay = await _find_adjust_replay(session, tx_id, body, target_wallet_id)
+        if replay is not None:
+            return replay
+    else:
+        tx_id = uuid4()
+
+    # credit increases the user (treasury is the debit side); debit reverses it.
+    if body.direction == "credit":
+        debit_wallet, credit_wallet = treasury_wallet, target_wallet
+    else:
+        debit_wallet, credit_wallet = target_wallet, treasury_wallet
+
+    # Lock both wallets in deterministic order (sorted by id) to avoid deadlock.
+    first, second = sorted((target_wallet, treasury_wallet), key=lambda w: w.id)
+    await session.refresh(first, with_for_update=True)
+    await session.refresh(second, with_for_update=True)
+
+    if body.direction == "debit" and target_wallet.balance < body.amount:
+        raise HTTPException(status_code=400, detail="Insufficient balance")
+
+    tx_data = build_tx_data(
+        str(tx_id), str(debit_wallet.id), str(credit_wallet.id),
+        body.amount, "ISL", "admin_adjustment",
+    )
+    sig = sign_transaction(debit_wallet.encrypted_private_key, tx_data)
+    if not verify_signature(debit_wallet.public_key, tx_data, sig):
+        raise HTTPException(status_code=500, detail="Signature self-check failed")
+
+    meta = {"reason": body.reason, "direction": body.direction, "admin": True}
+    debit = LedgerEntry(
+        tx_id=tx_id, account_id=debit_wallet.id, amount=-body.amount,
+        currency="ISL", tx_type="admin_adjustment", tx_metadata=meta, signature=sig,
+    )
+    credit = LedgerEntry(
+        tx_id=tx_id, account_id=credit_wallet.id, amount=body.amount,
+        currency="ISL", tx_type="admin_adjustment", tx_metadata=meta, signature=sig,
+    )
+    session.add(debit)
+    session.add(credit)
+    debit_wallet.balance -= body.amount
+    credit_wallet.balance += body.amount
+    # Durable inbox row in the SAME transaction (commit-before-publish).
+    add_notification(
+        session, body.user_id, "wallet:admin_adjustment",
+        {
+            "direction": body.direction,
+            "amount": body.amount,
+            "reason": body.reason,
+            "tx_id": str(tx_id),
+        },
+    )
+    try:
+        await session.commit()
+    except IntegrityError as e:
+        await session.rollback()
+        constraint = str(getattr(e, "orig", e))
+        if "uq_ledger_entries_tx_account" in constraint:
+            replay = await _find_adjust_replay(session, tx_id, body, target_wallet_id)
+            if replay is not None:
+                return replay
+        if "ck_wallets_balance_non_negative" in constraint:
+            raise HTTPException(
+                status_code=400, detail="Insufficient balance"
+            ) from None
+        raise
+    await session.refresh(debit)
+
+    new_balance = target_wallet.balance
+    await _cache_balance(body.user_id, new_balance)
+
+    # Commit-before-publish: live balance event only after the DB is durable.
+    try:
+        event = WalletEvent(
+            event_type="admin_adjustment", user_id=body.user_id,
+            balance=new_balance, tx_id=tx_id, amount=body.amount,
+            counterparty_id=SYSTEM_USER_ID, tx_type="admin_adjustment",
+        )
+        await get_redis().xadd(wallet_stream(body.user_id), event.to_redis())
+    except Exception as e:
+        print(f"WARN: wallet event publish failed for adjustment {tx_id}: {e}")
+
+    return AdminAdjustResponse(
+        tx_id=tx_id,
+        user_id=body.user_id,
+        direction=body.direction,
+        amount=body.amount,
+        new_balance=new_balance,
+        reason=body.reason,
         created_at=debit.created_at.isoformat(),
     )
 

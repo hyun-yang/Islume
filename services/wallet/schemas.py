@@ -1,4 +1,5 @@
 """Pydantic request/response schemas for the Wallet service."""
+from typing import Literal
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -34,6 +35,25 @@ class TransferResponse(BaseModel):
     to_user_id: UUID
     amount: int
     tx_type: str
+    created_at: str
+    idempotent_replay: bool = False
+
+
+class AdminAdjustRequest(BaseModel):
+    user_id: UUID
+    amount: int = Field(..., gt=0)
+    direction: Literal["credit", "debit"]  # credit increases, debit decreases
+    reason: str = Field(..., min_length=1, max_length=500)
+    idempotency_key: str | None = Field(None, min_length=1, max_length=128)
+
+
+class AdminAdjustResponse(BaseModel):
+    tx_id: UUID
+    user_id: UUID
+    direction: str
+    amount: int
+    new_balance: int
+    reason: str
     created_at: str
     idempotent_replay: bool = False
 

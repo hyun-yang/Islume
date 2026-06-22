@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     # Wallet
     wallet_master_key: str = ""
     wallet_service_url: str = "http://localhost:8004"
+    # Shared admin key for privileged wallet ops (e.g. balance adjustments).
+    # Empty disables the admin endpoints (403). Minimal gate — not full auth.
+    admin_api_key: str = ""
 
     # Solana / SPL withdrawal (hybrid: Postgres ledger is source of truth,
     # SPL tokens minted on-chain only on withdrawal). Devnet defaults.
