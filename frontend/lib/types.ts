@@ -453,6 +453,16 @@ export interface WithdrawalListResponse {
   total: number;
 }
 
+export interface SupplyResponse {
+  currency: string;
+  total_issued: number;
+  on_chain_supply: number;
+  in_app: number;
+  on_chain_cap: number; // 0 = unlimited
+  mint_address: string;
+  cluster: string;
+}
+
 interface LedgerEntry {
   id: number;
   tx_id: string;

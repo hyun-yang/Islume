@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useWallet, useTransactions, useWithdrawals } from "@/hooks/useWallet";
+import { useWallet, useTransactions, useWithdrawals, useSupply } from "@/hooks/useWallet";
 import { useAppStore } from "@/stores/appStore";
 import { useT } from "@/lib/i18n";
 
@@ -18,6 +18,7 @@ export default function WalletPanel() {
   const { data: wallet, isLoading } = useWallet();
   const { data: txData } = useTransactions(5, 0);
   const { data: withdrawalData } = useWithdrawals(5);
+  const { data: supply } = useSupply();
   const setShowTransferModal = useAppStore((s) => s.setShowTransferModal);
   const setShowWithdrawModal = useAppStore((s) => s.setShowWithdrawModal);
   const [expanded, setExpanded] = useState(false);
@@ -84,6 +85,44 @@ export default function WalletPanel() {
           </a>
         </div>
       </div>
+
+      {supply && (
+        <div className="mb-3 rounded-md border border-zinc-100 bg-zinc-50 p-2.5">
+          <div className="text-[10px] uppercase tracking-wide text-zinc-400 mb-1.5">
+            {t("wallet.supplyTitle")}
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <div className="text-zinc-400">{t("wallet.totalIssued")}</div>
+              <div className="font-semibold text-zinc-800 tabular-nums">
+                {supply.total_issued.toLocaleString()} ISL
+              </div>
+            </div>
+            <div>
+              <div className="text-zinc-400">{t("wallet.onChainSupply")}</div>
+              <div className="font-semibold text-zinc-800 tabular-nums">
+                {supply.on_chain_supply.toLocaleString()}
+                {supply.on_chain_cap > 0 && (
+                  <span className="font-normal text-zinc-400">
+                    {" "}/ {supply.on_chain_cap.toLocaleString()}
+                  </span>
+                )}{" "}
+                ISL
+              </div>
+            </div>
+          </div>
+          {supply.mint_address && (
+            <a
+              href={`https://explorer.solana.com/address/${supply.mint_address}?cluster=${supply.cluster}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1.5 inline-block text-xs text-blue-500 hover:underline"
+            >
+              {t("wallet.viewMintOnExplorer")}
+            </a>
+          )}
+        </div>
+      )}
 
       {txData && txData.entries.length > 0 && (
         <div>

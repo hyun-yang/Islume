@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     solana_confirm_timeout: float = 60.0  # max seconds to wait for confirmation
     solana_mint_max_attempts: int = 3  # reclaim attempts before marking failed
     solana_min_withdrawal: int = 1  # smallest ISL amount allowed to withdraw
+    solana_max_supply: int = 0  # on-chain SPL supply cap in ISL; 0 = unlimited
 
     # App
     log_level: str = "INFO"

@@ -20,6 +20,7 @@ import type {
   WithdrawalRequest,
   WithdrawalResponse,
   WithdrawalListResponse,
+  SupplyResponse,
   VisitResponse,
   IslandStage,
   StageLevelData,
@@ -447,6 +448,12 @@ export async function fetchWithdrawals(
 ): Promise<WithdrawalListResponse> {
   const res = await fetch(`${WALLET}/wallets/${userId}/withdrawals?limit=${limit}`);
   if (!res.ok) throw new Error(`Withdrawals fetch failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSupply(): Promise<SupplyResponse> {
+  const res = await fetch(`${WALLET}/supply`);
+  if (!res.ok) throw new Error(`Supply fetch failed: ${res.status}`);
   return res.json();
 }
 

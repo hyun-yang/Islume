@@ -6,6 +6,7 @@ import {
   fetchTransactions,
   createWithdrawal,
   fetchWithdrawals,
+  fetchSupply,
 } from "@/lib/api";
 import type { TransferRequest, WithdrawalRequest, WithdrawalListResponse } from "@/lib/types";
 
@@ -55,7 +56,17 @@ export function useWithdraw() {
       queryClient.invalidateQueries({ queryKey: ["balance", selectedUserId] });
       queryClient.invalidateQueries({ queryKey: ["transactions", selectedUserId] });
       queryClient.invalidateQueries({ queryKey: ["withdrawals", selectedUserId] });
+      // A withdrawal moves ISL into escrow → on-chain supply / in-app shift.
+      queryClient.invalidateQueries({ queryKey: ["supply"] });
     },
+  });
+}
+
+export function useSupply() {
+  // Supply totals are global (not per-user), so no selectedUserId / enabled gate.
+  return useQuery({
+    queryKey: ["supply"],
+    queryFn: fetchSupply,
   });
 }
 

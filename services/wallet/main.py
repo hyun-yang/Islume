@@ -445,6 +445,14 @@ async def create_withdrawal(
     if user_wallet.balance < body.amount:
         raise HTTPException(status_code=400, detail="Insufficient balance")
 
+    # On-chain supply cap. escrow.balance == on-chain SPL supply (withdraw-only
+    # invariant), so this withdrawal would push supply to escrow.balance + amount.
+    # The escrow row is already locked above (with_for_update), so the check is
+    # serialized against concurrent withdrawals — no over-mint race, no RPC needed.
+    cap = get_settings().solana_max_supply
+    if cap and escrow_wallet.balance + body.amount > cap:
+        raise HTTPException(status_code=409, detail="On-chain supply cap reached")
+
     tx_data = build_tx_data(
         str(tx_id), str(user_wallet.id), str(escrow_wallet.id),
         body.amount, "ISL", "withdrawal",
@@ -626,6 +634,37 @@ async def audit_ledger(
         "transactions_checked": checked,
         "wallets_checked": len(wallets),
         "anomalies": anomalies,
+    }
+
+
+@app.get("/supply")
+async def get_supply(session: AsyncSession = Depends(get_session)):
+    """ISL supply totals. On-chain SPL supply is read from the escrow wallet
+    (invariant: escrow.balance == on-chain SPL supply, withdraw-only), so this
+    needs no RPC and can't be rate-limited; verify trustlessly via the mint on a
+    Solana explorer using the returned mint_address + cluster."""
+    s = get_settings()
+    treasury_result = await session.execute(
+        select(Wallet).where(Wallet.user_id == SYSTEM_USER_ID)
+    )
+    treasury = treasury_result.scalar_one_or_none()
+    escrow_result = await session.execute(
+        select(Wallet).where(Wallet.user_id == ESCROW_USER_ID)
+    )
+    escrow = escrow_result.scalar_one_or_none()
+
+    # Genesis is the only tx that debits the treasury, so its balance went
+    # negative by exactly the total ISL granted into the economy.
+    total_issued = -treasury.balance if treasury else 0
+    on_chain_supply = escrow.balance if escrow else 0
+    return {
+        "currency": "ISL",
+        "total_issued": total_issued,
+        "on_chain_supply": on_chain_supply,
+        "in_app": total_issued - on_chain_supply,
+        "on_chain_cap": s.solana_max_supply,  # 0 = unlimited
+        "mint_address": s.solana_isl_mint,
+        "cluster": s.solana_cluster,
     }
 
 
