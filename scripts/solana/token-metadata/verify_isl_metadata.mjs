@@ -1,9 +1,7 @@
 // Read back the on-chain Metaplex metadata for the ISL mint and print it.
-//   node verify_isl_metadata.mjs
-
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+//
+//   node verify_isl_metadata.mjs                      # devnet (.env mint)
+//   ISL_MINT=<mainnet_mint> node verify_isl_metadata.mjs --network mainnet
 
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
 import { publicKey } from '@metaplex-foundation/umi';
@@ -12,15 +10,15 @@ import {
   mplTokenMetadata,
 } from '@metaplex-foundation/mpl-token-metadata';
 
-const envPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../.env');
-const mintLine = readFileSync(envPath, 'utf8')
-  .split('\n')
-  .find((l) => l.startsWith('SOLANA_ISL_MINT='));
-const mint = publicKey(mintLine.slice('SOLANA_ISL_MINT='.length).split(' #')[0].trim());
+import { resolveConfig } from './config.mjs';
 
-const umi = createUmi('https://api.devnet.solana.com').use(mplTokenMetadata());
+const cfg = resolveConfig();
+const mint = publicKey(cfg.mint);
+
+const umi = createUmi(cfg.rpc).use(mplTokenMetadata());
 const md = await fetchMetadataFromSeeds(umi, { mint });
 
+console.log(`network: ${cfg.network}  rpc: ${cfg.rpc}`);
 console.log('mint:', mint);
 console.log('name:', md.name);
 console.log('symbol:', md.symbol);

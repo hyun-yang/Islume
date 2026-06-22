@@ -5,14 +5,19 @@
 // the brand SVG. The icon + JSON are uploaded to Arweave via Irys; only the
 // resulting metadata URI is written on-chain (createMetadataAccountV3).
 //
-// Reads SOLANA_MINT_AUTHORITY_SECRET + SOLANA_ISL_MINT straight from the repo
-// .env so the secret never touches shell history. Devnet only.
+// Defaults to devnet, reading SOLANA_ISL_MINT + SOLANA_MINT_AUTHORITY_SECRET
+// from the repo .env (secret never touches shell history). For mainnet, pass
+// --network mainnet and override the mint/secret/RPC via env (see config.mjs)
+// so the devnet .env stays untouched:
 //
-//   cd scripts/solana/token-metadata && node set_isl_metadata.mjs
-
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+//   # devnet (default)
+//   node set_isl_metadata.mjs
+//
+//   # mainnet (real SOL for ATA rent + Irys upload; irreversible on-chain write)
+//   ISL_MINT=<mainnet_mint> \
+//   ISL_MINT_AUTHORITY_SECRET=<mainnet_secret> \
+//   ISL_RPC_URL=<paid_mainnet_rpc>   # optional; default api.mainnet-beta
+//   node set_isl_metadata.mjs --network mainnet
 
 import { Resvg } from '@resvg/resvg-js';
 import { createUmi } from '@metaplex-foundation/umi-bundle-defaults';
@@ -31,8 +36,7 @@ import {
   mplTokenMetadata,
 } from '@metaplex-foundation/mpl-token-metadata';
 
-const RPC_URL = 'https://api.devnet.solana.com';
-const IRYS_ADDRESS = 'https://devnet.irys.xyz';
+import { resolveConfig } from './config.mjs';
 
 const TOKEN_NAME = 'Islume';
 const TOKEN_SYMBOL = 'ISL';
@@ -52,21 +56,6 @@ const ICON_SVG = `<svg width="512" height="512" viewBox="0 0 512 512" xmlns="htt
   </g>
 </svg>`;
 
-function loadEnv() {
-  const envPath = resolve(dirname(fileURLToPath(import.meta.url)), '../../../.env');
-  const text = readFileSync(envPath, 'utf8');
-  const pick = (key) => {
-    for (const line of text.split('\n')) {
-      if (line.startsWith(`${key}=`)) {
-        // strip "KEY=" then any trailing " # comment"
-        return line.slice(key.length + 1).split(' #')[0].trim();
-      }
-    }
-    throw new Error(`${key} not found in ${envPath}`);
-  };
-  return { secret: pick('SOLANA_MINT_AUTHORITY_SECRET'), mint: pick('SOLANA_ISL_MINT') };
-}
-
 function secretToBytes(secret) {
   // shared/solana.py accepts a 128-hex-char (64-byte) secret or a base58 string.
   if (secret.length === 128 && /^[0-9a-fA-F]+$/.test(secret)) {
@@ -76,14 +65,18 @@ function secretToBytes(secret) {
 }
 
 async function main() {
-  const { secret, mint: mintAddress } = loadEnv();
-  console.log('[1/6] env loaded — mint:', mintAddress);
+  const cfg = resolveConfig({ needSecret: true });
+  console.log(`[cfg] network=${cfg.network} rpc=${cfg.rpc} irys=${cfg.irys}`);
+  console.log('[1/6] mint:', cfg.mint);
+  if (cfg.network === 'mainnet') {
+    console.log('[!] MAINNET — spends REAL SOL (ATA rent + Irys upload); the on-chain write is irreversible.');
+  }
 
-  const umi = createUmi(RPC_URL)
+  const umi = createUmi(cfg.rpc)
     .use(mplTokenMetadata())
-    .use(irysUploader({ address: IRYS_ADDRESS }));
+    .use(irysUploader({ address: cfg.irys }));
 
-  const keypair = umi.eddsa.createKeypairFromSecretKey(secretToBytes(secret));
+  const keypair = umi.eddsa.createKeypairFromSecretKey(secretToBytes(cfg.secret));
   umi.use(keypairIdentity(keypair));
   const authority = umi.identity.publicKey;
   console.log('[2/6] authority / update-authority:', authority);
@@ -113,7 +106,7 @@ async function main() {
   const metadataUri = await umi.uploader.uploadJson(offchain);
   console.log('[5/6] metadata JSON uploaded:', metadataUri);
 
-  const mint = publicKey(mintAddress);
+  const mint = publicKey(cfg.mint);
   const { signature } = await createMetadataAccountV3(umi, {
     metadata: findMetadataPda(umi, { mint }),
     mint,
