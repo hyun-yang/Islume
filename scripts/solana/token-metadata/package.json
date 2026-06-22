@@ -1,0 +1,17 @@
+{
+  "name": "isl-token-metadata",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "One-off script: attach Metaplex Token Metadata (name/symbol/icon/creator) to the ISL SPL mint on Solana devnet.",
+  "scripts": {
+    "set-metadata": "node set_isl_metadata.mjs"
+  },
+  "dependencies": {
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@metaplex-foundation/umi": "^0.9.2",
+    "@metaplex-foundation/umi-bundle-defaults": "^0.9.2",
+    "@metaplex-foundation/umi-uploader-irys": "^0.9.2",
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}
