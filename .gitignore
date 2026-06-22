@@ -66,6 +66,9 @@ docs/SECURITY.md
 docs/JOURNAL.md
 docs/ARCHITECTURE.md
 
+# Personal/local admin scripts (not for commit)
+scripts/local/
+
 # OS
 .DS_Store
 /uv.lock
