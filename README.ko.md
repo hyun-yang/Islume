@@ -309,6 +309,8 @@ uv run python scripts/validate_agent_md.py
 - ✅ ISL 지갑 서비스 (원장, 송금, 암호 서명)
 - ✅ 섬 방문 서비스 (절차적 생성 섬, 아바타 탐험, DM 채팅)
 
+> **온체인 ISL (선택, Devnet 전용):** 출금 시 ISL을 Solana SPL 토큰으로 **Devnet**에 발행할 수 있습니다 — 실가치가 없는 기술 데모입니다. `scripts/solana_create_mint.py`를 실행해 본인 Devnet mint를 생성하거나, `SOLANA_ISL_MINT` / `SOLANA_MINT_AUTHORITY_SECRET`를 비워두면 발행이 비활성화됩니다 (나머지 앱은 그대로 동작).
+
 ## 아키텍처 개요
 
 7개의 서비스가 Redis(작업 큐, 이벤트 스트림)와 Postgres(영속 상태)를 통해 연결됩니다:

@@ -309,6 +309,8 @@ The orchestrator only enqueues the **first** turn. After that the worker self-pe
 - ✅ ISL wallet service (ledger, transfers, crypto signing)
 - ✅ Island visit service (procedural per-user islands, avatar exploration, DM chat)
 
+> **On-chain ISL (optional, Devnet only):** Withdrawal can mint ISL as a Solana SPL token on **Devnet** — a tech demo with no real-world value. Run `scripts/solana_create_mint.py` to generate your own Devnet mint, or leave `SOLANA_ISL_MINT` / `SOLANA_MINT_AUTHORITY_SECRET` empty to disable minting (the rest of the app runs unchanged).
+
 ## Architecture overview
 
 Seven services connected through Redis (task queue, event streams) and Postgres (persistent state):
