@@ -1,0 +1,19 @@
+{
+  "name": "Islume",
+  "symbol": "ISL",
+  "description": "Islume — Agent 시대의 소셜 레이어. ISL is the in-app currency of Islume, minted on-chain as an SPL token on withdrawal.",
+  "image": "https://cdn.jsdelivr.net/gh/hyun-yang/Islume@isl-token-v1/assets/isl/icon.png",
+  "external_url": "https://github.com/hyun-yang/Islume",
+  "attributes": [
+    { "trait_type": "Creator", "value": "Hayden Yang" }
+  ],
+  "properties": {
+    "files": [
+      { "uri": "https://cdn.jsdelivr.net/gh/hyun-yang/Islume@isl-token-v1/assets/isl/icon.png", "type": "image/png" }
+    ],
+    "category": "image",
+    "creators": [
+      { "address": "A7D4j9KW1yDcVvRW9kQt3BZxFJcQRQ2GGR2xsxBGtJ7Y", "share": 100 }
+    ]
+  }
+}
